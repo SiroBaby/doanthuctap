@@ -1,0 +1,342 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id_user     String    @id @db.VarChar(255)
+  user_name   String    @db.VarChar(255)
+  email       String    @unique @db.VarChar(255)
+  password    String    @db.VarChar(255)
+  phone       String?   @db.VarChar(20)
+  avatar      String?   @db.VarChar(255)
+  status      String?   @db.VarChar(50)
+  role        Role
+  create_at   DateTime?
+  update_at   DateTime?
+  delete_at   DateTime?
+  
+  addresses   Address[]
+  shops       Shop[]
+  carts       Cart[]
+  invoices    Invoice[]
+  reviews     Review[]
+  voucher_storage Voucher_storage[]
+  chats       Chat[]
+  favorites   Favorite[]
+}
+
+model Address {
+  address_id  Int       @id @default(autoincrement())
+  full_name   String?   @db.VarChar(255)
+  phone       String?   @db.VarChar(20)
+  address     String?   @db.Text
+  is_default  Boolean?
+  id_user     String    @db.VarChar(255)
+  create_at   DateTime?
+  update_at   DateTime?
+  delete_at   DateTime?
+  
+  user        User      @relation(fields: [id_user], references: [id_user])
+}
+
+model Location {
+  location_id     String @id @db.VarChar(255)
+  location_name   String @db.VarChar(255)
+  
+  shops           Shop[]
+}
+
+model Shop_address {
+  address_id  String @id @db.VarChar(255)
+  address     String @db.Text
+  phone       String @db.VarChar(20)
+  
+  shops       Shop[]
+}
+
+model Shop {
+  shop_id         String     @id @db.VarChar(255)
+  shop_name       String?    @db.VarChar(255)
+  link            String?    @db.VarChar(255)
+  status          Shop_status
+  location_id     String?    @db.VarChar(255)
+  shop_address_id String?    @db.VarChar(255)
+  id_user         String     @db.VarChar(255)
+  create_at       DateTime?
+  update_at       DateTime?
+  delete_at       DateTime?
+  
+  user            User         @relation(fields: [id_user], references: [id_user])
+  location        Location?    @relation(fields: [location_id], references: [location_id])
+  shop_address    Shop_address? @relation(fields: [shop_address_id], references: [address_id])
+  products        Product[]
+  chats           Chat[]
+  shop_vouchers   Shop_Voucher[]
+}
+
+model Category {
+  category_id     Int       @id @default(autoincrement())
+  category_name   String?   @db.VarChar(255)
+  create_at       DateTime?
+  update_at       DateTime?
+  
+  products        Product[]
+}
+
+model Product_Detail {
+  product_detail_id   Int       @id @default(autoincrement())
+  description         String?   @db.Text
+  specifications      String?   @db.Text
+  create_at           DateTime?
+  update_at           DateTime?
+  
+  product             Product?
+}
+
+model Product {
+  product_id          Int       @id @default(autoincrement())
+  product_name        String    @db.VarChar(255)
+  brand               String?   @db.VarChar(255)
+  status              Product_status
+  category_id         Int?
+  product_detail_id   Int?      @unique
+  shop_id             String    @db.VarChar(255)
+  create_at           DateTime?
+  update_at           DateTime?
+  delete_at           DateTime?
+  
+  category            Category?         @relation(fields: [category_id], references: [category_id])
+  product_detail      Product_Detail?   @relation(fields: [product_detail_id], references: [product_detail_id])
+  shop                Shop              @relation(fields: [shop_id], references: [shop_id])
+  product_images      Product_Image[]
+  product_variations  Product_variation[]
+  reviews             Review[]
+  favorites           Favorite[]
+}
+
+model Product_Image {
+  image_id        Int       @id @default(autoincrement())
+  product_id      Int
+  image_url       String    @db.VarChar(255)
+  is_thumbnail    Boolean?
+  create_at       DateTime?
+  
+  product         Product   @relation(fields: [product_id], references: [product_id])
+}
+
+model Product_variation {
+  product_variation_id    Int               @id @default(autoincrement())
+  product_variation_name  String            @db.VarChar(255)
+  base_price             Decimal            @db.Decimal(10, 2)
+  percent_discount       Decimal            @db.Decimal(5, 2)
+  stock_quantity         Int                @default(0)
+  status                 Variation_status
+  product_id             Int
+  create_at              DateTime?
+  update_at              DateTime?
+  
+  product                Product           @relation(fields: [product_id], references: [product_id])
+  cart_products          Cart_Product[]
+}
+
+model Cart {
+  cart_id    String      @id @db.VarChar(255)
+  id_user    String      @db.VarChar(255)
+  status     Cart_status
+  create_at  DateTime?
+  update_at  DateTime?
+  
+  user       User        @relation(fields: [id_user], references: [id_user])
+  cart_products Cart_Product[]
+  invoices   Invoice[]
+}
+
+model Cart_Product {
+  cart_product_id     Int       @id @default(autoincrement())
+  cart_id             String    @db.VarChar(255)
+  product_variation_id Int
+  quantity            Int
+  create_at           DateTime?
+  update_at           DateTime?
+  
+  cart                Cart              @relation(fields: [cart_id], references: [cart_id])
+  product_variation   Product_variation @relation(fields: [product_variation_id], references: [product_variation_id])
+}
+
+model Voucher {
+  id                      Int       @id @default(autoincrement())
+  code                    String    @unique @db.VarChar(255)
+  discount_percent        Float
+  minimum_require_price   Decimal   @db.Decimal(10, 2)
+  max_discount_price      Decimal   @db.Decimal(10, 2)
+  quantity                Int       @default(0)
+  max_use_per_user        Int?
+  valid_from              DateTime? @db.Date
+  valid_to                DateTime? @db.Date
+  create_at               DateTime?
+  delete_at               DateTime?
+  
+  voucher_storage         Voucher_storage[]
+}
+
+model Shop_Voucher {
+  id                      Int       @id @default(autoincrement())
+  code                    String    @unique @db.VarChar(255)
+  discount_percent        Float
+  minimum_require_price   Decimal   @db.Decimal(10, 2)
+  max_discount_price      Decimal   @db.Decimal(10, 2)
+  quantity                Int       @default(0)
+  max_use_per_user        Int?
+  shop_id                 String    @db.VarChar(255)
+  valid_from              DateTime? @db.Date
+  valid_to                DateTime? @db.Date
+  create_at               DateTime?
+  delete_at               DateTime?
+  
+  shop                    Shop               @relation(fields: [shop_id], references: [shop_id])
+  voucher_storage         Voucher_storage[]
+}
+
+model Voucher_storage {
+  voucher_storage_id  Int             @id @default(autoincrement())
+  user_id             String          @db.VarChar(255)
+  voucher_id          Int
+  voucher_type        Voucher_type
+  claimed_at          DateTime?
+  
+  user                User            @relation(fields: [user_id], references: [id_user])
+  voucher             Voucher?        @relation(fields: [voucher_id], references: [id], map: "Voucher_storage_voucher_fk")
+  shop_voucher        Shop_Voucher?   @relation(fields: [voucher_id], references: [id], map: "Voucher_storage_shop_voucher_fk")
+  invoices            Invoice[]
+}
+
+model Invoice {
+  invoice_id             String    @id @db.VarChar(255)
+  payment_method         String?   @db.VarChar(255)
+  payment_status         String?   @db.VarChar(50)
+  total_amount           Decimal   @db.Decimal(10, 2)
+  shipping_fee           Decimal   @default(0) @db.Decimal(10, 2)
+  id_user                String    @db.VarChar(255)
+  cart_id                String    @db.VarChar(255)
+  voucher_storage_id     Int?
+  shipping_address_id    Int?
+  create_at              DateTime?
+  update_at              DateTime?
+  
+  user                   User             @relation(fields: [id_user], references: [id_user])
+  cart                   Cart             @relation(fields: [cart_id], references: [cart_id])
+  voucher_storage        Voucher_storage? @relation(fields: [voucher_storage_id], references: [voucher_storage_id])
+  order_statuses         Order_Status[]
+}
+
+model Order_Status {
+  status_id      Int       @id @default(autoincrement())
+  invoice_id     String    @db.VarChar(255)
+  status         String    @db.VarChar(50)
+  notes          String?   @db.Text
+  create_at      DateTime?
+  
+  invoice        Invoice   @relation(fields: [invoice_id], references: [invoice_id])
+}
+
+model Review {
+  review_id      Int       @id @default(autoincrement())
+  rating         Float
+  comment        String?   @db.Text
+  is_review      Boolean?
+  product_id     Int
+  id_user        String    @db.VarChar(255)
+  create_at      DateTime?
+  update_at      DateTime?
+  
+  product        Product   @relation(fields: [product_id], references: [product_id])
+  user           User      @relation(fields: [id_user], references: [id_user])
+}
+
+model Chat {
+  chat_id        String    @id @db.VarChar(255)
+  id_user        String    @db.VarChar(255)
+  shop_id        String    @db.VarChar(255)
+  last_message_at DateTime?
+  create_at      DateTime  @default(now())
+  update_at      DateTime  @updatedAt
+  
+  user           User      @relation(fields: [id_user], references: [id_user])
+  shop           Shop      @relation(fields: [shop_id], references: [shop_id])
+  messages       Chat_Message[]
+}
+
+model Chat_Message {
+  message_id     Int       @id @default(autoincrement())
+  chat_id        String    @db.VarChar(255)
+  sender_type    Sender_type
+  sender_id      String    @db.VarChar(255)
+  message        String    @db.Text
+  sent_at        DateTime  @default(now())
+  is_read        Boolean   @default(false)
+  
+  chat           Chat      @relation(fields: [chat_id], references: [chat_id])
+}
+
+model Favorite {
+  favorite_id    Int       @id @default(autoincrement())
+  user_id        String    @db.VarChar(255)
+  product_id     Int
+  created_at     DateTime  @default(now())
+  
+  user           User      @relation(fields: [user_id], references: [id_user])
+  product        Product   @relation(fields: [product_id], references: [product_id])
+  
+  @@unique([user_id, product_id])
+}
+
+enum Role {
+  admin
+  seller
+  user
+}
+
+enum Shop_status {
+  active
+  inactive
+  banned
+}
+
+enum Product_status {
+  active
+  inactive
+  out_of_stock
+}
+
+enum Variation_status {
+  active
+  inactive
+  out_of_stock
+}
+
+enum Cart_status {
+  active
+  checkout
+  abandoned
+}
+
+enum Voucher_type {
+  voucher
+  shop_voucher
+}
+
+enum Sender_type {
+  user
+  shop
+}
