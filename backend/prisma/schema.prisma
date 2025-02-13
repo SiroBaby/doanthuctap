@@ -41,7 +41,7 @@ model Address {
   full_name   String?   @db.VarChar(255)
   phone       String?   @db.VarChar(20)
   address     String?   @db.Text
-  is_default  Boolean?
+  is_default  Boolean?  @default(false)
   id_user     String    @db.VarChar(255)
   create_at   DateTime?
   update_at   DateTime?
@@ -58,7 +58,7 @@ model Location {
 }
 
 model Shop_address {
-  address_id  String @id @db.VarChar(255)
+  address_id  Int @id @default(autoincrement())
   address     String @db.Text
   phone       String @db.VarChar(20)
   
@@ -71,7 +71,7 @@ model Shop {
   link            String?    @db.VarChar(255)
   status          Shop_status
   location_id     String?    @db.VarChar(255)
-  shop_address_id String?    @db.VarChar(255)
+  shop_address_id Int?
   id_user         String     @db.VarChar(255)
   create_at       DateTime?
   update_at       DateTime?

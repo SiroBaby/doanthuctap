@@ -7,6 +7,9 @@ import { join } from 'path';
 import { ApolloDriver } from '@nestjs/apollo';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { LocationModule } from './location/location.module';
+import { AddressModule } from './address/address.module';
+import { ShopAddressModule } from './shop-address/shop-address.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -18,7 +21,7 @@ import { LocationModule } from './location/location.module';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       debug: true,
       playground: true,
-    }), 
+    }), AddressModule, ShopAddressModule, CategoryModule, 
   ],
   controllers: [AppController],
   providers: [AppService],

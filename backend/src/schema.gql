@@ -26,11 +26,31 @@ type Location {
   location_name: String!
 }
 
+type Address {
+  address_id: Int!
+  full_name: String!
+  phone: String!
+  address: String!
+  id_user: String!
+  is_default: Boolean
+  create_at: DateTime
+  update_at: DateTime
+  delete_at: DateTime
+}
+
+type ShopAddress {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
 type Query {
   users: [User!]!
   user(id: String!): User!
   locations: [Location!]!
   location(location_id: String!): Location!
+  addresss: [Address!]!
+  address(id: Int!): Address!
+  shopAddress(id: Int!): ShopAddress!
 }
 
 type Mutation {
@@ -38,6 +58,12 @@ type Mutation {
   createLocation(createLocationInput: CreateLocationInput!): Location!
   updateLocation(updateLocationInput: UpdateLocationInput!): Location!
   removeLocation(location_id: String!): Location!
+  createAddress(createAddressInput: CreateAddressInput!): Address!
+  updateAddress(updateAddressInput: UpdateAddressInput!): Address!
+  removeAddress(id: Int!): Address!
+  createShopAddress(createShopAddressInput: CreateShopAddressInput!): ShopAddress!
+  updateShopAddress(updateShopAddressInput: UpdateShopAddressInput!): ShopAddress!
+  removeShopAddress(id: Int!): ShopAddress!
 }
 
 input UpdateUserInput {
@@ -58,4 +84,32 @@ input CreateLocationInput {
 input UpdateLocationInput {
   location_id: String!
   location_name: String!
+}
+
+input CreateAddressInput {
+  full_name: String!
+  phone: String!
+  address: String!
+  id_user: String!
+  is_default: Boolean
+}
+
+input UpdateAddressInput {
+  full_name: String!
+  phone: String!
+  address: String!
+  id_user: String
+  is_default: Boolean
+  address_id: Int!
+}
+
+input CreateShopAddressInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateShopAddressInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
 }

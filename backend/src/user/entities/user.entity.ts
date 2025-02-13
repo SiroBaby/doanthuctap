@@ -28,7 +28,6 @@ export class User {
   @Field(() => String)
   role: string;
 
-  // Thêm 3 field thời gian
   @Field(() => Date, { nullable: true })
   create_at?: Date | null;
 
