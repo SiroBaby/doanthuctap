@@ -10,6 +10,8 @@ import { LocationModule } from './location/location.module';
 import { AddressModule } from './address/address.module';
 import { ShopAddressModule } from './shop-address/shop-address.module';
 import { CategoryModule } from './category/category.module';
+import { ProductDetailModule } from './product-detail/product-detail.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
@@ -21,7 +23,7 @@ import { CategoryModule } from './category/category.module';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       debug: true,
       playground: true,
-    }), AddressModule, ShopAddressModule, CategoryModule, 
+    }), AddressModule, ShopAddressModule, CategoryModule, ProductDetailModule, ProductModule, 
   ],
   controllers: [AppController],
   providers: [AppService],

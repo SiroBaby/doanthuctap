@@ -61,8 +61,9 @@ model Shop_address {
   address_id  Int @id @default(autoincrement())
   address     String @db.Text
   phone       String @db.VarChar(20)
-  
-  shops       Shop[]
+  shop_id     String? @db.VarChar(255)
+
+  shops       Shop? @relation(fields: [shop_id], references: [shop_id])
 }
 
 model Shop {
@@ -71,7 +72,6 @@ model Shop {
   link            String?    @db.VarChar(255)
   status          Shop_status
   location_id     String?    @db.VarChar(255)
-  shop_address_id Int?
   id_user         String     @db.VarChar(255)
   create_at       DateTime?
   update_at       DateTime?
@@ -79,10 +79,10 @@ model Shop {
   
   user            User         @relation(fields: [id_user], references: [id_user])
   location        Location?    @relation(fields: [location_id], references: [location_id])
-  shop_address    Shop_address? @relation(fields: [shop_address_id], references: [address_id])
   products        Product[]
   chats           Chat[]
   shop_vouchers   Shop_Voucher[]
+  shop_addresses  Shop_address[]
 }
 
 model Category {

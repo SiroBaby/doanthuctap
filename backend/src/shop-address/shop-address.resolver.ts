@@ -13,7 +13,7 @@ export class ShopAddressResolver {
     return this.shopAddressService.create(createShopAddressInput);
   }
 
-  @Query(() => [ShopAddress], { name: 'shopAddress' })
+  @Query(() => [ShopAddress], { name: 'shopAddresss' })
   findAll() {
     return this.shopAddressService.findAll();
   }
@@ -25,7 +25,7 @@ export class ShopAddressResolver {
 
   @Mutation(() => ShopAddress)
   updateShopAddress(@Args('updateShopAddressInput') updateShopAddressInput: UpdateShopAddressInput) {
-    return this.shopAddressService.update(updateShopAddressInput.id, updateShopAddressInput);
+    return this.shopAddressService.update(updateShopAddressInput.address_id, updateShopAddressInput);
   }
 
   @Mutation(() => ShopAddress)

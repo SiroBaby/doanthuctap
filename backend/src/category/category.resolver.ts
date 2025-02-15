@@ -13,7 +13,7 @@ export class CategoryResolver {
     return this.categoryService.create(createCategoryInput);
   }
 
-  @Query(() => [Category], { name: 'category' })
+  @Query(() => [Category], { name: 'categorys' })
   findAll() {
     return this.categoryService.findAll();
   }
@@ -25,7 +25,7 @@ export class CategoryResolver {
 
   @Mutation(() => Category)
   updateCategory(@Args('updateCategoryInput') updateCategoryInput: UpdateCategoryInput) {
-    return this.categoryService.update(updateCategoryInput.id, updateCategoryInput);
+    return this.categoryService.update(updateCategoryInput.category_id, updateCategoryInput);
   }
 
   @Mutation(() => Category)

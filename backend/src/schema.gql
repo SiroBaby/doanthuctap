@@ -39,8 +39,35 @@ type Address {
 }
 
 type ShopAddress {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  address_id: Int!
+  shop_id: String!
+  address: String!
+  phone: String!
+}
+
+type Category {
+  category_id: Int!
+  category_name: String!
+  create_at: DateTime
+  update_at: DateTime
+}
+
+type ProductDetail {
+  product_detail_id: Int!
+  description: String!
+  specifications: String!
+  create_at: DateTime!
+  update_at: DateTime!
+}
+
+type Product {
+  product_id: Int!
+  product_name: String!
+  brand: String!
+  status: String!
+  category_id: Int!
+  product_detail_id: Int!
+  shop_id: String!
 }
 
 type Query {
@@ -50,7 +77,14 @@ type Query {
   location(location_id: String!): Location!
   addresss: [Address!]!
   address(id: Int!): Address!
+  shopAddresss: [ShopAddress!]!
   shopAddress(id: Int!): ShopAddress!
+  categorys: [Category!]!
+  category(id: Int!): Category!
+  productDetails: [ProductDetail!]!
+  productDetail(id: Int!): ProductDetail!
+  products: [Product!]!
+  product(id: Int!): Product!
 }
 
 type Mutation {
@@ -64,6 +98,15 @@ type Mutation {
   createShopAddress(createShopAddressInput: CreateShopAddressInput!): ShopAddress!
   updateShopAddress(updateShopAddressInput: UpdateShopAddressInput!): ShopAddress!
   removeShopAddress(id: Int!): ShopAddress!
+  createCategory(createCategoryInput: CreateCategoryInput!): Category!
+  updateCategory(updateCategoryInput: UpdateCategoryInput!): Category!
+  removeCategory(id: Int!): Category!
+  createProductDetail(createProductDetailInput: CreateProductDetailInput!): ProductDetail!
+  updateProductDetail(updateProductDetailInput: UpdateProductDetailInput!): ProductDetail!
+  removeProductDetail(id: Int!): ProductDetail!
+  createProduct(createProductInput: CreateProductInput!): Product!
+  updateProduct(updateProductInput: UpdateProductInput!): Product!
+  removeProduct(id: Int!): Product!
 }
 
 input UpdateUserInput {
@@ -104,12 +147,52 @@ input UpdateAddressInput {
 }
 
 input CreateShopAddressInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  address: String!
+  shop_id: String!
+  phone: String!
 }
 
 input UpdateShopAddressInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
+  address_id: Int!
+  address: String!
+  phone: String!
+}
+
+input CreateCategoryInput {
+  category_name: String!
+}
+
+input UpdateCategoryInput {
+  category_id: Int!
+  category_name: String!
+}
+
+input CreateProductDetailInput {
+  description: String!
+  specifications: String!
+}
+
+input UpdateProductDetailInput {
+  description: String
+  specifications: String
+  product_detail_id: Int!
+}
+
+input CreateProductInput {
+  product_name: String!
+  brand: String!
+  status: String!
+  category_id: Int!
+  product_detail_id: Int!
+  shop_id: String!
+}
+
+input UpdateProductInput {
+  product_id: Int!
+  product_name: String
+  brand: String
+  status: String
+  category_id: Int
+  product_detail_id: Int
+  shop_id: String
 }
