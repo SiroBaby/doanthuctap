@@ -15,17 +15,17 @@ import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
-  UserModule,
-  WebhooksModule, 
-  LocationModule, 
-  GraphQLModule.forRoot({
+    UserModule,
+    WebhooksModule,
+    LocationModule,
+    GraphQLModule.forRoot({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       debug: true,
       playground: true,
-    }), AddressModule, ShopAddressModule, CategoryModule, ProductDetailModule, ProductModule, 
+    }), AddressModule, ShopAddressModule, CategoryModule, ProductDetailModule, ProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

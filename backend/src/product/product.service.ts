@@ -2,18 +2,19 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
 import { PrismaService } from '../prisma.service';
+import { PaginationArgs } from '../common/dto/pagination.args';
 
 @Injectable()
 export class ProductService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(createProductInput: CreateProductInput) {
     try {
       return await this.prisma.product.create({
         data: {
           ...createProductInput,
-          create_at: new Date(), 
-          update_at: new Date(), 
+          create_at: new Date(),
+          update_at: new Date(),
         },
       });
     } catch (error) {
@@ -24,9 +25,13 @@ export class ProductService {
     }
   }
 
-  async findAll() {
+  async findAll(paginationArgs: PaginationArgs) {
+    const { page = 1, limit = 10 } = paginationArgs;
     try {
-      return await this.prisma.product.findMany();
+      return await this.prisma.product.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+      });
     } catch (error) {
       throw error;
     }
@@ -50,7 +55,7 @@ export class ProductService {
     try {
       const { product_id, ...updateData } = updateProductInput;
       await this.findOne(id);
-      
+
       return await this.prisma.product.update({
         where: { product_id: id },
         data: {
