@@ -75,15 +75,15 @@ type Query {
   user(id: String!): User!
   locations: [Location!]!
   location(location_id: String!): Location!
-  addresss: [Address!]!
+  addresss(page: Int = 1, limit: Int = 10): [Address!]!
   address(id: Int!): Address!
   shopAddresss: [ShopAddress!]!
   shopAddress(id: Int!): ShopAddress!
-  categorys: [Category!]!
+  categorys(page: Int = 1, limit: Int = 10): [Category!]!
   category(id: Int!): Category!
   productDetails: [ProductDetail!]!
   productDetail(id: Int!): ProductDetail!
-  products: [Product!]!
+  products(page: Int = 1, limit: Int = 10): [Product!]!
   product(id: Int!): Product!
 }
 

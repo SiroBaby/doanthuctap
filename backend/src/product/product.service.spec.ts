@@ -80,8 +80,9 @@ describe('ProductService', () => {
 
   describe('findAll', () => {
     it('should return array of products', async () => {
+      const paginationArgs = { page: 1, limit: 10 };
       mockPrismaService.product.findMany.mockResolvedValue([mockProduct]);
-      const result = await service.findAll();
+      const result = await service.findAll(paginationArgs);
       expect(result).toEqual([mockProduct]);
     });
   });
@@ -127,7 +128,7 @@ describe('ProductService', () => {
         status: Product_status.inactive,
         category_id: 2
       };
-      
+
       await expect(service.update(999, updateInput)).rejects.toThrow(NotFoundException);
     });
   });

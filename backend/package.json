@@ -30,6 +30,8 @@
     "class-validator": "^0.14.1",
     "express": "^4.21.2",
     "graphql": "^16.10.0",
+    "jose": "^6.0.4",
+    "moment-timezone": "^0.5.47",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "svix": "^1.45.1"

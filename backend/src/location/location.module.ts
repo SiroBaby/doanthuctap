@@ -6,4 +6,4 @@ import { PrismaService } from 'src/prisma.service';
 @Module({
   providers: [LocationResolver, LocationService, PrismaService],
 })
-export class LocationModule {}
+export class LocationModule { }

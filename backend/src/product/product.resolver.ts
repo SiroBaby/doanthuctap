@@ -3,10 +3,11 @@ import { ProductService } from './product.service';
 import { Product } from './entities/product.entity';
 import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
+import { PaginationArgs } from '../common/dto/pagination.args';
 
 @Resolver(() => Product)
 export class ProductResolver {
-  constructor(private readonly productService: ProductService) {}
+  constructor(private readonly productService: ProductService) { }
 
   @Mutation(() => Product)
   createProduct(@Args('createProductInput') createProductInput: CreateProductInput) {
@@ -14,8 +15,8 @@ export class ProductResolver {
   }
 
   @Query(() => [Product], { name: 'products' })
-  findAll() {
-    return this.productService.findAll();
+  findAll(@Args() paginationArgs: PaginationArgs) {
+    return this.productService.findAll(paginationArgs);
   }
 
   @Query(() => Product, { name: 'product' })

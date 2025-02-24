@@ -3,16 +3,17 @@ import { LocationService } from './location.service';
 import { Location } from './entities/location.entity';
 import { CreateLocationInput } from './dto/create-location.input';
 import { UpdateLocationInput } from './dto/update-location.input';
+import { UseGuards } from '@nestjs/common';
 
 @Resolver(() => Location)
 export class LocationResolver {
-  constructor(private readonly locationService: LocationService) {}
+  constructor(private readonly locationService: LocationService) { }
 
   @Mutation(() => Location)
   createLocation(@Args('createLocationInput') createLocationInput: CreateLocationInput) {
     return this.locationService.create(createLocationInput);
   }
-  
+
   @Query(() => [Location], { name: 'locations' })
   findAll() {
     return this.locationService.findAll();

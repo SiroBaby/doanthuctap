@@ -3,10 +3,12 @@ import { CategoryService } from './category.service';
 import { Category } from './entities/category.entity';
 import { CreateCategoryInput } from './dto/create-category.input';
 import { UpdateCategoryInput } from './dto/update-category.input';
+import { PaginationArgs } from '../common/dto/pagination.args';
+import { UseGuards } from '@nestjs/common';
 
 @Resolver(() => Category)
 export class CategoryResolver {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly categoryService: CategoryService) { }
 
   @Mutation(() => Category)
   createCategory(@Args('createCategoryInput') createCategoryInput: CreateCategoryInput) {
@@ -14,8 +16,8 @@ export class CategoryResolver {
   }
 
   @Query(() => [Category], { name: 'categorys' })
-  findAll() {
-    return this.categoryService.findAll();
+  findAll(@Args() paginationArgs: PaginationArgs) {
+    return this.categoryService.findAll(paginationArgs);
   }
 
   @Query(() => Category, { name: 'category' })
