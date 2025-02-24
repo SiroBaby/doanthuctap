@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Add smooth transitions for all elements */
+* {
+    transition: background-color 0.2s ease-in-out;
+}
+
+/* Prevent content shifting during load */
+.layout-container {
+    opacity: 0;
+    animation: fadeIn 0.3s ease-in forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
