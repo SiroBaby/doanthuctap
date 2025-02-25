@@ -3,8 +3,8 @@ import { CategoryService } from './category.service';
 import { Category } from './entities/category.entity';
 import { CreateCategoryInput } from './dto/create-category.input';
 import { UpdateCategoryInput } from './dto/update-category.input';
-import { PaginationArgs } from '../common/dto/pagination.args';
-import { UseGuards } from '@nestjs/common';
+import { PaginationInput } from '../common/dto/pagination.input';
+import { CategoryPagination } from './entities/categorypagination.entity';
 
 @Resolver(() => Category)
 export class CategoryResolver {
@@ -15,9 +15,9 @@ export class CategoryResolver {
     return this.categoryService.create(createCategoryInput);
   }
 
-  @Query(() => [Category], { name: 'categorys' })
-  findAll(@Args() paginationArgs: PaginationArgs) {
-    return this.categoryService.findAll(paginationArgs);
+  @Query(() => CategoryPagination, { name: 'categorys' })
+  findAll(@Args('pagination', { type: () => PaginationInput }) paginationInput: PaginationInput) {
+    return this.categoryService.findAll(paginationInput);
   }
 
   @Query(() => Category, { name: 'category' })

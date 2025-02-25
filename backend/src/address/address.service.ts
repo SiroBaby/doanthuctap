@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAddressInput } from './dto/create-address.input';
 import { UpdateAddressInput } from './dto/update-address.input';
 import { PrismaService } from 'src/prisma.service';
-import { PaginationArgs } from '../common/dto/pagination.args';
+import { PaginationInput } from '../common/dto/pagination.input';
 
 @Injectable()
 export class AddressService {
@@ -14,12 +14,26 @@ export class AddressService {
     });
   }
 
-  async findAll(paginationArgs: PaginationArgs) {
-    const { page = 1, limit = 10 } = paginationArgs;
-    return await this.prisma.address.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-    });
+  async findAll({ page, limit }: PaginationInput) {
+    try {
+      const skip = (page - 1) * limit;
+      const [data, totalCount] = await Promise.all([
+        this.prisma.address.findMany({
+          skip,
+          take: limit,
+        }),
+        this.prisma.address.count()
+      ]);
+
+      return {
+        data,
+        totalCount,
+        totalPage: Math.ceil(totalCount / limit),
+      };
+
+    } catch (error) {
+      throw new NotFoundException('Categories not found');
+    }
   }
 
   async findOne(id: number) {

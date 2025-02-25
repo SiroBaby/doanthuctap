@@ -3,7 +3,7 @@ import { CreateCategoryInput } from './dto/create-category.input';
 import { UpdateCategoryInput } from './dto/update-category.input';
 import { PrismaService } from 'src/prisma.service';
 import * as moment from 'moment-timezone';
-import { PaginationArgs } from '../common/dto/pagination.args';
+import { PaginationInput } from '../common/dto/pagination.input';
 
 @Injectable()
 export class CategoryService {
@@ -24,13 +24,23 @@ export class CategoryService {
     }
   }
 
-  async findAll(paginationArgs: PaginationArgs) {
-    const { page = 1, limit = 10 } = paginationArgs;
+  async findAll({ page, limit }: PaginationInput) {
     try {
-      return await this.prisma.category.findMany({
-        skip: (page - 1) * limit,
-        take: limit,
-      });
+      const skip = (page - 1) * limit;
+      const [data, totalCount] = await Promise.all([
+        this.prisma.category.findMany({
+          skip,
+          take: limit,
+        }),
+        this.prisma.category.count()
+      ]);
+
+      return {
+        data,
+        totalCount,
+        totalPage: Math.ceil(totalCount / limit),
+      };
+
     } catch (error) {
       throw new NotFoundException('Categories not found');
     }
