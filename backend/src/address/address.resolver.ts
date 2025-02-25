@@ -3,7 +3,8 @@ import { AddressService } from './address.service';
 import { Address } from './entities/address.entity';
 import { CreateAddressInput } from './dto/create-address.input';
 import { UpdateAddressInput } from './dto/update-address.input';
-import { PaginationArgs } from '../common/dto/pagination.args';
+import { PaginationInput } from '../common/dto/pagination.input';
+import AddressPagination from './entities/addresspagination.entity';
 
 @Resolver(() => Address)
 export class AddressResolver {
@@ -14,8 +15,8 @@ export class AddressResolver {
     return this.addressService.create(createAddressInput);
   }
 
-  @Query(() => [Address], { name: 'addresss' })
-  findAll(@Args() paginationArgs: PaginationArgs) {
+  @Query(() => AddressPagination, { name: 'addresss' })
+  findAll(@Args('addresss', { type: () => PaginationInput }) paginationArgs: PaginationInput) {
     return this.addressService.findAll(paginationArgs);
   }
 

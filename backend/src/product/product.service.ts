@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
 import { PrismaService } from '../prisma.service';
-import { PaginationArgs } from '../common/dto/pagination.args';
+import { PaginationInput } from '../common/dto/pagination.input';
 
 @Injectable()
 export class ProductService {
@@ -25,13 +25,22 @@ export class ProductService {
     }
   }
 
-  async findAll(paginationArgs: PaginationArgs) {
+  async findAll(paginationArgs: PaginationInput) {
     const { page = 1, limit = 10 } = paginationArgs;
     try {
-      return await this.prisma.product.findMany({
-        skip: (page - 1) * limit,
-        take: limit,
-      });
+      const skip = (page - 1) * limit;
+      const [data, totalCount] = await Promise.all([
+        this.prisma.product.findMany({
+          skip,
+          take: limit,
+        }),
+        this.prisma.product.count()
+      ]);
+      return {
+        data,
+        totalCount,
+        totalPage: Math.ceil(totalCount / limit),
+      };
     } catch (error) {
       throw error;
     }

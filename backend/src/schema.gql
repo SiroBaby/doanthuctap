@@ -38,6 +38,12 @@ type Address {
   delete_at: DateTime
 }
 
+type AddressPagination {
+  data: [Address!]!
+  totalCount: Int!
+  totalPage: Int!
+}
+
 type ShopAddress {
   address_id: Int!
   shop_id: String!
@@ -50,6 +56,12 @@ type Category {
   category_name: String!
   create_at: DateTime
   update_at: DateTime
+}
+
+type CategoryPagination {
+  data: [Category!]!
+  totalCount: Int!
+  totalPage: Int!
 }
 
 type ProductDetail {
@@ -70,21 +82,32 @@ type Product {
   shop_id: String!
 }
 
+type ProductPagination {
+  data: [Product!]!
+  totalCount: Int!
+  totalPage: Int!
+}
+
 type Query {
   users: [User!]!
   user(id: String!): User!
   locations: [Location!]!
   location(location_id: String!): Location!
-  addresss(page: Int = 1, limit: Int = 10): [Address!]!
+  addresss(addresss: PaginationInput!): AddressPagination!
   address(id: Int!): Address!
   shopAddresss: [ShopAddress!]!
   shopAddress(id: Int!): ShopAddress!
-  categorys(page: Int = 1, limit: Int = 10): [Category!]!
+  categorys(pagination: PaginationInput!): CategoryPagination!
   category(id: Int!): Category!
   productDetails: [ProductDetail!]!
   productDetail(id: Int!): ProductDetail!
-  products(page: Int = 1, limit: Int = 10): [Product!]!
+  products(products: PaginationInput!): ProductPagination!
   product(id: Int!): Product!
+}
+
+input PaginationInput {
+  page: Int = 1
+  limit: Int = 10
 }
 
 type Mutation {

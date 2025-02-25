@@ -6,8 +6,8 @@ import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
-  
+  constructor(private prisma: PrismaService) { }
+
   // create(createUserInput: CreateUserInput) {
   //   return 'This action adds a new user';
   // }
@@ -28,7 +28,7 @@ export class UserService {
     const user = await this.prisma.user.update({
       where: {
         id_user: id,
-      },  
+      },
       data: updateUserInput.phone ? { phone: updateUserInput.phone } : {},
     });
     return user;
