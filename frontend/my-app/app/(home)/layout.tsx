@@ -1,13 +1,19 @@
-import { Metadata } from 'next'
+import { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 
+// Tách viewport thành export riêng
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#00BCD4'
+}
+
+// Giữ lại các metadata khác
 export const metadata: Metadata = {
   title: 'Trang chủ | Shopping Mall',
   description: 'Website mua sắm trực tuyến với nhiều ưu đãi hấp dẫn',
   keywords: ['shop', 'ecommerce', 'bán hàng', 'online store', 'shopping mall', 'ưu đãi', 'khuyến mãi'],
   robots: 'index, follow',
-  viewport: 'width=device-width, initial-scale=1',
-  themeColor: '#00BCD4',
   icons: {
     icon: [
       {
@@ -48,7 +54,7 @@ const HomeLayout = ({ children }: HomeLayoutProps) => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main content container */}
-      <main className="w-full max-w-7xl mx-auto">
+      <main className="w-screen">
         {children}
       </main>
 

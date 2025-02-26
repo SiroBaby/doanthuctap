@@ -22,6 +22,13 @@ const config: Config = {
         'dark-body': '#444444',
         'dark-selected': '#4A4A4A',
         'dark-outline': '#555555',
+        'left-anothertopbar': '#00D2E4',
+        'right-anothertopbar': '#00E3CD',
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--gradient-stops))',
+        'gradient-conic': 'conic-gradient(var(--gradient-stops))',
+        'gradient-to-tr': 'linear-gradient(to top right, var(--tw-gradient-stops))',
       },
     },
   },
