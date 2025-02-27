@@ -21,6 +21,12 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type UserPagination {
+  data: [User!]
+  totalCount: Int
+  totalPage: Int
+}
+
 type Location {
   location_id: String!
   location_name: String!
@@ -89,7 +95,7 @@ type ProductPagination {
 }
 
 type Query {
-  users: [User!]!
+  users(pagination: PaginationInput!): UserPagination!
   user(id: String!): User!
   locations: [Location!]!
   location(location_id: String!): Location!
@@ -108,6 +114,7 @@ type Query {
 input PaginationInput {
   page: Int = 1
   limit: Int = 10
+  search: String
 }
 
 type Mutation {

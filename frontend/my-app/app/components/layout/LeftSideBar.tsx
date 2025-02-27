@@ -17,14 +17,16 @@ const LeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => 
   useEffect(() => {
     if (pathname.includes("/dashboard")) {
       setSelectedItem("dashboard");
-    } else if (pathname.includes("/tour")) {
-      setSelectedItem("tour");
+    } else if (pathname.includes("/admin/shop")) {
+      setSelectedItem("shop");
     } else if (pathname.includes("/admin/user")) {
       setSelectedItem("user");
+    } else if (pathname.includes("/admin/product")) {
+      setSelectedItem("product");
     } else if (pathname.includes("/admin/order")) {
       setSelectedItem("order");
-    } else if (pathname.includes("/admin/vehicle")) {
-      setSelectedItem("vehicle");
+    } else if (pathname.includes("/admin/category")) {
+      setSelectedItem("category");
     }
   }, [pathname]);
 
@@ -45,8 +47,8 @@ const LeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => 
 
           <li
             className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "dashboard"
-                ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
-                : "border-transparent"
+              ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
+              : "border-transparent"
               }`}
             onClick={() => handleItemClick("dashboard", "/admin/dashboard")}
           >
@@ -56,19 +58,19 @@ const LeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => 
 
           <li
             className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "tour"
-                ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
-                : "border-transparent"
+              ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
+              : "border-transparent"
               }`}
-            onClick={() => handleItemClick("tour", "/admin/tour")}
+            onClick={() => handleItemClick("shop", "/admin/shop")}
           >
             <SvgIcon component={TourIcon} className="h-auto w-8 text-custom-red" />
-            <span className="ml-2 text-2xl font-bold">Tour</span>
+            <span className="ml-2 text-2xl font-bold">Shop</span>
           </li>
 
           <li
             className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "user"
-                ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
-                : "border-transparent"
+              ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
+              : "border-transparent"
               }`}
             onClick={() => handleItemClick("user", "/admin/user")}
           >
@@ -77,9 +79,20 @@ const LeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => 
           </li>
 
           <li
+            className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "tour"
+              ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
+              : "border-transparent"
+              }`}
+            onClick={() => handleItemClick("product", "/admin/product")}
+          >
+            <SvgIcon component={TourIcon} className="h-auto w-8 text-custom-red" />
+            <span className="ml-2 text-2xl font-bold">Product</span>
+          </li>
+
+          <li
             className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "order"
-                ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
-                : "border-transparent"
+              ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
+              : "border-transparent"
               }`}
             onClick={() => handleItemClick("order", "/admin/order")}
           >
@@ -89,13 +102,13 @@ const LeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => 
 
           <li
             className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "vehicle"
-                ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
-                : "border-transparent"
+              ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
+              : "border-transparent"
               }`}
-            onClick={() => handleItemClick("vehicle", "/admin/vehicle")}
+            onClick={() => handleItemClick("category", "/admin/category")}
           >
             <SvgIcon component={DirectionsBusIcon} className="h-auto w-8 text-custom-red" />
-            <span className="ml-2 text-2xl font-bold">Vehicle</span>
+            <span className="ml-2 text-2xl font-bold">Category</span>
           </li>
         </ul>
       </div>
