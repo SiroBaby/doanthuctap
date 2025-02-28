@@ -53,17 +53,9 @@ interface HomeLayoutProps {
 const HomeLayout = ({ children }: HomeLayoutProps) => {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Main content container */}
       <main className="w-screen">
         {children}
       </main>
-
-      {/* Optional: Add footer */}
-      <footer className="mt-auto py-6 bg-white border-t">
-        <div className="max-w-7xl mx-auto px-4">
-          {/* Footer content */}
-        </div>
-      </footer>
     </div>
   )
 }
