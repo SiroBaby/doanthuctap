@@ -15,16 +15,14 @@ import {
     IconButton,
     Paper,
     Pagination,
-    TextField,
-    InputAdornment,
-    Button,
-    Alert
+    Alert,
+    Button
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import SearchIcon from '@mui/icons-material/Search';
+import ViewListIcon from '@mui/icons-material/ViewList';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@apollo/client';
 import { GET_USERS } from '@/graphql/queries';
+import SearchBar from '@/app/components/common/SearchBar';
 
 interface User {
     id_user: string;
@@ -45,7 +43,7 @@ interface UsersResponse {
 const StatusChip = ({ status }: { status: string }) => {
     // Xử lý trạng thái null trước
     const normalizedStatus = status === null ? 'active' : status;
-    
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'active':
@@ -56,7 +54,7 @@ const StatusChip = ({ status }: { status: string }) => {
                 return 'default';
         }
     };
-    
+
     return (
         <Chip
             label={normalizedStatus}
@@ -68,7 +66,6 @@ const StatusChip = ({ status }: { status: string }) => {
 const UserPage = () => {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
-    const [searchInput, setSearchInput] = useState(''); // Thêm state cho giá trị nhập tìm kiếm
     const limit = 10;
     const router = useRouter();
 
@@ -97,24 +94,18 @@ const UserPage = () => {
         setPage(newPage);
     }, []);
 
-    const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchInput(event.target.value); // Cập nhật giá trị nhập, không thay đổi search
-    }, []);
-
-    // Thêm hàm xử lý khi nhấn Enter
-    const handleSearchSubmit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        setSearch(searchInput); // Chỉ khi form submit mới cập nhật search
+    // Hàm xử lý khi người dùng submit tìm kiếm từ SearchBar component
+    const handleSearch = useCallback((searchTerm: string) => {
+        setSearch(searchTerm);
         setPage(1); // Reset về trang đầu tiên khi tìm kiếm
-        console.log('Search:', search);
-    }, [searchInput]);
+    }, []);
 
     // Loading state
     if (loading) {
         return (
             <div className="h-screen flex items-center justify-center">
                 <CircularProgress />
-                <Typography className="ml-3">Loading users...</Typography>
+                <Typography className="ml-3">Đang tải danh mục...</Typography>
             </div>
         );
     }
@@ -127,8 +118,8 @@ const UserPage = () => {
                     <Typography variant="h6">Error Loading Data</Typography>
                     <Typography>{error.message || 'An unknown error occurred'}</Typography>
                 </Alert>
-                <Button 
-                    variant="contained" 
+                <Button
+                    variant="contained"
                     onClick={() => window.location.reload()}
                 >
                     Try Again
@@ -145,32 +136,12 @@ const UserPage = () => {
             <Card className="!bg-white dark:!bg-dark-sidebar shadow-lg h-full flex flex-col">
                 <CardContent className="!p-0 flex flex-col h-full">
                     <div className="p-4 bg-gray-50 dark:bg-dark-sidebar border-b border-gray-200 dark:border-gray-700">
-                        <form onSubmit={handleSearchSubmit} className="flex gap-2">
-                            <TextField
-                                fullWidth
-                                variant="outlined"
-                                placeholder="Tìm kiếm người dùng..."
-                                value={searchInput}
-                                onChange={handleSearchChange}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <SearchIcon />
-                                        </InputAdornment>
-                                    ),
-                                    className: "bg-white dark:bg-gray-800"
-                                }}
-                                size="small"
-                            />
-                            <Button 
-                                type="submit" 
-                                variant="contained" 
-                                color="primary"
-                                startIcon={<SearchIcon />}
-                            >
-                                Tìm kiếm
-                            </Button>
-                        </form>
+                        <SearchBar
+                            onSearch={handleSearch}
+                            placeholder="Tìm kiếm người dùng..."
+                            initialValue={search}
+                            buttonText="Search"
+                        />
                     </div>
                     <TableContainer
                         component={Paper}
@@ -178,8 +149,8 @@ const UserPage = () => {
                     >
                         {showEmptyState ? (
                             <div className="flex-grow flex items-center justify-center p-8">
-                                <Typography variant="h6" color="textSecondary">
-                                    No users found matching your search criteria
+                                <Typography variant="h6" className=' dark:!text-gray-300'>
+                                    Không tìm thấy danh mục nào phù hợp với tiêu chí tìm kiếm
                                 </Typography>
                             </div>
                         ) : (
@@ -225,11 +196,13 @@ const UserPage = () => {
                                                     </TableCell>
                                                     <TableCell>
                                                         <IconButton
+                                                            aria-label="detail"
+                                                            title="Xem chi tiết"
                                                             onClick={() => handleDetailUser(user.id_user)}
                                                             className="!text-blue-500 hover:!bg-blue-50 dark:hover:!bg-blue-900"
                                                             size="small"
                                                         >
-                                                            <EditIcon className="!w-7 !h-6" />
+                                                            <ViewListIcon className="!w-7 !h-6" />
                                                         </IconButton>
                                                     </TableCell>
                                                 </TableRow>

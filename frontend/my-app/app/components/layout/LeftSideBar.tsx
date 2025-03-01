@@ -7,6 +7,9 @@ import TourIcon from "@mui/icons-material/Tour";
 import PersonIcon from "@mui/icons-material/Person";
 import RequestPageIcon from "@mui/icons-material/RequestPage";
 import DirectionsBusIcon from '@mui/icons-material/DirectionsBus';
+import CategoryIcon from '@mui/icons-material/Category';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import StoreIcon from '@mui/icons-material/Store';
 import { SvgIcon } from "@mui/material";
 
 const LeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => void; onClose: () => void; }) => {
@@ -57,13 +60,13 @@ const LeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => 
           </li>
 
           <li
-            className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "tour"
+            className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "shop"
               ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
               : "border-transparent"
               }`}
             onClick={() => handleItemClick("shop", "/admin/shop")}
           >
-            <SvgIcon component={TourIcon} className="h-auto w-8 text-custom-red" />
+            <SvgIcon component={StoreIcon} className="h-auto w-8 text-custom-red" />
             <span className="ml-2 text-2xl font-bold">Shop</span>
           </li>
 
@@ -79,13 +82,13 @@ const LeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => 
           </li>
 
           <li
-            className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "tour"
+            className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "product"
               ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
               : "border-transparent"
               }`}
             onClick={() => handleItemClick("product", "/admin/product")}
           >
-            <SvgIcon component={TourIcon} className="h-auto w-8 text-custom-red" />
+            <SvgIcon component={InventoryIcon} className="h-auto w-8 text-custom-red" />
             <span className="ml-2 text-2xl font-bold">Product</span>
           </li>
 
@@ -101,13 +104,13 @@ const LeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => 
           </li>
 
           <li
-            className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "vehicle"
+            className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "category"
               ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
               : "border-transparent"
               }`}
             onClick={() => handleItemClick("category", "/admin/category")}
           >
-            <SvgIcon component={DirectionsBusIcon} className="h-auto w-8 text-custom-red" />
+            <SvgIcon component={CategoryIcon} className="h-auto w-8 text-custom-red" />
             <span className="ml-2 text-2xl font-bold">Category</span>
           </li>
         </ul>

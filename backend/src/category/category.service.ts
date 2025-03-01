@@ -24,13 +24,26 @@ export class CategoryService {
     }
   }
 
-  async findAll({ page, limit }: PaginationInput) {
+  async findAll({ page, limit, search }: PaginationInput) {
     try {
       const skip = (page - 1) * limit;
+
+      const whereCondition = search
+        ? {
+          OR: [
+            { category_name: { contains: search } },
+          ],
+        }
+        : {};
+
       const [data, totalCount] = await Promise.all([
         this.prisma.category.findMany({
+          where: whereCondition,
           skip,
           take: limit,
+          orderBy: {
+            create_at: 'desc',
+          },
         }),
         this.prisma.category.count()
       ]);
@@ -78,6 +91,7 @@ export class CategoryService {
   }
 
   async remove(id: number) {
+    console.log(id);
     try {
       const category = await this.prisma.category.delete({
         where: { category_id: id },

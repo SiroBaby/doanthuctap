@@ -42,24 +42,27 @@ export class UserService {
   async findAll({ page, limit, search }: PaginationInput) {
     try {
       const skip = (page - 1) * limit;
-      
+
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex kiểm tra email hợp lệ
       const isEmail = emailRegex.test(search);
-      
+
       const whereCondition = search
         ? {
-            OR: [
-              { user_name: { contains: search } },
-              ...(isEmail ? [{ email: { contains: search} }] : []),
-            ],
-          }
-        : {};      
+          OR: [
+            { user_name: { contains: search } },
+            ...(isEmail ? [{ email: { contains: search } }] : []),
+          ],
+        }
+        : {};
 
       const [data, totalCount] = await Promise.all([
         this.prisma.user.findMany({
           where: whereCondition,
           skip,
           take: limit,
+          orderBy: {
+            create_at: 'desc',
+          },
         }),
         this.prisma.user.count({ where: whereCondition }),
       ]);
