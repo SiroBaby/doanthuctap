@@ -10,65 +10,82 @@ const ProductCategory = () => {
     const toggleDropdown = () => {  
         setIsOpen(!isOpen); // Chuyển đổi trạng thái mở/đóng  
     };  
-  return (  
-    <div className="container mx-auto p-4">  
-        {/* menu cho thiết bị màn hình nhỏ*/}  
-        <div className="md:hidden">  
-          <button onClick={toggleDropdown} className="flex items-center" aria-label="shipping">  
-            <Image src="/icon/menu.png" width={30} height={30} alt="Menu" />  
-          </button>  
-        </div>  
 
-      {/* Danh mục*/}  
-      <section className="mb-4 ${isOpen ? 'block' : 'hidden'} md:flex`">  
-        <h2 className="text-xl font-semibold mb-2">Danh mục</h2>  
-        <div className="flex flex-wrap justify-between">  
-          {/* Danh mục 1 */}  
-          <div className="flex flex-col items-center mb-2">  
-            <Image src="/icon/brand.png" width={40} height={40} alt="Quần áo" />  
-            <p className="text-center text-gray-600">Quần áo</p>  
-          </div>  
-          {/* Danh mục 2 */}  
-          <div className="flex flex-col items-center mb-2">  
-            <Image src="/icon/shoes.png" width={40} height={40} alt="Giày dép" />  
-            <p className="text-center text-gray-600">Giày dép</p>  
-          </div>  
-          {/* Danh mục 3 */}  
-          <div className="flex flex-col items-center mb-2">  
-            <Image src="/icon/hand-watch.png" width={40} height={40} alt="Đồng hồ" />  
-            <p className="text-center text-gray-600">Đồng hồ</p>  
-          </div>  
-          {/* Danh mục 4 */}  
-          <div className="flex flex-col items-center mb-2">  
-            <Image src="/icon/iphone.png" width={40} height={40} alt="Điện thoại" />  
-            <p className="text-center text-gray-600">Điện thoại</p>  
-          </div>  
-          {/* Danh mục 5 */}  
-          <div className="flex flex-col items-center mb-2">  
-            <Image src="/icon/computer.png" width={40} height={40} alt="Máy tính & laptop" />  
-            <p className="text-center text-gray-600">Máy tính & laptop</p>  
-          </div>  
-          {/* Danh mục 6 */}  
-          <div className="flex flex-col items-center mb-2">  
-            <Image src="/icon/keyboard.png" width={40} height={40} alt="Phụ kiện máy tính" />  
-            <p className="text-center text-gray-600">Phụ kiện máy tính</p>  
-          </div>  
-          {/* Danh mục 7 */}  
-          <div className="flex flex-col items-center mb-2">  
-            <Image src="/icon/ram-memory.png" width={40} height={40} alt="Linh kiện điện tử" />  
-            <p className="text-center text-gray-600">Linh kiện điện tử</p>  
-          </div>  
-          {/* Danh mục 8 */}  
-          <div className="flex flex-col items-center mb-2">  
-            <Image src="/icon/point.png" width={40} height={40} alt="Xem thêm" />  
-            <p className="text-center text-gray-600">Xem thêm</p>  
-          </div>  
-        </div>  
-      </section>  
+    return (  
+        <div className="container mx-auto p-4">  
+            {/* Navbar*/}  
+            <nav className="bg-white border-gray-200 dark:bg-gray-900 md:hidden">  
+                <div className="max-w-screen-xl flex items-center justify-between mx-auto p-4">    
+                    <button   
+                        onClick={toggleDropdown}   
+                        type="button"   
+                        className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-btext-black"   
+                        aria-controls="navbar-default"   
+                        aria-expanded={isOpen ? 'true' : 'false'}  
+                    >  
+                        <span className="sr-only">Open main menu</span>  
+                        <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">  
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M1 1h15M1 7h15M1 13h15"/>  
+                        </svg>  
+                    </button>  
+                </div>  
+            </nav>  
 
-      
-    </div>  
-  );  
+                <div className=" rounded-lg p-4"> 
+                    <div className="text-center md:text-left">
+                        <h2 className="text-xl font-semibold mb-4 hidden md:block">Danh mục</h2>  
+                    </div>
+
+                    {/* Phần danh mục */}  
+                    <section id="navbar-default" className={`${isOpen ? 'block' : 'hidden'} md:block`}>  
+                        <div className="flex flex-col items-center md:flex-row md:flex-wrap md:justify-between">  
+                              
+                            <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4">  
+                                <Image src="/icon/brand.png" width={40} height={40} alt="Quần áo" />  
+                                <p className="text-center text-black">Quần áo</p>  
+                            </div>  
+                            
+                            <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4">  
+                                <Image src="/icon/shoes.png" width={40} height={40} alt="Giày dép" />  
+                                <p className="text-center text-black">Giày dép</p>  
+                            </div>  
+                            
+                            <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4">  
+                                <Image src="/icon/hand-watch.png" width={40} height={40} alt="Đồng hồ" />  
+                                <p className="text-center text-black">Đồng hồ</p>  
+                            </div>  
+                            
+                            <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4">  
+                                <Image src="/icon/iphone.png" width={40} height={40} alt="Điện thoại" />  
+                                <p className="text-center text-black">Điện thoại</p>  
+                            </div>  
+                             
+                            <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4">  
+                                <Image src="/icon/computer.png" width={40} height={40} alt="Máy tính & laptop" />  
+                                <p className="text-center text-black">Máy tính & laptop</p>  
+                            </div>  
+                              
+                            <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4">  
+                                <Image src="/icon/keyboard.png" width={40} height={40} alt="Phụ kiện máy tính" />  
+                                <p className="text-center text-black">Phụ kiện máy tính</p>  
+                            </div>  
+                             
+                            <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4">  
+                                <Image src="/icon/ram-memory.png" width={40} height={40} alt="Linh kiện điện tử" />  
+                                <p className="text-center text-black">Linh kiện điện tử</p>  
+                            </div>  
+                             
+                            <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4">  
+                                <Image src="/icon/point.png" width={40} height={40} alt="Xem thêm" />  
+                                <p className="text-center text-black">Xem thêm</p>  
+                            </div>   
+                        </div>  
+                    </section>
+                </div>
+
+            </div>
+
+    );  
 };  
 
-export default ProductCategory;  
+export default ProductCategory;

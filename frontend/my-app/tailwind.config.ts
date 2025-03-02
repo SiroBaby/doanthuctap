@@ -24,6 +24,7 @@ const config: Config = {
         'dark-outline': '#555555',
         'left-anothertopbar': '#00D2E4',
         'right-anothertopbar': '#00E3CD',
+        'voucher': '#00E3CD',
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--gradient-stops))',
