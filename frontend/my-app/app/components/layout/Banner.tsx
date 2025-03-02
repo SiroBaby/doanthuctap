@@ -1,6 +1,6 @@
-"use client"; // Thêm dòng này để chỉ định đây là Client Component  
+"use client";   
 
-import React, { useState } from 'react';  
+import React, { useState, useEffect } from 'react';  
 import Image from 'next/image';  
 
 const Banner = () => {  
@@ -16,39 +16,38 @@ const Banner = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % banners.length);  
   };  
 
-  const prevBanner = () => {  
-    setCurrentIndex((prevIndex) =>   
-      (prevIndex - 1 + banners.length) % banners.length  
-    );  
-  };  
+
+
+  // Thiết lập timer để tự động chuyển banner  
+  useEffect(() => {  
+    const timer = setInterval(() => {  
+      nextBanner();  
+    }, 5000); // Thay đổi banner mỗi 5 giây  
+
+    return () => clearInterval(timer); // Dọn dẹp timer khi component bị unmount  
+  }, []); // Chỉ chạy một lần khi component được mount  
 
   return (  
     <div className="flex justify-center flex-grow relative">  
-      <div className="relative w-3/6">  
+      <div className="relative w-3/6 h-96"> {/* Thiết lập chiều cao cố định */}  
           <Image  
               src={banners[currentIndex]}  
               alt={`Banner Sale ${currentIndex + 1}`}  
-              layout="responsive"   
-              width={0}   
-              height={0}  
+              layout="fill"    
+              objectFit="cover"   
           />  
       </div>  
 
-      {/* Nút Previous */}  
-      <button   
-        onClick={prevBanner}   
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow"  
-      >  
-        &#10094;  
-      </button>  
-      
-      {/* Nút Next */}  
-      <button   
-        onClick={nextBanner}   
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow"  
-      >  
-        &#10095;  
-      </button>  
+      {/* Chấm tròn chỉ định vị trí banner */}  
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">  
+          {banners.map((_, index) => (  
+              <div  
+                key={index}  
+                className={`w-2 h-2 rounded-full cursor-pointer transition-all duration-300 ${currentIndex === index ? 'bg-blue-600' : 'bg-gray-300'}`}  
+                onClick={() => setCurrentIndex(index)} // Chuyển đến banner tương ứng khi nhấp vào chấm  
+              />  
+          ))}  
+      </div>  
     </div>   
   );  
 };  

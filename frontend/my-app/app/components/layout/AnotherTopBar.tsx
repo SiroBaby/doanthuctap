@@ -1,10 +1,10 @@
 import React from 'react';  
 import Image from "next/image";  
 
-const AnotherTopBar: React.FC = () => {  
+const AnotherTopBar= () => {  
   return (  
     <div className="bg-gradient-to-tr from-left-anothertopbar to-right-anothertopbar p-4">  
-      {/* Dòng đầu tiên */}  
+
       <div className="max-w-7xl mx-auto">  
         <div className="flex items-center justify-between">  
           <div className="flex space-x-6">  
@@ -16,7 +16,6 @@ const AnotherTopBar: React.FC = () => {
           </div>  
         </div>  
 
-        {/* Dòng thứ hai */}  
         <div className="flex items-center justify-between mt-2">  
           <div className="font-bold text-white">  
             <Image src="/logo/logodemo.png" width={120} height={0} alt="logo" />  
