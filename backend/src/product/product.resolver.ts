@@ -16,8 +16,8 @@ export class ProductResolver {
   }
 
   @Query(() => ProductPagination, { name: 'products' })
-  findAll(@Args('products', { type: () => PaginationInput }) paginationArgs: PaginationInput) {
-    return this.productService.findAll(paginationArgs);
+  findAll(@Args('pagination', { type: () => PaginationInput }) pagination: PaginationInput) {
+    return this.productService.findAll(pagination);
   }
 
   @Query(() => Product, { name: 'product' })
