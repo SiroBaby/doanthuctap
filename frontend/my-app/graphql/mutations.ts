@@ -49,3 +49,71 @@ export const REMOVE_USER = gql`
         }
     }
 `;
+
+export const CREATE_PRODUCT_DETAIL = gql`
+  mutation CreateProductDetail($createProductDetailInput: CreateProductDetailInput!) {
+    createProductDetail(createProductDetailInput: $createProductDetailInput) {
+      product_detail_id
+      description
+      specifications
+      create_at
+      update_at
+    }
+  }
+`;
+
+export const CREATE_PRODUCT = gql`
+  mutation CreateProduct($createProductInput: CreateProductInput!) {
+    createProduct(createProductInput: $createProductInput) {
+      product_id
+      product_name
+      brand
+      status
+      category_id
+      product_detail_id
+      shop_id
+    }
+  }
+`;
+
+export const CREATE_PRODUCT_IMAGE = gql`
+  mutation CreateProductImage($createProductImageInput: CreateProductImageInput!) {
+    createProductImage(createProductImageInput: $createProductImageInput) {
+      image_id
+      product_id
+      image_url
+      is_thumbnail
+      create_at
+    }
+  }
+`;
+
+export const CREATE_PRODUCT_VARIATION = gql`
+  mutation CreateProductVariation($createProductVariationInput: CreateProductVariationInput!) {
+    createProductVariation(createProductVariationInput: $createProductVariationInput) {
+      product_variation_id
+      product_variation_name
+      base_price
+      percent_discount
+      stock_quantity
+      status
+      product_id
+      create_at
+      update_at
+    }
+  }
+`;
+
+export const CREATE_FULL_PRODUCT = gql`
+  mutation CreateFullProduct($createFullProductInput: CreateFullProductInput!) {
+    createFullProduct(createFullProductInput: $createFullProductInput) {
+      product_id
+      product_name
+      brand
+      status
+      category_id
+      product_detail_id
+      shop_id
+    }
+  }
+`;

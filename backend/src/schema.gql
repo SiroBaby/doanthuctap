@@ -72,10 +72,18 @@ type CategoryPagination {
 
 type ProductDetail {
   product_detail_id: Int!
-  description: String!
-  specifications: String!
-  create_at: DateTime!
-  update_at: DateTime!
+  description: String
+  specifications: String
+  create_at: DateTime
+  update_at: DateTime
+}
+
+type PaginatedProductDetails {
+  items: [ProductDetail!]!
+  totalCount: Int!
+  page: Int!
+  limit: Int!
+  totalPages: Int!
 }
 
 type Product {
@@ -94,6 +102,32 @@ type ProductPagination {
   totalPage: Int!
 }
 
+type ProductImage {
+  image_id: Int!
+  product_id: Int!
+  image_url: String!
+  is_thumbnail: Boolean
+  create_at: DateTime
+}
+
+type ProductVariation {
+  product_variation_id: Int!
+  product_variation_name: String!
+  base_price: Float!
+  percent_discount: Float!
+  stock_quantity: Int!
+  status: String!
+  product_id: Int!
+  create_at: DateTime
+  update_at: DateTime
+}
+
+type PaginatedProductVariations {
+  data: [ProductVariation!]!
+  totalCount: Int!
+  totalPages: Int!
+}
+
 type Query {
   users(pagination: PaginationInput!): UserPagination!
   user(id: String!): User!
@@ -105,10 +139,16 @@ type Query {
   shopAddress(id: Int!): ShopAddress!
   categorys(pagination: PaginationInput!): CategoryPagination!
   category(id: Int!): Category!
-  productDetails: [ProductDetail!]!
+  productDetails(pagination: PaginationInput): PaginatedProductDetails!
   productDetail(id: Int!): ProductDetail!
-  products(products: PaginationInput!): ProductPagination!
+  products(pagination: PaginationInput!): ProductPagination!
   product(id: Int!): Product!
+  productImages: [ProductImage!]!
+  productImage(id: Int!): ProductImage!
+  productImagesByProductId(productId: Int!): [ProductImage!]!
+  productVariations(pagination: PaginationInput): PaginatedProductVariations!
+  productVariationsByProductId(productId: Int!, pagination: PaginationInput): PaginatedProductVariations!
+  productVariation(id: Int!): ProductVariation!
 }
 
 input PaginationInput {
@@ -137,6 +177,12 @@ type Mutation {
   createProduct(createProductInput: CreateProductInput!): Product!
   updateProduct(updateProductInput: UpdateProductInput!): Product!
   removeProduct(id: Int!): Product!
+  createProductImage(createProductImageInput: CreateProductImageInput!): ProductImage!
+  updateProductImage(updateProductImageInput: UpdateProductImageInput!): ProductImage!
+  removeProductImage(id: Int!): ProductImage!
+  createProductVariation(createProductVariationInput: CreateProductVariationInput!): ProductVariation!
+  updateProductVariation(updateProductVariationInput: UpdateProductVariationInput!): ProductVariation!
+  removeProductVariation(id: Int!): ProductVariation!
 }
 
 input UpdateUserInput {
@@ -225,4 +271,36 @@ input UpdateProductInput {
   category_id: Int
   product_detail_id: Int
   shop_id: String
+}
+
+input CreateProductImageInput {
+  product_id: Int!
+  image_url: String!
+  is_thumbnail: Boolean = false
+}
+
+input UpdateProductImageInput {
+  product_id: Int
+  image_url: String
+  is_thumbnail: Boolean = false
+  image_id: Int!
+}
+
+input CreateProductVariationInput {
+  product_variation_name: String!
+  base_price: Float!
+  percent_discount: Float!
+  stock_quantity: Int!
+  status: String!
+  product_id: Int!
+}
+
+input UpdateProductVariationInput {
+  product_variation_name: String
+  base_price: Float
+  percent_discount: Float
+  stock_quantity: Int
+  status: String
+  product_id: Int
+  product_variation_id: Int!
 }

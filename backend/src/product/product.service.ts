@@ -3,6 +3,7 @@ import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
 import { PrismaService } from '../prisma.service';
 import { PaginationInput } from '../common/dto/pagination.input';
+import { Product } from './entities/product.entity';
 
 @Injectable()
 export class ProductService {
@@ -26,13 +27,25 @@ export class ProductService {
   }
 
   async findAll(paginationArgs: PaginationInput) {
-    const { page = 1, limit = 10 } = paginationArgs;
+    const { page = 1, limit = 10, search } = paginationArgs;
+
+    const wherecondition = search
+      ? {
+        OR: [
+          { product_name: { contains: search } },
+          { product_id: isNaN(parseInt(search)) ? undefined : parseInt(search) },
+        ],
+      }
+      : {};
+
     try {
       const skip = (page - 1) * limit;
       const [data, totalCount] = await Promise.all([
         this.prisma.product.findMany({
           skip,
+          where: wherecondition,
           take: limit,
+          orderBy: { product_id: 'desc' },
         }),
         this.prisma.product.count()
       ]);

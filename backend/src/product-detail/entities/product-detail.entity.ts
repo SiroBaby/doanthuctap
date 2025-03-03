@@ -5,15 +5,15 @@ export class ProductDetail {
   @Field(() => Int)
   product_detail_id: number;
 
-  @Field(() => String)
-  description: string;
+  @Field({ nullable: true })
+  description?: string;
 
-  @Field(() => String)
-  specifications: string;
+  @Field({ nullable: true })
+  specifications?: string;
 
-  @Field(() => Date)
-  create_at: Date;
+  @Field(() => Date, { nullable: true })
+  create_at?: Date;
 
-  @Field(() => Date)
-  update_at: Date;
+  @Field(() => Date, { nullable: true })
+  update_at?: Date;
 }
