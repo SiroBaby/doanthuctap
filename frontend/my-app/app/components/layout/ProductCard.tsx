@@ -1,37 +1,39 @@
 "use client";
-import Image from 'next/image';
 
-interface ProductCardProps {
-  id: number;
-  name: string;
-  image: string;
-  tag?: string;
-}
+import React from "react";
+import Image from "next/image";
 
-const ProductCard: React.FC<ProductCardProps> = ({ id, name, image, tag }) => {
+const ProductCard = () => {
   return (
-    <article 
-      key={id}
-      className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-    >
-      <div className="relative w-full h-48">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden max-w-xs">
+      <div className="relative h-25">
         <Image
-          src={image}
-          alt={name}
-          fill
-          className="object-cover"
+          src="/icon/ao.png"
+          width={200}
+          height={200}
+          alt="Áo phông trắng"
+          className="w-full h-full object-cover"
         />
       </div>
-      <div className="p-4">
-        <h3 className="font-medium text-gray-800 mb-2">{name}</h3>
-        {tag && (
-          <span className="inline-block px-2 py-1 bg-red-100 text-red-600 text-xs rounded">
-            {tag}
-          </span>
-        )}
+
+      <div className="relative p-3 h-24">
+        <p className="text-gray-800 font-medium">Áo phông trắng</p>
+        <p className="text-blue-500 font-bold mt-1">100.000</p>
+
+        <button
+          className="absolute bottom-7 right-5 bg-button-shopping rounded-full p-3"
+          aria-label="Thêm vào giỏ hàng"
+        >
+          <Image
+            src="/icon/shopping-b.png"
+            width={30}
+            height={30}
+            alt="shopping"
+          />
+        </button>
       </div>
-    </article>
+    </div>
   );
-}
+};
 
 export default ProductCard;

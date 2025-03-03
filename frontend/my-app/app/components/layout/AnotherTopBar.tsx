@@ -3,7 +3,7 @@ import Image from "next/image";
 
 const AnotherTopBar= () => {  
   return (  
-    <div className="bg-gradient-to-tr from-left-anothertopbar to-right-anothertopbar p-4">  
+    <div className="bg-gradient-to-tr from-left-anothertopbar to-right-anothertopbar ">  
 
       <div className="max-w-7xl mx-auto">  
         <div className="flex items-center justify-between">  
@@ -34,7 +34,7 @@ const AnotherTopBar= () => {
             </div>  
           </div>  
 
-          <button className="p-2 rounded-full" aria-label="shipping">  
+          <button className="p-2 rounded-full" aria-label="shopping">  
             <Image src="/icon/shopping.png" width={30} height={30} alt="shopping" />  
           </button>  
         </div>  
