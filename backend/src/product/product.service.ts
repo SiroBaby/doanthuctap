@@ -46,6 +46,17 @@ export class ProductService {
           where: wherecondition,
           take: limit,
           orderBy: { product_id: 'desc' },
+          include: {
+            shop: true,
+            product_detail: true,
+            product_images: true,
+            product_variations: true,
+            category: {
+              select: {
+                category_name: true,
+              },
+            },
+          },
         }),
         this.prisma.product.count()
       ]);
@@ -63,6 +74,17 @@ export class ProductService {
     try {
       const product = await this.prisma.product.findUnique({
         where: { product_id: id },
+        include: {
+          shop: true,
+          product_detail: true,
+          product_images: true,
+          product_variations: true,
+          category: {
+            select: {
+              category_name: true,
+            },
+          },
+        },
       });
       if (!product) {
         throw new NotFoundException(`Product with ID ${id} not found`);

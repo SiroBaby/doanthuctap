@@ -63,3 +63,76 @@ export const GET_CATEGORY_BY_ID = gql`
     }
 `;
 
+//query product
+//query get products
+export const GET_PRODUCTS = gql`
+  query Products($page: Int!, $limit: Int!, $search: String) {
+      products(pagination: { page: $page, limit: $limit, search: $search }) {
+          totalCount
+          totalPage
+          data {
+              product_id
+              product_name
+              brand
+              status
+              shop {
+                  shop_name
+              }
+              category {
+                  category_name
+              }
+          }
+      }
+  }
+`; 
+//query get product by id
+export const GET_PRODUCT_BY_ID = gql`
+  query Product ($id: Int!) {
+      product(id: $id) {
+          product_id
+          product_name
+          brand
+          status
+          product_detail_id
+          category {
+              category_name
+          }
+          shop {
+              shop_id
+              id_user
+              shop_name
+              link
+              status
+              location_id
+              create_at
+              update_at
+              delete_at
+          }
+          product_detail {
+              product_detail_id
+              description
+              specifications
+              create_at
+              update_at
+          }
+          product_variations {
+              product_variation_id
+              product_variation_name
+              base_price
+              percent_discount
+              stock_quantity
+              status
+              product_id
+              create_at
+              update_at
+          }
+          product_images {
+              image_id
+              product_id
+              image_url
+              is_thumbnail
+              create_at
+          }
+      }
+  }
+`;

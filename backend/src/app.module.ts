@@ -16,6 +16,7 @@ import { ProductModule } from './product/product.module';
 import { ProductImageModule } from './product-image/product-image.module';
 import { ProductVariationsModule } from './product-variations/product-variations.module';
 import { UploadModule } from './file-upload/file-upload.module';
+import { ShopModule } from './shop/shop.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { UploadModule } from './file-upload/file-upload.module';
     ProductImageModule,
     ProductVariationsModule,
     UploadModule,
+    ShopModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -86,22 +86,6 @@ type PaginatedProductDetails {
   totalPages: Int!
 }
 
-type Product {
-  product_id: Int!
-  product_name: String!
-  brand: String!
-  status: String!
-  category_id: Int!
-  product_detail_id: Int!
-  shop_id: String!
-}
-
-type ProductPagination {
-  data: [Product!]!
-  totalCount: Int!
-  totalPage: Int!
-}
-
 type ProductImage {
   image_id: Int!
   product_id: Int!
@@ -120,6 +104,51 @@ type ProductVariation {
   product_id: Int!
   create_at: DateTime
   update_at: DateTime
+}
+
+type Shop {
+  shop_id: String!
+  id_user: String!
+  shop_name: String!
+  link: String
+  status: Shop_status!
+  location_id: String!
+  create_at: DateTime
+  update_at: DateTime
+  delete_at: DateTime
+}
+
+"""Trạng thái của cửa hàng"""
+enum Shop_status {
+  active
+  inactive
+  banned
+}
+
+type Product {
+  product_id: Int!
+  product_name: String!
+  brand: String!
+  status: Product_status!
+  category: Category!
+  product_detail_id: Int!
+  shop: Shop
+  product_detail: ProductDetail!
+  product_images: [ProductImage!]!
+  product_variations: [ProductVariation!]!
+}
+
+"""Trạng thái của sản phẩm"""
+enum Product_status {
+  active
+  inactive
+  out_of_stock
+}
+
+type ProductPagination {
+  data: [Product!]!
+  totalCount: Int!
+  totalPage: Int!
 }
 
 type PaginatedProductVariations {
@@ -149,6 +178,7 @@ type Query {
   productVariations(pagination: PaginationInput): PaginatedProductVariations!
   productVariationsByProductId(productId: Int!, pagination: PaginationInput): PaginatedProductVariations!
   productVariation(id: Int!): ProductVariation!
+  shop(id: Int!): Shop!
 }
 
 input PaginationInput {
@@ -183,6 +213,9 @@ type Mutation {
   createProductVariation(createProductVariationInput: CreateProductVariationInput!): ProductVariation!
   updateProductVariation(updateProductVariationInput: UpdateProductVariationInput!): ProductVariation!
   removeProductVariation(id: Int!): ProductVariation!
+  createShop(createShopInput: CreateShopInput!): Shop!
+  updateShop(updateShopInput: UpdateShopInput!): Shop!
+  removeShop(id: Int!): Shop!
 }
 
 input UpdateUserInput {
@@ -303,4 +336,15 @@ input UpdateProductVariationInput {
   status: String
   product_id: Int
   product_variation_id: Int!
+}
+
+input CreateShopInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateShopInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
 }
