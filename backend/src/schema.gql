@@ -106,6 +106,21 @@ type ProductVariation {
   update_at: DateTime
 }
 
+type ShopVoucher {
+  id: Int!
+  code: String!
+  discount_percent: Float!
+  minimum_require_price: Float!
+  max_discount_price: Float!
+  quantity: Int!
+  max_use_per_user: Int
+  shop_id: String!
+  valid_from: DateTime
+  valid_to: DateTime
+  create_at: DateTime
+  delete_at: DateTime
+}
+
 type Shop {
   shop_id: String!
   id_user: String!
@@ -116,6 +131,11 @@ type Shop {
   create_at: DateTime
   update_at: DateTime
   delete_at: DateTime
+  shop_addresses: [ShopAddress!]
+  location: Location
+  shop_vouchers: [ShopVoucher!]
+  user: User!
+  products: [Product!]
 }
 
 """Trạng thái của cửa hàng"""
@@ -157,6 +177,12 @@ type PaginatedProductVariations {
   totalPages: Int!
 }
 
+type ShopPagination {
+  data: [Shop!]!
+  totalCount: Int!
+  totalPage: Int!
+}
+
 type Query {
   users(pagination: PaginationInput!): UserPagination!
   user(id: String!): User!
@@ -178,7 +204,10 @@ type Query {
   productVariations(pagination: PaginationInput): PaginatedProductVariations!
   productVariationsByProductId(productId: Int!, pagination: PaginationInput): PaginatedProductVariations!
   productVariation(id: Int!): ProductVariation!
-  shop(id: Int!): Shop!
+  shops(pagination: PaginationInput!): ShopPagination!
+  shop(id: String!): Shop!
+  shopVouchers: [ShopVoucher!]!
+  shopVoucher(id: Int!): ShopVoucher!
 }
 
 input PaginationInput {
@@ -216,6 +245,9 @@ type Mutation {
   createShop(createShopInput: CreateShopInput!): Shop!
   updateShop(updateShopInput: UpdateShopInput!): Shop!
   removeShop(id: Int!): Shop!
+  createShopVoucher(createShopVoucherInput: CreateShopVoucherInput!): ShopVoucher!
+  updateShopVoucher(updateShopVoucherInput: UpdateShopVoucherInput!): ShopVoucher!
+  removeShopVoucher(id: Int!): ShopVoucher!
 }
 
 input UpdateUserInput {
@@ -344,6 +376,17 @@ input CreateShopInput {
 }
 
 input UpdateShopInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateShopVoucherInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateShopVoucherInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!

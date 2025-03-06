@@ -1,19 +1,75 @@
 import { Injectable } from '@nestjs/common';
 import { CreateShopInput } from './dto/create-shop.input';
 import { UpdateShopInput } from './dto/update-shop.input';
+import { PaginationInput } from 'src/common/dto/pagination.input';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class ShopService {
+  constructor(private prisma: PrismaService) {}
+
   create(createShopInput: CreateShopInput) {
     return 'This action adds a new shop';
   }
 
-  findAll() {
-    return `This action returns all shop`;
+  async findAll(paginationArgs: PaginationInput) {
+    const { page = 1, limit = 10, search } = paginationArgs;
+
+    const wherecondition = search
+      ? {
+          OR: [
+            { shop_id: { contains: search } },
+            { shop_name: { contains: search } },
+          ],
+        }
+      : {};
+
+    try {
+      const skip = (page - 1) * limit;
+      const [data, totalCount] = await Promise.all([
+        this.prisma.shop.findMany({
+          skip,
+          where: wherecondition,
+          take: limit,
+          orderBy: { shop_id: 'desc' },
+        }),
+        this.prisma.shop.count(),
+      ]);
+      return {
+        data,
+        totalCount,
+        totalPage: Math.ceil(totalCount / limit),
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} shop`;
+  async findOne(id: string) {
+    try {
+      const [data] = await Promise.all([
+        this.prisma.shop.findUnique({
+          where: { shop_id: id },
+          include: {
+            shop_addresses: true,
+            user: true,
+            location: true,
+            products: {
+              include: {
+                product_images: true,
+              },
+              orderBy: {
+                create_at: 'desc',
+              },
+            },
+            shop_vouchers: true,
+          },
+        }),
+      ]);
+      return data;
+    } catch (error) {
+      throw error;
+    }
   }
 
   update(id: number, updateShopInput: UpdateShopInput) {

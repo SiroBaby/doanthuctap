@@ -54,7 +54,7 @@ export default function AdminLayout({
             {/* Nội dung chính */}
             <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-60' : 'lg:ml-60'}`}>
                 <TopBar onToggleSidebar={toggleSidebar} />
-                <main className="h-screen bg-gray-100 dark:bg-dark-body">{children}</main>
+                <main className="h-min-screen bg-gray-100 dark:bg-dark-body">{children}</main>
             </div>
         </div>
     );

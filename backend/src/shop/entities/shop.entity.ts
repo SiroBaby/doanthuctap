@@ -1,11 +1,15 @@
 import { ObjectType, Field, Int, registerEnumType } from '@nestjs/graphql';
 import { Shop_status } from '@prisma/client';
+import { ShopAddress } from '../../shop-address/entities/shop-address.entity';
+import { Location } from '../../location/entities/location.entity';
+import { ShopVoucher } from '../../shop-voucher/entities/shop-voucher.entity';
+import { User } from '../../user/entities/user.entity';
+import { Product } from '../../product/entities/product.entity';
 
 registerEnumType(Shop_status, {
   name: 'Shop_status',
   description: 'Trạng thái của cửa hàng',
 });
-
 
 @ObjectType()
 export class Shop {
@@ -36,4 +40,18 @@ export class Shop {
   @Field(() => Date, { nullable: true })
   delete_at: Date;
 
+  @Field(() => [ShopAddress], { nullable: true })
+  shop_addresses: ShopAddress[];
+
+  @Field(() => Location, { nullable: true })
+  location: Location;
+
+  @Field(() => [ShopVoucher], { nullable: true })
+  shop_vouchers: ShopVoucher[];
+
+  @Field(() => User)
+  user: User;
+
+  @Field(() => [Product], { nullable: true })
+  products: Product[];
 }

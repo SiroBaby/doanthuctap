@@ -3,6 +3,8 @@ import { ShopService } from './shop.service';
 import { Shop } from './entities/shop.entity';
 import { CreateShopInput } from './dto/create-shop.input';
 import { UpdateShopInput } from './dto/update-shop.input';
+import { PaginationInput } from 'src/common/dto/pagination.input';
+import ShopPagination from './entities/shoppagination.entity';
 
 @Resolver(() => Shop)
 export class ShopResolver {
@@ -13,13 +15,16 @@ export class ShopResolver {
     return this.shopService.create(createShopInput);
   }
 
-  @Query(() => [Shop], { name: 'shop' })
-  findAll() {
-    return this.shopService.findAll();
+  @Query(() => ShopPagination, { name: 'shops' })
+  findAll(
+    @Args('pagination', { type: () => PaginationInput })
+    pagination: PaginationInput,
+  ) {
+    return this.shopService.findAll(pagination);
   }
 
   @Query(() => Shop, { name: 'shop' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
+  findOne(@Args('id', { type: () => String }) id: string) {
     return this.shopService.findOne(id);
   }
 

@@ -17,6 +17,7 @@ import { ProductImageModule } from './product-image/product-image.module';
 import { ProductVariationsModule } from './product-variations/product-variations.module';
 import { UploadModule } from './file-upload/file-upload.module';
 import { ShopModule } from './shop/shop.module';
+import { ShopVoucherModule } from './shop-voucher/shop-voucher.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ShopModule } from './shop/shop.module';
     ProductVariationsModule,
     UploadModule,
     ShopModule,
+    ShopVoucherModule,
   ],
   controllers: [AppController],
   providers: [AppService],
