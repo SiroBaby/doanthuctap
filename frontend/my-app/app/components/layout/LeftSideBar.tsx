@@ -3,13 +3,12 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation"; // Sử dụng usePathname
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import TourIcon from "@mui/icons-material/Tour";
 import PersonIcon from "@mui/icons-material/Person";
 import RequestPageIcon from "@mui/icons-material/RequestPage";
-import DirectionsBusIcon from '@mui/icons-material/DirectionsBus';
 import CategoryIcon from '@mui/icons-material/Category';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import StoreIcon from '@mui/icons-material/Store';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import { SvgIcon } from "@mui/material";
 
 const LeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => void; onClose: () => void; }) => {
@@ -30,6 +29,8 @@ const LeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => 
       setSelectedItem("order");
     } else if (pathname.includes("/admin/category")) {
       setSelectedItem("category");
+    } else if (pathname.includes("/admin/voucher")) {
+      setSelectedItem("voucher");
     }
   }, [pathname]);
 
@@ -49,69 +50,80 @@ const LeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => 
           <li className="border-b border-outline dark:border-dark-outline"></li>
 
           <li
-            className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "dashboard"
-              ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
-              : "border-transparent"
+              className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "dashboard"
+                  ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
+                  : "border-transparent"
               }`}
-            onClick={() => handleItemClick("dashboard", "/admin/dashboard")}
+              onClick={() => handleItemClick("dashboard", "/admin/dashboard")}
           >
-            <SvgIcon component={DashboardIcon} className="h-auto w-8 text-custom-red" />
+            <SvgIcon component={DashboardIcon} className="h-auto w-8 text-custom-red"/>
             <span className="ml-2 text-2xl font-bold">Dashboard</span>
           </li>
 
           <li
-            className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "shop"
-              ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
-              : "border-transparent"
+              className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "shop"
+                  ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
+                  : "border-transparent"
               }`}
-            onClick={() => handleItemClick("shop", "/admin/shop")}
+              onClick={() => handleItemClick("shop", "/admin/shop")}
           >
-            <SvgIcon component={StoreIcon} className="h-auto w-8 text-custom-red" />
+            <SvgIcon component={StoreIcon} className="h-auto w-8 text-custom-red"/>
             <span className="ml-2 text-2xl font-bold">Shop</span>
           </li>
 
           <li
-            className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "user"
-              ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
-              : "border-transparent"
+              className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "user"
+                  ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
+                  : "border-transparent"
               }`}
-            onClick={() => handleItemClick("user", "/admin/user")}
+              onClick={() => handleItemClick("user", "/admin/user")}
           >
-            <SvgIcon component={PersonIcon} className="h-auto w-8 text-custom-red" />
+            <SvgIcon component={PersonIcon} className="h-auto w-8 text-custom-red"/>
             <span className="ml-2 text-2xl font-bold">User</span>
           </li>
 
           <li
-            className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "product"
-              ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
-              : "border-transparent"
+              className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "product"
+                  ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
+                  : "border-transparent"
               }`}
-            onClick={() => handleItemClick("product", "/admin/product")}
+              onClick={() => handleItemClick("product", "/admin/product")}
           >
-            <SvgIcon component={InventoryIcon} className="h-auto w-8 text-custom-red" />
+            <SvgIcon component={InventoryIcon} className="h-auto w-8 text-custom-red"/>
             <span className="ml-2 text-2xl font-bold">Product</span>
           </li>
 
           <li
-            className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "order"
-              ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
-              : "border-transparent"
+              className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "order"
+                  ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
+                  : "border-transparent"
               }`}
-            onClick={() => handleItemClick("order", "/admin/order")}
+              onClick={() => handleItemClick("order", "/admin/order")}
           >
-            <SvgIcon component={RequestPageIcon} className="h-auto w-8 text-custom-red" />
+            <SvgIcon component={RequestPageIcon} className="h-auto w-8 text-custom-red"/>
             <span className="ml-2 text-2xl font-bold">Order</span>
           </li>
 
           <li
-            className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "category"
-              ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
-              : "border-transparent"
+              className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "category"
+                  ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
+                  : "border-transparent"
               }`}
-            onClick={() => handleItemClick("category", "/admin/category")}
+              onClick={() => handleItemClick("category", "/admin/category")}
           >
-            <SvgIcon component={CategoryIcon} className="h-auto w-8 text-custom-red" />
+            <SvgIcon component={CategoryIcon} className="h-auto w-8 text-custom-red"/>
             <span className="ml-2 text-2xl font-bold">Category</span>
+          </li>
+
+          <li
+              className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "voucher"
+                  ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
+                  : "border-transparent"
+              }`}
+              onClick={() => handleItemClick("voucher", "/admin/voucher")}
+          >
+            <SvgIcon component={ConfirmationNumberIcon} className="h-auto w-8 text-custom-red"/>
+            <span className="ml-2 text-2xl font-bold">Voucher</span>
           </li>
         </ul>
       </div>

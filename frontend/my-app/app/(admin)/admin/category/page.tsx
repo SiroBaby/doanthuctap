@@ -95,6 +95,7 @@ const CategoryPage = () => {
         if (!dateString) return "N/A";
         try {
             return moment(dateString).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm');
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
             return "Invalid date";
         }

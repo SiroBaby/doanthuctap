@@ -106,6 +106,20 @@ type ProductVariation {
   update_at: DateTime
 }
 
+type Voucher {
+  id: Int!
+  code: String!
+  discount_percent: Float!
+  minimum_require_price: Float!
+  max_discount_price: Float!
+  quantity: Int!
+  max_use_per_user: Int
+  valid_from: DateTime
+  valid_to: DateTime
+  create_at: DateTime
+  delete_at: DateTime
+}
+
 type ShopVoucher {
   id: Int!
   code: String!
@@ -114,11 +128,11 @@ type ShopVoucher {
   max_discount_price: Float!
   quantity: Int!
   max_use_per_user: Int
-  shop_id: String!
   valid_from: DateTime
   valid_to: DateTime
   create_at: DateTime
   delete_at: DateTime
+  shop_id: String!
 }
 
 type Shop {
@@ -183,6 +197,12 @@ type ShopPagination {
   totalPage: Int!
 }
 
+type VoucherPagination {
+  totalCount: Int
+  totalPage: Int
+  data: [Voucher!]!
+}
+
 type Query {
   users(pagination: PaginationInput!): UserPagination!
   user(id: String!): User!
@@ -208,6 +228,8 @@ type Query {
   shop(id: String!): Shop!
   shopVouchers: [ShopVoucher!]!
   shopVoucher(id: Int!): ShopVoucher!
+  vouchers(paginationInput: PaginationInput!): VoucherPagination!
+  voucher(id: Int!): Voucher!
 }
 
 input PaginationInput {
@@ -248,6 +270,9 @@ type Mutation {
   createShopVoucher(createShopVoucherInput: CreateShopVoucherInput!): ShopVoucher!
   updateShopVoucher(updateShopVoucherInput: UpdateShopVoucherInput!): ShopVoucher!
   removeShopVoucher(id: Int!): ShopVoucher!
+  createVoucher(createVoucherInput: CreateVoucherInput!): Voucher!
+  updateVoucher(updateVoucherInput: UpdateVoucherInput!): Voucher!
+  removeVoucher(id: Int!): Voucher!
 }
 
 input UpdateUserInput {
@@ -389,5 +414,28 @@ input CreateShopVoucherInput {
 input UpdateShopVoucherInput {
   """Example field (placeholder)"""
   exampleField: Int
+  id: Int!
+}
+
+input CreateVoucherInput {
+  code: String!
+  discount_percent: Float!
+  minimum_require_price: Float!
+  max_discount_price: Float!
+  quantity: Int!
+  max_use_per_user: Int
+  valid_from: DateTime
+  valid_to: DateTime
+}
+
+input UpdateVoucherInput {
+  code: String
+  discount_percent: Float!
+  minimum_require_price: Float!
+  max_discount_price: Float!
+  quantity: Int!
+  max_use_per_user: Int!
+  valid_from: DateTime!
+  valid_to: DateTime!
   id: Int!
 }

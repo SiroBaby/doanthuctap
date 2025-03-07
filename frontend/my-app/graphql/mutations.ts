@@ -117,3 +117,54 @@ export const CREATE_FULL_PRODUCT = gql`
     }
   }
 `;
+
+//mutation voucher
+//mutation add voucher
+export const ADD_VOUCHER = gql`
+    mutation CreateVoucher ($createVoucherInput: CreateVoucherInput!) {
+        createVoucher(createVoucherInput: $createVoucherInput) {
+                code
+                discount_percent
+                minimum_require_price
+                max_discount_price
+                quantity
+                max_use_per_user
+                valid_from
+                valid_to
+        }
+    }
+`;
+
+//mutation remove voucher
+export const REMOVE_VOUCHER = gql`
+    mutation RemoveVoucher($id: Int!) {
+        removeVoucher(id: $id) {
+            id
+            code
+            discount_percent
+            minimum_require_price
+            max_discount_price
+            quantity
+            max_use_per_user
+            valid_from
+            valid_to
+        }
+    }
+`;
+
+//mutation update voucher
+export const UPDATE_VOUCHER = gql`
+    mutation UpdateVoucher($updateVoucherInput: UpdateVoucherInput!) {
+        updateVoucher(updateVoucherInput: $updateVoucherInput) {
+            id
+            code
+            discount_percent
+            minimum_require_price
+            max_discount_price
+            quantity
+            max_use_per_user
+            valid_from
+            valid_to
+        }
+    }
+`;

@@ -204,3 +204,43 @@ export const GET_PRODUCT_BY_ID = gql`
       }
   }
 `;
+
+// query voucher
+// query get vouchers
+export const GET_VOUCHERS = gql`
+    query Vouchers ($page: Int!, $limit: Int!, $search: String) {
+        vouchers(paginationInput: { page: $page, limit: $limit, search: $search }) {
+            totalCount
+            totalPage
+            data {
+                id
+                code
+                discount_percent
+                minimum_require_price
+                max_discount_price
+                quantity
+                valid_to
+                delete_at
+            }
+        }
+    }
+`;
+
+// query get voucher by id
+export const GET_VOUCHER_BY_ID = gql`
+    query Voucher ($id: Int!) {
+        voucher(id: $id) {
+            id
+            code
+            discount_percent
+            minimum_require_price
+            max_discount_price
+            quantity
+            max_use_per_user
+            valid_from
+            valid_to
+            create_at
+            delete_at
+        }
+    }
+`;
