@@ -27,6 +27,7 @@ const config: Config = {
         voucher: "rgba(0, 227, 205, 0.17)",
         button: "#1FBFEB",
         "button-shopping": "#1FBFEB",
+        "button-loc": "#F9F871",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--gradient-stops))",
