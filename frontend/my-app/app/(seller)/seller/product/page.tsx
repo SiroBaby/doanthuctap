@@ -19,71 +19,74 @@ import {
     Snackbar,
     Chip
 } from '@mui/material';
-import EditNoteIcon from '@mui/icons-material/EditNote';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@apollo/client';
-import { GET_PRODUCTS } from '@/graphql/queries';
+import {GET_PRODUCTS_BY_SHOP_ID, GET_SHOP_ID_BY_USER_ID} from '@/graphql/queries';
+import { useAuth } from "@clerk/nextjs";
 import SearchBar from '@/app/components/common/SearchBar';
-import moment from 'moment-timezone';
 
+// Interface cho Product từ query mới
 interface Product {
     product_id: string;
     product_name: string;
     brand: string;
     status: string;
-    shop: {
-        shop_name: string;
-    };
-    category: {
-        category_name: string;
-    };
 }
 
+// Interface cho response từ query GET_PRODUCTS_BY_SHOP_ID
 interface ProductsResponse {
-    products: {
+    getProductsByShopId: {
         data: Product[];
         totalCount: number;
         totalPage: number;
     };
 }
 
-const ProductPage = () => {
+const SellerProductPage = () => {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
     const limit = 10;
     const router = useRouter();
+    const { userId } = useAuth();
 
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
 
+    // Query để lấy thông tin user
+    const { data: userDataResponse, loading: isUserLoading } = useQuery(GET_SHOP_ID_BY_USER_ID, {
+        variables: { id: userId },
+        skip: !userId
+    });
+
+    // Giả sử shopId nằm trong userData (điều chỉnh theo schema thực tế)
+    const shopId = userDataResponse?.getShopIdByUserId?.shop_id; // Có thể cần đổi thành field khác như shop_id
+
     const queryVariables = useMemo(() => ({
+        id: shopId, // Sử dụng "id" thay vì "shopId" theo query mới
         page,
         limit,
         search
-    }), [page, limit, search]);
+    }), [page, limit, search, shopId]);
 
-    const { data, loading, error, refetch } = useQuery<ProductsResponse>(GET_PRODUCTS, {
+    const { data, loading, error, refetch } = useQuery<ProductsResponse>(GET_PRODUCTS_BY_SHOP_ID, {
         variables: queryVariables,
-        fetchPolicy: 'network-only'
+        fetchPolicy: 'network-only',
+        skip: !shopId // Bỏ qua query nếu chưa có shopId
     });
 
-    const products = useMemo(() => data?.products.data || [], [data]);
-    const totalPages = useMemo(() => data?.products.totalPage || 0, [data]);
+    const products = useMemo(() => data?.getProductsByShopId.data || [], [data]);
+    const totalPages = useMemo(() => data?.getProductsByShopId.totalPage || 0, [data]);
 
     const handleViewProduct = useCallback((id: string) => {
-        router.push(`/admin/product/detail/${id}`);
-    }, [router]);
-
-    const handleEditProduct = useCallback((id: string) => {
-        router.push(`/admin/product/edit/${id}`);
+        router.push(`/seller/product/detail/${id}`);
     }, [router]);
 
     const handleAddProduct = useCallback(() => {
-        router.push('/admin/product/create');
-    }, [router]);
+        router.push(`/seller/product/add/${shopId}`);
+    }, [router, shopId]);
 
     const handleCloseSnackbar = useCallback(() => {
         setSnackbarOpen(false);
@@ -120,7 +123,7 @@ const ProductPage = () => {
         );
     };
 
-    if (loading) {
+    if (isUserLoading || loading) {
         return (
             <div className="h-screen flex items-center justify-center">
                 <CircularProgress />
@@ -205,12 +208,6 @@ const ProductPage = () => {
                                                     Thương hiệu
                                                 </TableCell>
                                                 <TableCell className="!font-bold !text-gray-700 dark:!text-gray-200 !bg-gray-50 dark:!bg-dark-sidebar !text-2xl">
-                                                    Danh mục
-                                                </TableCell>
-                                                <TableCell className="!font-bold !text-gray-700 dark:!text-gray-200 !bg-gray-50 dark:!bg-dark-sidebar !text-2xl">
-                                                    Cửa hàng
-                                                </TableCell>
-                                                <TableCell className="!font-bold !text-gray-700 dark:!text-gray-200 !bg-gray-50 dark:!bg-dark-sidebar !text-2xl">
                                                     Trạng thái
                                                 </TableCell>
                                                 <TableCell className="!font-bold !text-gray-700 dark:!text-gray-200 !bg-gray-50 dark:!bg-dark-sidebar !text-2xl">
@@ -232,12 +229,6 @@ const ProductPage = () => {
                                                     </TableCell>
                                                     <TableCell className="!text-gray-600 dark:!text-gray-300 !text-xl">
                                                         {product.brand}
-                                                    </TableCell>
-                                                    <TableCell className="!text-gray-600 dark:!text-gray-300 !text-xl">
-                                                        {product.category?.category_name || 'N/A'}
-                                                    </TableCell>
-                                                    <TableCell className="!text-gray-600 dark:!text-gray-300 !text-xl">
-                                                        {product.shop?.shop_name || 'N/A'}
                                                     </TableCell>
                                                     <TableCell className="!text-gray-600 dark:!text-gray-300 !text-xl">
                                                         <StatusChip status={product.status} />
@@ -294,4 +285,4 @@ const ProductPage = () => {
     );
 };
 
-export default ProductPage;
+export default SellerProductPage;

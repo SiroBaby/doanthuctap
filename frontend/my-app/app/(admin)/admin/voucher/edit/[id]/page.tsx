@@ -13,26 +13,10 @@ import {
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation } from '@apollo/client';
-import { gql } from '@apollo/client';
 import { UPDATE_VOUCHER } from '@/graphql/mutations';
+import { GET_VOUCHER_BY_ID} from '@/graphql/queries';
 import moment from 'moment-timezone';
 
-// Define the GraphQL query
-const GET_VOUCHER_BY_ID = gql`
-    query Voucher($id: Int!) {
-        voucher(id: $id) {
-            id
-            code
-            discount_percent
-            minimum_require_price
-            max_discount_price
-            quantity
-            max_use_per_user
-            valid_from
-            valid_to
-        }
-    }
-`;
 
 interface Voucher {
     id: string;

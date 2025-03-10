@@ -1,15 +1,15 @@
 "use client"
 import "@/app/globals.css";
 import { useState, useEffect } from "react";
-import TopBar from "@/app/components/layout/TopBar";
-import LeftSideBar from "@/app/components/layout/LeftSideBar";
+import SellerTopBar from "@/app/components/layout/SellerTopBar";
+import SellerLeftSideBar from "@/app/components/layout/SellerLeftSideBar";
 import LoadingScreen from "@/app/components/LoadingScreen";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { GET_USER_BY_ID } from "@/graphql/queries";
 import { useQuery } from "@apollo/client";
 
-export default function AdminLayout({
+export default function SellerLayout({
                                         children,
                                     }: Readonly<{
     children: React.ReactNode;
@@ -18,7 +18,7 @@ export default function AdminLayout({
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
     const { userId, isLoaded } = useAuth();
-    // Thêm variables cho query với userId
+
     const { data: userData, loading: isUserLoading } = useQuery(GET_USER_BY_ID, {
         variables: { id: userId },
         skip: !userId // Bỏ qua query nếu chưa có userId
@@ -52,7 +52,7 @@ export default function AdminLayout({
             if (!userId) {
                 router.push('/sign-in');
             } else if (!isUserLoading && userData?.user) {
-                if (userData.user.role !== "admin") {
+                if (userData.user.role !== "seller") {
                     router.push('/');
                 }
             } else if (!isUserLoading && !userData?.user) {
@@ -68,13 +68,13 @@ export default function AdminLayout({
     return (
         <div className="flex">
             <div className={`hidden lg:block fixed top-0 left-0 h-screen w-60 bg-white shadow-xl dark:bg-dark-sidebar transition-transform duration-300`}>
-                <LeftSideBar onItemClick={handleItemClick} onClose={handleCloseSidebar} />
+                <SellerLeftSideBar onItemClick={handleItemClick} onClose={handleCloseSidebar} />
             </div>
             <div className={`fixed top-0 left-0 h-screen w-60 bg-white shadow-xl dark:bg-dark-sidebar transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:hidden'}`}>
-                <LeftSideBar onItemClick={handleItemClick} onClose={handleCloseSidebar} />
+                <SellerLeftSideBar onItemClick={handleItemClick} onClose={handleCloseSidebar} />
             </div>
             <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-60' : 'lg:ml-60'}`}>
-                <TopBar onToggleSidebar={toggleSidebar} />
+                <SellerTopBar onToggleSidebar={toggleSidebar} />
                 <main className="h-min-screen bg-gray-100 dark:bg-dark-body">{children}</main>
             </div>
         </div>

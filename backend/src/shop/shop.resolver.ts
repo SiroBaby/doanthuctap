@@ -5,6 +5,7 @@ import { CreateShopInput } from './dto/create-shop.input';
 import { UpdateShopInput } from './dto/update-shop.input';
 import { PaginationInput } from 'src/common/dto/pagination.input';
 import ShopPagination from './entities/shoppagination.entity';
+import { User } from '../user/entities/user.entity';
 
 @Resolver(() => Shop)
 export class ShopResolver {
@@ -26,6 +27,11 @@ export class ShopResolver {
   @Query(() => Shop, { name: 'shop' })
   findOne(@Args('id', { type: () => String }) id: string) {
     return this.shopService.findOne(id);
+  }
+
+  @Query(() => Shop, { name: 'getShopIdByUserId' })
+  getShopIdByUserId(@Args('id', { type: () => String }) id: string) {
+    return this.shopService.getShopIdByUserId(id);
   }
 
   @Mutation(() => Shop)

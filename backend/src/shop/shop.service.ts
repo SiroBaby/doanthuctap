@@ -72,6 +72,19 @@ export class ShopService {
     }
   }
 
+  async getShopIdByUserId(id: string) {
+    try {
+      const [data] = await Promise.all([
+        this.prisma.shop.findFirst({
+          where: { id_user: id },
+        }),
+      ]);
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   update(id: number, updateShopInput: UpdateShopInput) {
     return `This action updates a #${id} shop`;
   }

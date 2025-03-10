@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
 import { PrismaService } from '../prisma.service';
@@ -7,7 +11,7 @@ import { Product } from './entities/product.entity';
 
 @Injectable()
 export class ProductService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(createProductInput: CreateProductInput) {
     try {
@@ -31,11 +35,15 @@ export class ProductService {
 
     const wherecondition = search
       ? {
-        OR: [
-          { product_name: { contains: search } },
-          { product_id: isNaN(parseInt(search)) ? undefined : parseInt(search) },
-        ],
-      }
+          OR: [
+            { product_name: { contains: search } },
+            {
+              product_id: isNaN(parseInt(search))
+                ? undefined
+                : parseInt(search),
+            },
+          ],
+        }
       : {};
 
     try {
@@ -58,8 +66,63 @@ export class ProductService {
             },
           },
         }),
-        this.prisma.product.count()
+        this.prisma.product.count(),
       ]);
+      return {
+        data,
+        totalCount,
+        totalPage: Math.ceil(totalCount / limit),
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getProductsByShopId(
+    shopId: string,
+    paginationArgs: PaginationInput = { page: 1, limit: 10, search: '' },
+  ) {
+    const { page = 1, limit = 10, search } = paginationArgs;
+
+    const whereCondition = {
+      shop_id: shopId,
+      ...(search
+        ? {
+            OR: [
+              { product_name: { contains: search } },
+              {
+                product_id: isNaN(parseInt(search))
+                  ? undefined
+                  : parseInt(search),
+              },
+            ],
+          }
+        : {}),
+    };
+
+    try {
+      const skip = (page - 1) * limit;
+      const [data, totalCount] = await Promise.all([
+        this.prisma.product.findMany({
+          where: whereCondition,
+          skip,
+          take: limit,
+          orderBy: { product_id: 'desc' },
+          include: {
+            shop: true,
+            product_detail: true,
+            product_images: true,
+            product_variations: true,
+            category: {
+              select: {
+                category_name: true,
+              },
+            },
+          },
+        }),
+        this.prisma.product.count({ where: whereCondition }),
+      ]);
+
       return {
         data,
         totalCount,

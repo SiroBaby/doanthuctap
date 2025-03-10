@@ -185,6 +185,16 @@ type ProductPagination {
   totalPage: Int!
 }
 
+type CreateProduct {
+  product_id: Int!
+  product_name: String!
+  brand: String!
+  status: Product_status!
+  category_id: Int!
+  product_detail_id: Int!
+  shop_id: String!
+}
+
 type PaginatedProductVariations {
   data: [ProductVariation!]!
   totalCount: Int!
@@ -217,6 +227,7 @@ type Query {
   productDetails(pagination: PaginationInput): PaginatedProductDetails!
   productDetail(id: Int!): ProductDetail!
   products(pagination: PaginationInput!): ProductPagination!
+  getProductsByShopId(id: String!, pagination: PaginationInput): ProductPagination!
   product(id: Int!): Product!
   productImages: [ProductImage!]!
   productImage(id: Int!): ProductImage!
@@ -226,6 +237,7 @@ type Query {
   productVariation(id: Int!): ProductVariation!
   shops(pagination: PaginationInput!): ShopPagination!
   shop(id: String!): Shop!
+  getShopIdByUserId(id: String!): Shop!
   shopVouchers: [ShopVoucher!]!
   shopVoucher(id: Int!): ShopVoucher!
   vouchers(paginationInput: PaginationInput!): VoucherPagination!
@@ -255,7 +267,7 @@ type Mutation {
   createProductDetail(createProductDetailInput: CreateProductDetailInput!): ProductDetail!
   updateProductDetail(updateProductDetailInput: UpdateProductDetailInput!): ProductDetail!
   removeProductDetail(id: Int!): ProductDetail!
-  createProduct(createProductInput: CreateProductInput!): Product!
+  createProduct(createProductInput: CreateProductInput!): CreateProduct!
   updateProduct(updateProductInput: UpdateProductInput!): Product!
   removeProduct(id: Int!): Product!
   createProductImage(createProductImageInput: CreateProductImageInput!): ProductImage!

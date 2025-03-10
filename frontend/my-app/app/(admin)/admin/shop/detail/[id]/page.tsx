@@ -82,7 +82,7 @@ interface ShopResponse {
 
 const ShopDetailPage = ({ params }: { params: { id: string } }) => {
     const router = useRouter();
-    const [shopId] = useState(params.id || 'shop_abc');
+    const [shopId] = useState(params.id);
     const [productIndex, setProductIndex] = useState(0); // Quản lý vị trí hiển thị sản phẩm
     const [voucherIndex, setVoucherIndex] = useState(0); // Quản lý vị trí hiển thị voucher
 
@@ -90,6 +90,8 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
         variables: { id: shopId },
         fetchPolicy: 'network-only'
     });
+
+    console.log("Shop Id", shopId)
 
     const shop = useMemo(() => data?.shop || null, [data]);
     const productsPerPage = 5; // Hiển thị 5 sản phẩm mỗi lần
@@ -212,7 +214,7 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
                             <Typography className="!text-gray-700 dark:!text-dark-text !font-semibold">
                                 ID:
                             </Typography>
-                            <Typography className="!text-gray-600 dark:!text-gray-300">{shop.shop_id}</Typography>
+                            <Typography className="!text-gray-600 dark:!text-gray-300 truncate">{shop.shop_id}</Typography>
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <Typography className="!text-gray-700 dark:!text-dark-text !font-semibold">
@@ -364,14 +366,14 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
                                             <Box className="flex flex-col items-center text-center">
                                                 <Typography
                                                     variant="subtitle1"
-                                                    className="!text-gray-700 dark:!text-dark-text truncate"
+                                                    className="!text-gray-700 max-w-[225px] dark:!text-dark-text truncate"
                                                     title={product.product_name}
                                                 >
                                                     {product.product_name}
                                                 </Typography>
                                                 <Typography
                                                     variant="body2"
-                                                    className="dark:!text-gray-300 truncate"
+                                                    className="dark:!text-gray-300 max-w-[225px] truncate"
                                                     title={product.brand || 'N/A'}
                                                 >
                                                     {product.brand || 'N/A'}

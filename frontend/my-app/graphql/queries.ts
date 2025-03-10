@@ -54,8 +54,8 @@ export const GET_SHOPS = gql`
 
 //query get shop by id
 export const GET_SHOP_BY_ID = gql`
-    query Shop {
-        shop(id: "shop_abc") {
+    query Shop ($id: String!) {
+        shop(id: $id) {
             shop_id
             id_user
             shop_name
@@ -97,6 +97,31 @@ export const GET_SHOP_BY_ID = gql`
             location {
                 location_id
                 location_name
+            }
+        }
+    }
+`;
+
+//query get shop id by user id
+export const GET_SHOP_ID_BY_USER_ID = gql`
+query GetShopIdByUserId($id: String!) {
+    getShopIdByUserId(id: $id) {
+        shop_id
+    }
+}
+`;
+
+//query get products by shop id
+export const GET_PRODUCTS_BY_SHOP_ID = gql`
+    query GetProductsByShopId($id: String!, $page: Int!, $limit: Int!, $search: String!) {
+        getProductsByShopId(id: $id, pagination: { page: $page, limit: $limit, search: $search }) {
+            totalCount
+            totalPage
+            data {
+                product_id
+                product_name
+                brand
+                status
             }
         }
     }
