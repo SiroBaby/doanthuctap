@@ -2,14 +2,19 @@ import AnotherTopBar from "../components/layout/AnotherTopBar";
 import ProductCard from "../components/layout/ProductCard";
 import Banner from "../components/layout/Banner";
 import ProductCategory from "../components/layout/ProductCategory";
+import LiveStream from "../components/layout/LiveStream";
 import Vouchers from "../components/layout/Vouchers";
+import Video from "../components/layout/Video";
 import Footer from "../components/layout/Footer";
 import Image from "next/image";
 import "../globals.css";
 
 const HomePage: React.FC = () => {
+  //mẫu test
   // Tạo mảng 16 sản phẩm mẫu (4 hàng x 4 sản phẩm)
   const sampleProducts = Array(16).fill(null); //hàm array có 16 vị trí chưa có giá trị Array(16) fill(null) điền null vào 16 vị trí đó
+  const sampleLiveStream = Array(12).fill(null);
+  const sampleVideo = Array(12).fill(null); // dùng chung với live stream cũng được
 
   return (
     <div className="w-full">
@@ -48,6 +53,78 @@ const HomePage: React.FC = () => {
               <div className="hidden sm:block sm:col-span-1 md:col-span-1 lg:col-span-2"></div>
             </div>
           </section>
+
+          {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn á*/}
+          <div className="flex justify-center mb-2">
+            <button className="rounded-full" aria-label="button">
+              <Image
+                src="/icon/button-bar.png"
+                width={40}
+                height={40}
+                alt="button"
+              />
+            </button>
+          </div>
+
+          <div className="border-t border-black my-4"></div>
+
+          {/* LIVESTREAMS */}
+          <div className="flex items-center mb-4">
+            <div className="bg-green-300 px-2 py-1 rounded flex items-center">
+              <Image
+                src="/icon/livestream.png"
+                width={32}
+                height={32}
+                alt="Voucher"
+                className="mr-2"
+              />
+              <span className="text-lg md:text-xl lg:text-2xl text-white font-semibold">
+                LIVESTREAM
+              </span>
+            </div>
+          </div>
+          {/* Grid sản phẩm: 4 hàng, mỗi hàng 4 sản phẩm */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+            {sampleLiveStream.map((_, index) => (
+              <LiveStream key={index} />
+            ))}
+          </div>
+
+          {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn á*/}
+          <div className="flex justify-center mb-2">
+            <button className="rounded-full" aria-label="button">
+              <Image
+                src="/icon/button-bar.png"
+                width={40}
+                height={40}
+                alt="button"
+              />
+            </button>
+          </div>
+
+          <div className="border-t border-black my-4"></div>
+
+          {/* VIDEO */}
+          <div className="flex items-center mb-4">
+            <div className="bg-green-300 px-2 py-1 rounded flex items-center">
+              <Image
+                src="/icon/video.png"
+                width={32}
+                height={32}
+                alt="Voucher"
+                className="mr-2"
+              />
+              <span className="text-lg md:text-xl lg:text-2xl text-white font-semibold">
+                VIDEO
+              </span>
+            </div>
+          </div>
+          {/* Grid video: 4 hàng, mỗi hàng 4 video*/}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+            {sampleVideo.map((_, index) => (
+              <Video key={index} />
+            ))}
+          </div>
 
           {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn á*/}
           <div className="flex justify-center mb-2">
