@@ -2,27 +2,94 @@ import { Injectable } from '@nestjs/common';
 import { CreateShopVoucherInput } from './dto/create-shop-voucher.input';
 import { UpdateShopVoucherInput } from './dto/update-shop-voucher.input';
 import { PrismaService } from '../prisma.service';
+import { PaginationInput } from '../common/dto/pagination.input';
+import { UpdateVoucherInput } from '../voucher/dto/update-voucher.input';
+import { CreateVoucherInput } from '../voucher/dto/create-voucher.input';
 
 @Injectable()
 export class ShopVoucherService {
   constructor(private prisma: PrismaService) {}
-  create(createShopVoucherInput: CreateShopVoucherInput) {
-    return 'This action adds a new shopVoucher';
+
+  async create(createShopVoucherInput: CreateShopVoucherInput) {
+    try {
+      return await this.prisma.shop_Voucher.create({
+        data: {
+          ...createShopVoucherInput,
+          create_at: new Date(),
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
-  findAll() {
-    return this.prisma.shop_Voucher.findMany();
+  async findAll(paginationArgs: PaginationInput) {
+    const { page = 1, limit = 10, search } = paginationArgs;
+
+    const wherecondition = search
+      ? {
+          OR: [
+            { code: { contains: search } },
+            { id: isNaN(parseInt(search)) ? undefined : parseInt(search) },
+          ],
+        }
+      : {};
+
+    try {
+      const skip = (page - 1) * limit;
+      const [data, totalCount] = await Promise.all([
+        this.prisma.shop_Voucher.findMany({
+          skip,
+          where: wherecondition,
+          take: limit,
+          orderBy: { create_at: 'desc' },
+        }),
+        this.prisma.shop_Voucher.count(),
+      ]);
+
+      return {
+        data,
+        totalCount,
+        totalPage: Math.ceil(totalCount / limit),
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} shopVoucher`;
+  async findOne(id: number) {
+    try {
+      return await this.prisma.shop_Voucher.findUnique({
+        where: { id: id },
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
-  update(id: number, updateShopVoucherInput: UpdateShopVoucherInput) {
-    return `This action updates a #${id} shopVoucher`;
+  async update(id: number, updateShopVoucherInput: UpdateShopVoucherInput) {
+    try {
+      return await this.prisma.shop_Voucher.update({
+        where: { id: id },
+        data: {
+          ...updateShopVoucherInput,
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} shopVoucher`;
+  async remove(id: number) {
+    try {
+      return await this.prisma.shop_Voucher.update({
+        where: { id: id },
+        data: {
+          delete_at: new Date(),
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 }

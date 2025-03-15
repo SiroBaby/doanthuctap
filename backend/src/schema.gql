@@ -207,6 +207,12 @@ type ShopPagination {
   totalPage: Int!
 }
 
+type ShopVoucherPagination {
+  totalCount: Int
+  totalPage: Int
+  data: [ShopVoucher!]!
+}
+
 type VoucherPagination {
   totalCount: Int
   totalPage: Int
@@ -238,7 +244,7 @@ type Query {
   shops(pagination: PaginationInput!): ShopPagination!
   shop(id: String!): Shop!
   getShopIdByUserId(id: String!): Shop!
-  shopVouchers: [ShopVoucher!]!
+  shopVouchers(paginationInput: PaginationInput!): ShopVoucherPagination!
   shopVoucher(id: Int!): ShopVoucher!
   vouchers(paginationInput: PaginationInput!): VoucherPagination!
   voucher(id: Int!): Voucher!
@@ -268,7 +274,7 @@ type Mutation {
   updateProductDetail(updateProductDetailInput: UpdateProductDetailInput!): ProductDetail!
   removeProductDetail(id: Int!): ProductDetail!
   createProduct(createProductInput: CreateProductInput!): CreateProduct!
-  updateProduct(updateProductInput: UpdateProductInput!): Product!
+  updateProduct(shopid: String!, updateProductInput: UpdateProductInput!): Product!
   removeProduct(id: Int!): Product!
   createProductImage(createProductImageInput: CreateProductImageInput!): ProductImage!
   updateProductImage(updateProductImageInput: UpdateProductImageInput!): ProductImage!
@@ -372,7 +378,6 @@ input UpdateProductInput {
   status: String
   category_id: Int
   product_detail_id: Int
-  shop_id: String
 }
 
 input CreateProductImageInput {
@@ -419,13 +424,27 @@ input UpdateShopInput {
 }
 
 input CreateShopVoucherInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  code: String!
+  shop_id: String!
+  discount_percent: Float!
+  minimum_require_price: Float!
+  max_discount_price: Float!
+  quantity: Int!
+  max_use_per_user: Int
+  valid_from: DateTime
+  valid_to: DateTime
 }
 
 input UpdateShopVoucherInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  code: String
+  shop_id: String
+  discount_percent: Float!
+  minimum_require_price: Float!
+  max_discount_price: Float!
+  quantity: Int!
+  max_use_per_user: Int!
+  valid_from: DateTime!
+  valid_to: DateTime!
   id: Int!
 }
 

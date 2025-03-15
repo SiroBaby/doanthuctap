@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useCallback, useMemo, Fragment } from 'react';
+import React, { useState, useCallback, useMemo} from 'react';
 import {
     Card,
     CardContent,
@@ -15,6 +15,7 @@ import {
 import ViewListIcon from '@mui/icons-material/ViewList';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import EditNoteIcon from '@mui/icons-material/EditNote';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@apollo/client';
 import { GET_SHOP_BY_ID } from '@/graphql/queries';
@@ -133,6 +134,10 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
             setVoucherIndex(voucherIndex - 1);
         }
     };
+
+    const handleViewVoucher = useCallback((id: number) => {
+        router.push(`/admin/shopvoucher/detail/${id}`);
+    }, [router])
 
     const StatusChip = ({ status }: { status: string }) => {
         const normalizedStatus = status === null ? 'active' : status;
@@ -456,6 +461,15 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
                                         >
                                             Đến: {moment(voucher.valid_to).format('DD/MM/YYYY')}
                                         </Typography>
+                                        <IconButton
+                                            aria-label="detail"
+                                            title="Xem chi tiết Voucher"
+                                            onClick={() => handleViewVoucher(voucher.id)}
+                                            className="!text-blue-500 hover:!bg-blue-50 dark:hover:!bg-blue-900"
+                                            size="small"
+                                        >
+                                            <EditNoteIcon className="!w-7 !h-6" />
+                                        </IconButton>
                                     </CardContent>
                                 </Card>
                             ))

@@ -2,7 +2,7 @@
 
 import {useQuery} from '@apollo/client';
 import {GET_PRODUCT_BY_ID} from '@/graphql/queries';
-import {useParams} from 'next/navigation';
+import {useParams, useRouter} from 'next/navigation';
 import {useState} from 'react';
 
 // MUI Components
@@ -17,11 +17,14 @@ import {
     CircularProgress,
     Box,
     Divider,
+    Button,
 } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import EditIcon from '@mui/icons-material/Edit';
 
 const ProductDetailPage = () => {
     const params = useParams();
+    const router = useRouter();
     const productId = parseInt(params.id as string);
 
     // State cho ảnh chính
@@ -35,6 +38,10 @@ const ProductDetailPage = () => {
             setMainImage(thumbnail?.image_url || data?.product?.product_images?.[0]?.image_url);
         },
     });
+
+    const handleEditProduct = () => {
+        router.push(`/seller/product/edit/${productId}`);
+    };
 
     if (loading) {
         return (
@@ -59,11 +66,25 @@ const ProductDetailPage = () => {
 
     // Hàm tính giá sau khi giảm
     const calculateDiscountedPrice = (basePrice: number, percentDiscount: number) => {
-        return basePrice * (1 - percentDiscount / 100);
+        return basePrice - (basePrice * percentDiscount);
     };
 
     return (
         <Container maxWidth="lg" className="py-8 bg-gray-100 dark:bg-dark-body min-h-screen">
+            <Box className="flex justify-between items-center mb-6">
+                <Typography variant="h4" className="font-bold text-gray-800 dark:text-dark-text">
+                    Chi tiết sản phẩm
+                </Typography>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<EditIcon />}
+                    onClick={handleEditProduct}
+                >
+                    Chỉnh sửa sản phẩm
+                </Button>
+            </Box>
+            
             <Grid container spacing={4}>
                 {/* Phần hình ảnh */}
                 <Grid item xs={12} md={6}>
@@ -161,7 +182,7 @@ const ProductDetailPage = () => {
                                             <Typography className="text-gray-700 dark:text-gray-300">
                                                 <span className="font-medium">Giảm giá:</span>{' '}
                                                 <span className="text-red-500 dark:text-custom-red">
-                                                    {variation.percent_discount}%
+                                                    {variation.percent_discount * 100}%
                                                 </span>
                                             </Typography>
                                         )}

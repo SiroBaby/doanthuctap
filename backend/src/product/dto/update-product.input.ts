@@ -20,7 +20,4 @@ export class UpdateProductInput {
 
   @Field(() => Int, { nullable: true })
   product_detail_id?: number;
-
-  @Field(() => String, { nullable: true })
-  shop_id?: string;
 }

@@ -158,10 +158,24 @@ export class ProductService {
     }
   }
 
-  async update(id: number, updateProductInput: UpdateProductInput) {
+  async update(
+    id: number,
+    updateProductInput: UpdateProductInput,
+    shopid: string,
+  ) {
     try {
       const { product_id, ...updateData } = updateProductInput;
-      await this.findOne(id);
+      const product = await this.findOne(id);
+
+      if (product.shop_id !== shopid) {
+        throw new ConflictException(
+          'Không tìm thấy sản phẩm này trong shop của bạn',
+        );
+      }
+
+      if (!product) {
+        throw new NotFoundException(`Sản phẩm với ID ${id} không tồn tại`);
+      }
 
       return await this.prisma.product.update({
         where: { product_id: id },

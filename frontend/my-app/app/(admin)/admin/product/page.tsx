@@ -23,7 +23,7 @@ import EditNoteIcon from '@mui/icons-material/EditNote';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import AddIcon from '@mui/icons-material/Add';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import { GET_PRODUCTS } from '@/graphql/queries';
 import SearchBar from '@/app/components/common/SearchBar';
 import moment from 'moment-timezone';
@@ -55,10 +55,12 @@ const ProductPage = () => {
     const limit = 10;
     const router = useRouter();
 
+    // State for notification
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
 
+    // Memoize query variables
     const queryVariables = useMemo(() => ({
         page,
         limit,
@@ -70,19 +72,17 @@ const ProductPage = () => {
         fetchPolicy: 'network-only'
     });
 
+    // Memoize derived data
     const products = useMemo(() => data?.products.data || [], [data]);
     const totalPages = useMemo(() => data?.products.totalPage || 0, [data]);
 
+    // Handlers
     const handleViewProduct = useCallback((id: string) => {
         router.push(`/admin/product/detail/${id}`);
     }, [router]);
 
     const handleEditProduct = useCallback((id: string) => {
         router.push(`/admin/product/edit/${id}`);
-    }, [router]);
-
-    const handleAddProduct = useCallback(() => {
-        router.push('/admin/product/create');
     }, [router]);
 
     const handleCloseSnackbar = useCallback(() => {
@@ -95,12 +95,13 @@ const ProductPage = () => {
 
     const handleSearch = useCallback((searchTerm: string) => {
         setSearch(searchTerm);
-        setPage(1);
+        setPage(1); // Reset to first page when searching
     }, []);
 
     const StatusChip = ({ status }: { status: string }) => {
+        // Xử lý trạng thái null trước
         const normalizedStatus = status === null ? 'active' : status;
-
+    
         const getStatusColor = (status: string) => {
             switch (status) {
                 case 'active':
@@ -111,7 +112,7 @@ const ProductPage = () => {
                     return 'default';
             }
         };
-
+    
         return (
             <Chip
                 label={normalizedStatus}
@@ -119,7 +120,9 @@ const ProductPage = () => {
             />
         );
     };
+    
 
+    // Loading state
     if (loading) {
         return (
             <div className="h-screen flex items-center justify-center">
@@ -129,6 +132,7 @@ const ProductPage = () => {
         );
     }
 
+    // Error state
     if (error) {
         return (
             <div className="h-screen flex flex-col items-center justify-center p-4">
@@ -146,6 +150,7 @@ const ProductPage = () => {
         );
     }
 
+    // Empty state
     const showEmptyState = products.length === 0;
 
     return (
@@ -158,36 +163,19 @@ const ProductPage = () => {
                                 onSearch={handleSearch}
                                 placeholder="Tìm kiếm sản phẩm theo id hoặc tên sản phẩm..."
                                 initialValue={search}
-                                buttonText="Search"
+                                buttonText="Seach"
                             />
                         </div>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            startIcon={<AddIcon />}
-                            onClick={handleAddProduct}
-                            className="!ml-3"
-                        >
-                            Thêm sản phẩm
-                        </Button>
                     </div>
                     <TableContainer
                         component={Paper}
                         className="!bg-transparent flex-grow overflow-hidden flex flex-col"
                     >
                         {showEmptyState ? (
-                            <div className="flex-grow flex flex-col items-center justify-center p-8">
-                                <Typography variant="h6" className="dark:!text-gray-300 mb-4">
+                            <div className="flex-grow flex items-center justify-center p-8 ">
+                                <Typography variant="h6" className=' dark:!text-gray-300'>
                                     Không tìm thấy sản phẩm nào phù hợp với tiêu chí tìm kiếm
                                 </Typography>
-                                <Button
-                                    variant="outlined"
-                                    color="primary"
-                                    startIcon={<AddIcon />}
-                                    onClick={handleAddProduct}
-                                >
-                                    Thêm sản phẩm mới
-                                </Button>
                             </div>
                         ) : (
                             <>
@@ -243,7 +231,7 @@ const ProductPage = () => {
                                                         <StatusChip status={product.status} />
                                                     </TableCell>
                                                     <TableCell>
-                                                        <IconButton
+                                                    <IconButton
                                                             aria-label="detail"
                                                             title="Xem chi tiết sản phẩm"
                                                             onClick={() => handleViewProduct(product.product_id)}
@@ -251,7 +239,7 @@ const ProductPage = () => {
                                                             size="small"
                                                         >
                                                             <ViewListIcon className="!w-7 !h-6" />
-                                                        </IconButton>
+                                                    </IconButton>
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -275,6 +263,7 @@ const ProductPage = () => {
                 </CardContent>
             </Card>
 
+            {/* Result notification */}
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={6000}

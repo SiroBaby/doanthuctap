@@ -230,6 +230,31 @@ export const GET_PRODUCT_BY_ID = gql`
   }
 `;
 
+// query shop voucher
+// query get shop vouchers
+export const GET_SHOP_VOUCHERS = gql`
+    query ShopVouchers($page: Int!, $limit: Int!, $search: String) {
+        shopVouchers(paginationInput: { page: $page, limit: $limit, search: $search }) {
+            totalCount
+            totalPage
+            data {
+                id
+                code
+                discount_percent
+                minimum_require_price
+                max_discount_price
+                quantity
+                max_use_per_user
+                valid_from
+                valid_to
+                create_at
+                delete_at
+                shop_id
+            }
+        }
+    }
+`;
+
 // query voucher
 // query get vouchers
 export const GET_VOUCHERS = gql`

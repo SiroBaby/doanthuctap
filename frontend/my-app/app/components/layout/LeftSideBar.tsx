@@ -17,20 +17,33 @@ const LeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => 
 
   // Đồng bộ selectedItem với URL hiện tại khi component được mount
   useEffect(() => {
-    if (pathname.includes("/dashboard")) {
-      setSelectedItem("dashboard");
-    } else if (pathname.includes("/admin/shop")) {
-      setSelectedItem("shop");
-    } else if (pathname.includes("/admin/user")) {
-      setSelectedItem("user");
-    } else if (pathname.includes("/admin/product")) {
-      setSelectedItem("product");
-    } else if (pathname.includes("/admin/order")) {
-      setSelectedItem("order");
-    } else if (pathname.includes("/admin/category")) {
-      setSelectedItem("category");
-    } else if (pathname.includes("/admin/voucher")) {
-      setSelectedItem("voucher");
+    switch (pathname) {
+      case "/admin/dashboard":
+        setSelectedItem("dashboard");
+        break;
+      case "/admin/shop":
+        setSelectedItem("shop");
+        break;
+      case "/admin/user":
+        setSelectedItem("user");
+        break;
+      case "/admin/product":
+        setSelectedItem("product");
+        break;
+      case "/admin/order":
+        setSelectedItem("order");
+        break;
+      case "/admin/category":
+        setSelectedItem("category");
+        break;
+      case "/admin/voucher":
+        setSelectedItem("voucher");
+        break;
+      case "/admin/shopvoucher":
+        setSelectedItem("shopvoucher");
+        break;
+      default:
+        setSelectedItem("");
     }
   }, [pathname]);
 
@@ -39,6 +52,8 @@ const LeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => 
     setSelectedItem(item); // Cập nhật item được chọn
     onItemClick(path); // Gọi hàm từ props để điều hướng và kích hoạt loading
   };
+
+  console.log(selectedItem)
 
   return (
     <div className="h-screen w-60 left-0 top-0 sticky flex flex-col bg-white shadow-xl dark:bg-dark-sidebar transition-colors duration-200">
@@ -124,6 +139,17 @@ const LeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => 
           >
             <SvgIcon component={ConfirmationNumberIcon} className="h-auto w-8 text-custom-red"/>
             <span className="ml-2 text-2xl font-bold">Voucher</span>
+          </li>
+
+          <li
+              className={`flex p-4 text-2xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${selectedItem === "shopvoucher"
+                  ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
+                  : "border-transparent"
+              }`}
+              onClick={() => handleItemClick("shopvoucher", "/admin/shopvoucher")}
+          >
+            <SvgIcon component={ConfirmationNumberIcon} className="h-auto w-8 text-custom-red"/>
+            <span className="ml-2 text-2xl font-bold">Shop Voucher</span>
           </li>
         </ul>
       </div>

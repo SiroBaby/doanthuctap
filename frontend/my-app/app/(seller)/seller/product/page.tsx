@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@apollo/client';
 import {GET_PRODUCTS_BY_SHOP_ID, GET_SHOP_ID_BY_USER_ID} from '@/graphql/queries';
@@ -82,6 +83,10 @@ const SellerProductPage = () => {
 
     const handleViewProduct = useCallback((id: string) => {
         router.push(`/seller/product/detail/${id}`);
+    }, [router]);
+
+    const handleEditProduct = useCallback((id: string) => {
+        router.push(`/seller/product/edit/${id}`);
     }, [router]);
 
     const handleAddProduct = useCallback(() => {
@@ -242,6 +247,15 @@ const SellerProductPage = () => {
                                                             size="small"
                                                         >
                                                             <ViewListIcon className="!w-7 !h-6" />
+                                                        </IconButton>
+                                                        <IconButton
+                                                            aria-label="edit"
+                                                            title="Chỉnh sửa sản phẩm"
+                                                            onClick={() => handleEditProduct(product.product_id)}
+                                                            className="!text-blue-500 hover:!bg-blue-50 dark:hover:!bg-blue-900"
+                                                            size="small"
+                                                        >
+                                                            <EditIcon className="!w-7 !h-6" />
                                                         </IconButton>
                                                     </TableCell>
                                                 </TableRow>

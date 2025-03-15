@@ -118,53 +118,70 @@ export const CREATE_FULL_PRODUCT = gql`
   }
 `;
 
-//mutation voucher
-//mutation add voucher
-export const ADD_VOUCHER = gql`
-    mutation CreateVoucher ($createVoucherInput: CreateVoucherInput!) {
-        createVoucher(createVoucherInput: $createVoucherInput) {
-                code
-                discount_percent
-                minimum_require_price
-                max_discount_price
-                quantity
-                max_use_per_user
-                valid_from
-                valid_to
-        }
+//mutation update product
+export const UPDATE_PRODUCT = gql`
+  mutation UpdateProduct($shopid: String!, $updateProductInput: UpdateProductInput!) {
+    updateProduct(shopid: $shopid, updateProductInput: $updateProductInput) {
+      product_id
+      product_name
+      brand
+      status
     }
+  }
 `;
 
-//mutation remove voucher
-export const REMOVE_VOUCHER = gql`
-    mutation RemoveVoucher($id: Int!) {
-        removeVoucher(id: $id) {
-            id
-            code
-            discount_percent
-            minimum_require_price
-            max_discount_price
-            quantity
-            max_use_per_user
-            valid_from
-            valid_to
-        }
+//mutation update product detail
+export const UPDATE_PRODUCT_DETAIL = gql`
+  mutation UpdateProductDetail($updateProductDetailInput: UpdateProductDetailInput!) {
+    updateProductDetail(updateProductDetailInput: $updateProductDetailInput) {
+      product_detail_id
+      description
+      specifications
+      create_at
+      update_at
     }
+  }
 `;
 
-//mutation update voucher
-export const UPDATE_VOUCHER = gql`
-    mutation UpdateVoucher($updateVoucherInput: UpdateVoucherInput!) {
-        updateVoucher(updateVoucherInput: $updateVoucherInput) {
-            id
-            code
-            discount_percent
-            minimum_require_price
-            max_discount_price
-            quantity
-            max_use_per_user
-            valid_from
-            valid_to
-        }
+//mutation update product image
+export const UPDATE_PRODUCT_IMAGE = gql`
+  mutation UpdateProductImage($updateProductImageInput: UpdateProductImageInput!) {
+    updateProductImage(updateProductImageInput: $updateProductImageInput) {
+      image_id
+      product_id
+      image_url
+      is_thumbnail
+      create_at
     }
+  }
+`;
+
+//mutation update product variation
+export const UPDATE_PRODUCT_VARIATION = gql`
+  mutation UpdateProductVariation($updateProductVariationInput: UpdateProductVariationInput!) {
+    updateProductVariation(updateProductVariationInput: $updateProductVariationInput) {
+      product_variation_id
+      product_variation_name
+      base_price
+      percent_discount
+      stock_quantity
+      status
+      product_id
+      create_at
+      update_at
+    }
+  }
+`;
+
+//mutation delete product image
+export const DELETE_PRODUCT_IMAGE = gql`
+  mutation RemoveProductImage($id: Int!) {
+    removeProductImage(id: $id) {
+      image_id
+      product_id
+      image_url
+      is_thumbnail
+      create_at
+    }
+  }
 `;

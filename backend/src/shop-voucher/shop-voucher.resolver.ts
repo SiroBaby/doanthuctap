@@ -3,6 +3,8 @@ import { ShopVoucherService } from './shop-voucher.service';
 import { ShopVoucher } from './entities/shop-voucher.entity';
 import { CreateShopVoucherInput } from './dto/create-shop-voucher.input';
 import { UpdateShopVoucherInput } from './dto/update-shop-voucher.input';
+import ShopVoucherPagination from './entities/shopvoucherpagination.entity';
+import { PaginationInput } from '../common/dto/pagination.input';
 
 @Resolver(() => ShopVoucher)
 export class ShopVoucherResolver {
@@ -16,9 +18,12 @@ export class ShopVoucherResolver {
     return this.shopVoucherService.create(createShopVoucherInput);
   }
 
-  @Query(() => [ShopVoucher], { name: 'shopVouchers' })
-  findAll() {
-    return this.shopVoucherService.findAll();
+  @Query(() => ShopVoucherPagination, { name: 'shopVouchers' })
+  findAll(
+    @Args('paginationInput', { type: () => PaginationInput })
+    pagination: PaginationInput,
+  ) {
+    return this.shopVoucherService.findAll(pagination);
   }
 
   @Query(() => ShopVoucher, { name: 'shopVoucher' })
