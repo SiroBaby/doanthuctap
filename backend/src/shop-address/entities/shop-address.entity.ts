@@ -14,4 +14,7 @@ export class ShopAddress {
 
     @Field (() => String, {nullable: false})
     phone: string;
+
+    @Field(() => Boolean, { nullable: true, defaultValue: false })
+    is_default?: boolean;
 }

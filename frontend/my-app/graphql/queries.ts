@@ -70,6 +70,7 @@ export const GET_SHOP_BY_ID = gql`
                 shop_id
                 address
                 phone
+                is_default
             }
             products {
                 product_id
@@ -341,4 +342,26 @@ export const GET_SHOP_VOUCHER_BY_ID = gql`
             }
         }
     }
+`;
+
+// Query để lấy danh sách locations
+export const GET_LOCATIONS = gql`
+  query Locations {
+    locations {
+      location_id
+      location_name
+    }
+  }
+`;
+
+// Query để lấy chi tiết một shop address
+export const GET_SHOP_ADDRESS_BY_ID = gql`
+  query ShopAddress($id: Int!) {
+    shopAddress(id: $id) {
+      address_id
+      address
+      phone
+      shop_id
+    }
+  }
 `;

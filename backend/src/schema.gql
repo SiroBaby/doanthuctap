@@ -55,6 +55,7 @@ type ShopAddress {
   shop_id: String!
   address: String!
   phone: String!
+  is_default: Boolean
 }
 
 type Category {
@@ -269,6 +270,7 @@ type Mutation {
   createShopAddress(createShopAddressInput: CreateShopAddressInput!): ShopAddress!
   updateShopAddress(updateShopAddressInput: UpdateShopAddressInput!): ShopAddress!
   removeShopAddress(id: Int!): ShopAddress!
+  setDefaultShopAddress(id: Int!): ShopAddress!
   createCategory(createCategoryInput: CreateCategoryInput!): Category!
   updateCategory(updateCategoryInput: UpdateCategoryInput!): Category!
   removeCategory(id: Int!): Category!
@@ -336,12 +338,15 @@ input CreateShopAddressInput {
   address: String!
   shop_id: String!
   phone: String!
+  is_default: Boolean = false
 }
 
 input UpdateShopAddressInput {
   address_id: Int!
   address: String!
   phone: String!
+  shop_id: String
+  is_default: Boolean
 }
 
 input CreateCategoryInput {

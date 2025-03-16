@@ -32,4 +32,9 @@ export class ShopAddressResolver {
   removeShopAddress(@Args('id', { type: () => Int }) id: number) {
     return this.shopAddressService.remove(id);
   }
+
+  @Mutation(() => ShopAddress)
+  setDefaultShopAddress(@Args('id', { type: () => Int }) id: number) {
+    return this.shopAddressService.setDefault(id);
+  }
 }

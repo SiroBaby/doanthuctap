@@ -230,3 +230,63 @@ export const REMOVE_SHOP_VOUCHER = gql`
     }
   }
 `;
+
+// Shop mutations
+export const UPDATE_SHOP = gql`
+  mutation UpdateShop($updateShopInput: UpdateShopInput!) {
+    updateShop(updateShopInput: $updateShopInput) {
+      shop_id
+      shop_name
+      link
+      status
+      location_id
+      id_user
+      update_at
+    }
+  }
+`;
+
+// Shop address mutations
+export const CREATE_SHOP_ADDRESS = gql`
+  mutation CreateShopAddress($createShopAddressInput: CreateShopAddressInput!) {
+    createShopAddress(createShopAddressInput: $createShopAddressInput) {
+      address_id
+      address
+      phone
+      shop_id
+    }
+  }
+`;
+
+export const UPDATE_SHOP_ADDRESS = gql`
+  mutation UpdateShopAddress($updateShopAddressInput: UpdateShopAddressInput!) {
+    updateShopAddress(updateShopAddressInput: $updateShopAddressInput) {
+      address_id
+      address
+      phone
+      shop_id
+    }
+  }
+`;
+
+export const REMOVE_SHOP_ADDRESS = gql`
+  mutation RemoveShopAddress($id: Int!) {
+    removeShopAddress(id: $id) {
+      address_id
+      address
+      phone
+    }
+  }
+`;
+
+export const SET_DEFAULT_SHOP_ADDRESS = gql`
+  mutation SetDefaultShopAddress($id: Int!) {
+    setDefaultShopAddress(id: $id) {
+      address_id
+      address
+      phone
+      shop_id
+      is_default
+    }
+  }
+`;

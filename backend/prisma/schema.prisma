@@ -62,6 +62,7 @@ model Shop_address {
   address     String @db.Text
   phone       String @db.VarChar(20)
   shop_id     String? @db.VarChar(255)
+  is_default  Boolean?  @default(false)
 
   shops       Shop? @relation(fields: [shop_id], references: [shop_id])
 }

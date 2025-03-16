@@ -11,4 +11,10 @@ export class UpdateShopAddressInput {
 
   @Field(() => String)
   phone: string;
+
+  @Field(() => String, { nullable: true })
+  shop_id?: string;
+
+  @Field(() => Boolean, { nullable: true })
+  is_default?: boolean;
 }

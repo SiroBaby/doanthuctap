@@ -10,4 +10,7 @@ export class CreateShopAddressInput {
 
   @Field(() => String)
   phone: string;
+
+  @Field(() => Boolean, { nullable: true, defaultValue: false })
+  is_default?: boolean;
 }
