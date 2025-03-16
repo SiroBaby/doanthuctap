@@ -133,6 +133,7 @@ type ShopVoucher {
   create_at: DateTime
   delete_at: DateTime
   shop_id: String!
+  shop: Shop
 }
 
 type Shop {
@@ -245,6 +246,7 @@ type Query {
   shop(id: String!): Shop!
   getShopIdByUserId(id: String!): Shop!
   shopVouchers(paginationInput: PaginationInput!): ShopVoucherPagination!
+  getShopVouchersByShopId(shopId: String!, paginationInput: PaginationInput!): ShopVoucherPagination!
   shopVoucher(id: Int!): ShopVoucher!
   vouchers(paginationInput: PaginationInput!): VoucherPagination!
   voucher(id: Int!): Voucher!

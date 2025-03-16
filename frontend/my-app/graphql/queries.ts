@@ -294,3 +294,51 @@ export const GET_VOUCHER_BY_ID = gql`
         }
     }
 `;
+
+// query get shop vouchers by shop id
+export const GET_SHOP_VOUCHERS_BY_SHOP_ID = gql`
+    query GetShopVouchersByShopId($shopId: String!, $page: Int!, $limit: Int!, $search: String) {
+        getShopVouchersByShopId(shopId: $shopId, paginationInput: { page: $page, limit: $limit, search: $search }) {
+            totalCount
+            totalPage
+            data {
+                id
+                code
+                discount_percent
+                minimum_require_price
+                max_discount_price
+                quantity
+                max_use_per_user
+                valid_from
+                valid_to
+                create_at
+                delete_at
+                shop_id
+            }
+        }
+    }
+`;
+
+// query get shop voucher by id
+export const GET_SHOP_VOUCHER_BY_ID = gql`
+    query ShopVoucher($id: Int!) {
+        shopVoucher(id: $id) {
+            id
+            code
+            discount_percent
+            minimum_require_price
+            max_discount_price
+            quantity
+            max_use_per_user
+            valid_from
+            valid_to
+            create_at
+            delete_at
+            shop_id
+            shop {
+                shop_id
+                shop_name
+            }
+        }
+    }
+`;

@@ -185,3 +185,48 @@ export const DELETE_PRODUCT_IMAGE = gql`
     }
   }
 `;
+
+// Mutation cho shop voucher
+export const ADD_SHOP_VOUCHER = gql`
+  mutation CreateShopVoucher($createShopVoucherInput: CreateShopVoucherInput!) {
+    createShopVoucher(createShopVoucherInput: $createShopVoucherInput) {
+      id
+      code
+      discount_percent
+      minimum_require_price
+      max_discount_price
+      quantity
+      max_use_per_user
+      valid_from
+      valid_to
+      shop_id
+    }
+  }
+`;
+
+export const UPDATE_SHOP_VOUCHER = gql`
+  mutation UpdateShopVoucher($updateShopVoucherInput: UpdateShopVoucherInput!) {
+    updateShopVoucher(updateShopVoucherInput: $updateShopVoucherInput) {
+      id
+      code
+      discount_percent
+      minimum_require_price
+      max_discount_price
+      quantity
+      max_use_per_user
+      valid_from
+      valid_to
+      shop_id
+    }
+  }
+`;
+
+export const REMOVE_SHOP_VOUCHER = gql`
+  mutation RemoveShopVoucher($id: Int!) {
+    removeShopVoucher(id: $id) {
+      id
+      code
+      delete_at
+    }
+  }
+`;

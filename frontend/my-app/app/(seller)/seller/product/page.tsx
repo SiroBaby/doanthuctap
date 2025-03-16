@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 import React, { useState, useCallback, useMemo } from 'react';
 import {
@@ -116,7 +117,7 @@ const SellerProductPage = () => {
                 case 'delete':
                     return 'error';
                 default:
-                    return 'default';
+                    return 'warning';
             }
         };
 

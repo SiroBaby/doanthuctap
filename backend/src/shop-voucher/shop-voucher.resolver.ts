@@ -26,6 +26,15 @@ export class ShopVoucherResolver {
     return this.shopVoucherService.findAll(pagination);
   }
 
+  @Query(() => ShopVoucherPagination, { name: 'getShopVouchersByShopId' })
+  findByShopId(
+    @Args('shopId', { type: () => String }) shopId: string,
+    @Args('paginationInput', { type: () => PaginationInput })
+    pagination: PaginationInput,
+  ) {
+    return this.shopVoucherService.findByShopId(shopId, pagination);
+  }
+
   @Query(() => ShopVoucher, { name: 'shopVoucher' })
   findOne(@Args('id', { type: () => Int }) id: number) {
     return this.shopVoucherService.findOne(id);
