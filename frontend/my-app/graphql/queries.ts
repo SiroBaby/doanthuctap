@@ -365,3 +365,23 @@ export const GET_SHOP_ADDRESS_BY_ID = gql`
     }
   }
 `;
+
+// query get seller dashboard stats
+export const GET_SELLER_DASHBOARD_STATS = gql`
+  query GetSellerDashboardStats($shopId: String!) {
+    getSellerDashboardStats(shopId: $shopId) {
+      totalRevenue
+      orderCount
+      productCount
+      averageRating
+      monthlyRevenue {
+        month
+        revenue
+      }
+      productStatusCount {
+        status
+        count
+      }
+    }
+  }
+`;

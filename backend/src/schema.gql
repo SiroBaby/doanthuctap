@@ -221,6 +221,47 @@ type VoucherPagination {
   data: [Voucher!]!
 }
 
+type DashboardStat {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type SellerDashboardStats {
+  """Tổng doanh thu"""
+  totalRevenue: Float!
+
+  """Số lượng đơn hàng"""
+  orderCount: Int!
+
+  """Số lượng sản phẩm"""
+  productCount: Int!
+
+  """Điểm đánh giá trung bình"""
+  averageRating: Float!
+
+  """Doanh thu theo tháng"""
+  monthlyRevenue: [MonthlyRevenue!]
+
+  """Số lượng sản phẩm theo trạng thái"""
+  productStatusCount: [ProductStatus!]
+}
+
+type MonthlyRevenue {
+  """Tháng (MM/YYYY)"""
+  month: String!
+
+  """Doanh thu"""
+  revenue: Float!
+}
+
+type ProductStatus {
+  """Trạng thái sản phẩm"""
+  status: String!
+
+  """Số lượng"""
+  count: Int!
+}
+
 type Query {
   users(pagination: PaginationInput!): UserPagination!
   user(id: String!): User!
@@ -251,6 +292,9 @@ type Query {
   shopVoucher(id: Int!): ShopVoucher!
   vouchers(paginationInput: PaginationInput!): VoucherPagination!
   voucher(id: Int!): Voucher!
+  dashboardStats: [DashboardStat!]!
+  dashboardStat(id: Int!): DashboardStat!
+  getSellerDashboardStats(shopId: String!): SellerDashboardStats!
 }
 
 input PaginationInput {
@@ -295,6 +339,9 @@ type Mutation {
   createVoucher(createVoucherInput: CreateVoucherInput!): Voucher!
   updateVoucher(updateVoucherInput: UpdateVoucherInput!): Voucher!
   removeVoucher(id: Int!): Voucher!
+  createDashboardStat(createDashboardStatInput: CreateDashboardStatInput!): DashboardStat!
+  updateDashboardStat(updateDashboardStatInput: UpdateDashboardStatInput!): DashboardStat!
+  removeDashboardStat(id: Int!): DashboardStat!
 }
 
 input UpdateUserInput {
@@ -475,5 +522,16 @@ input UpdateVoucherInput {
   max_use_per_user: Int!
   valid_from: DateTime!
   valid_to: DateTime!
+  id: Int!
+}
+
+input CreateDashboardStatInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateDashboardStatInput {
+  """Example field (placeholder)"""
+  exampleField: Int
   id: Int!
 }

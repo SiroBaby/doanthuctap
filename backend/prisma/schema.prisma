@@ -226,6 +226,7 @@ model Invoice {
   invoice_id             String    @id @db.VarChar(255)
   payment_method         String?   @db.VarChar(255)
   payment_status         String?   @db.VarChar(50)
+  order_status           String    @db.VarChar(50)
   total_amount           Decimal   @db.Decimal(10, 2)
   shipping_fee           Decimal   @default(0) @db.Decimal(10, 2)
   id_user                String    @db.VarChar(255)
@@ -238,17 +239,6 @@ model Invoice {
   user                   User             @relation(fields: [id_user], references: [id_user])
   cart                   Cart             @relation(fields: [cart_id], references: [cart_id])
   voucher_storage        Voucher_storage? @relation(fields: [voucher_storage_id], references: [voucher_storage_id])
-  order_statuses         Order_Status[]
-}
-
-model Order_Status {
-  status_id      Int       @id @default(autoincrement())
-  invoice_id     String    @db.VarChar(255)
-  status         String    @db.VarChar(50)
-  notes          String?   @db.Text
-  create_at      DateTime?
-  
-  invoice        Invoice   @relation(fields: [invoice_id], references: [invoice_id])
 }
 
 model Review {

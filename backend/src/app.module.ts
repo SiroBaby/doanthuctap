@@ -19,6 +19,7 @@ import { UploadModule } from './file-upload/file-upload.module';
 import { ShopModule } from './shop/shop.module';
 import { ShopVoucherModule } from './shop-voucher/shop-voucher.module';
 import { VoucherModule } from './voucher/voucher.module';
+import { DashboardStatsModule } from './dashboard-stats/dashboard-stats.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { VoucherModule } from './voucher/voucher.module';
     ShopModule,
     ShopVoucherModule,
     VoucherModule,
+    DashboardStatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
