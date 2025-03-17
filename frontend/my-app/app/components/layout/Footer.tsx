@@ -52,12 +52,12 @@ const Footer = () => {
                 className="hover:text-red-600"
                 href="https://www.google.com/maps/place/H%E1%BB%8Dc+Vi%E1%BB%87n+H%C3%A0ng+Kh%C3%B4ng+Vi%E1%BB%87t+Nam+CS2/@10.7999506,106.6533982,18.59z/data=!4m6!3m5!1s0x3175292976c117ad:0x5b3f38b21051f84!8m2!3d10.8000211!4d106.6544162!16s%2Fg%2F1td1mcc1?hl=vi-VN&entry=ttu&g_ep=EgoyMDI0MTEwNi4wIKXMDSoASAFQAw%3D%3D"
               >
-                <p>Địa chỉ: 18A/1 Cộng Hòa, phường 12, Tân Bình, TP.HCM</p>
+                <p>Địa chỉ: Tân Bình, TP.HCM</p>
               </a>
               <div className="flex items-center space-x-4">
                 <a
                   className="hover:text-red-600"
-                  href="https://www.facebook.com/profile.php?id=61557053777825"
+                  href="https://www.facebook.com"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -65,7 +65,7 @@ const Footer = () => {
                 </a>
                 <a
                   className="hover:text-red-600"
-                  href="https://github.com/SiroBaby/doanchuyennganhweb"
+                  href="https://github.com"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
