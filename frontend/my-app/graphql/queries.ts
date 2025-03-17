@@ -385,3 +385,171 @@ export const GET_SELLER_DASHBOARD_STATS = gql`
     }
   }
 `;
+
+// Query liên quan đến invoice
+export const GET_INVOICES_BY_SHOP = gql`
+  query GetInvoicesByShop($getInvoicesByShopInput: GetInvoicesByShopInput!) {
+    getInvoicesByShop(getInvoicesByShopInput: $getInvoicesByShopInput) {
+      data {
+        invoice_id
+        payment_method
+        payment_status
+        order_status
+        total_amount
+        shipping_fee
+        id_user
+        create_at
+        update_at
+        user {
+          user_name
+          email
+          phone
+        }
+      }
+      totalCount
+      totalPage
+    }
+  }
+`;
+
+export const GET_INVOICE_DETAIL = gql`
+  query GetInvoiceDetail($invoice_id: String!) {
+    getInvoiceDetail(invoice_id: $invoice_id) {
+      invoice_id
+      payment_method
+      payment_status
+      order_status
+      total_amount
+      shipping_fee
+      create_at
+      user {
+        user_name
+        email
+        phone
+      }
+      shipping_address {
+        address
+        phone
+      }
+      invoice_products {
+        invoice_product_id
+        product_name
+        variation_name
+        price
+        quantity
+        discount_percent
+        product_variation_id
+        product_variation {
+          product {
+            product_images {
+              image_url
+              is_thumbnail
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_OUT_OF_STOCK_PRODUCTS = gql`
+  query GetOutOfStockProducts($getOutOfStockProductsInput: GetOutOfStockProductsInput!) {
+    getOutOfStockProducts(getOutOfStockProductsInput: $getOutOfStockProductsInput) {
+      products {
+        product_id
+        product_name
+        brand
+        status
+        shop_id
+        product_images {
+          image_url
+          is_thumbnail
+        }
+        category {
+          category_name
+        }
+      }
+      variations {
+        product_variation_id
+        product_variation_name
+        base_price
+        percent_discount
+        stock_quantity
+        status
+        product {
+          product_id
+          product_name
+          brand
+          shop_id
+          product_images {
+            image_url
+            is_thumbnail
+          }
+          category {
+            category_name
+          }
+        }
+      }
+      totalCount
+      totalPage
+    }
+  }
+`;
+
+export const GET_DASHBOARD_STATS = gql`
+  query GetDashboardStats($shop_id: String!) {
+    getDashboardStats(shop_id: $shop_id) {
+      totalRevenue
+      totalOrders
+      totalProducts
+      ordersByStatus {
+        waiting_for_delivery
+        processed
+        delivery
+        delivered
+        canceled
+      }
+      revenueByMonth {
+        month
+        revenue
+      }
+      topSellingProducts {
+        product_id
+        product_name
+        total_quantity
+        total_revenue
+        product {
+          product_id
+          product_name
+          product_images {
+            image_url
+            is_thumbnail
+          }
+        }
+      }
+      recentOrders {
+        invoice_id
+        order_status
+        total_amount
+        create_at
+        user {
+          user_name
+        }
+      }
+      lowStockProducts {
+        product_id
+        product_name
+        status
+        product_images {
+          image_url
+          is_thumbnail
+        }
+        product_variations {
+          product_variation_id
+          variation_name
+          stock_quantity
+        }
+      }
+    }
+  }
+`;

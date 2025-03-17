@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { useAuth } from '@clerk/nextjs';
 import { useTheme } from 'next-themes';
-import { GET_SHOP_ID_BY_USER_ID, GET_SELLER_DASHBOARD_STATS } from '@/graphql/queries';
+import { GET_SHOP_ID_BY_USER_ID, GET_DASHBOARD_STATS } from '@/graphql/queries';
 import {
   AlertCircle,
   TrendingUp,
@@ -36,23 +36,70 @@ interface ShopIdResponse {
   };
 }
 
-interface SellerDashboardStats {
-  totalRevenue: number;
-  orderCount: number;
-  productCount: number;
-  averageRating: number;
-  monthlyRevenue?: {
-    month: string;
-    revenue: number;
-  }[];
-  productStatusCount?: {
-    status: string;
-    count: number;
-  }[];
+interface OrderStatusCount {
+  waiting_for_delivery: number;
+  processed: number;
+  delivery: number;
+  delivered: number;
+  canceled: number;
+}
+
+interface MonthlyRevenue {
+  month: string;
+  revenue: number;
+}
+
+interface TopSellingProduct {
+  product_id: number;
+  product_name: string;
+  total_quantity: number;
+  total_revenue: number;
+  product: {
+    product_id: number;
+    product_name: string;
+    product_images: Array<{
+      image_url: string;
+      is_thumbnail: boolean;
+    }>;
+  };
+}
+
+interface RecentOrder {
+  invoice_id: string;
+  order_status: string;
+  total_amount: number;
+  create_at: string;
+  user: {
+    user_name: string;
+  };
+}
+
+interface LowStockProduct {
+  product_id: number;
+  product_name: string;
+  status: string;
+  product_images: Array<{
+    image_url: string;
+    is_thumbnail: boolean;
+  }>;
+  product_variations: Array<{
+    product_variation_id: number;
+    variation_name: string;
+    stock_quantity: number;
+  }>;
 }
 
 interface DashboardData {
-  getSellerDashboardStats: SellerDashboardStats;
+  getDashboardStats: {
+    totalRevenue: number;
+    totalOrders: number;
+    totalProducts: number;
+    ordersByStatus: OrderStatusCount;
+    revenueByMonth: MonthlyRevenue[];
+    topSellingProducts: TopSellingProduct[];
+    recentOrders: RecentOrder[];
+    lowStockProducts: LowStockProduct[];
+  };
 }
 
 const COLORS = ['#1FBFEB', '#00E3CD', '#F9F871', '#FF5E5E', '#8884D8'];
@@ -77,16 +124,32 @@ const DashboardPage = () => {
 
   // Fetch dashboard stats
   const { loading: statsLoading, error: statsError, data: statsData } = useQuery<DashboardData>(
-    GET_SELLER_DASHBOARD_STATS,
+    GET_DASHBOARD_STATS,
     {
-      variables: { shopId },
+      variables: { shop_id: shopId },
       skip: !shopId,
     }
   );
 
-  const loading = shopIdLoading || statsLoading;
-  const error = statsError;
-  const data = statsData?.getSellerDashboardStats;
+  const isLoading = shopIdLoading || statsLoading;
+  
+  // Extract data with null checks
+  const dashboardStats = statsData?.getDashboardStats || {
+    totalRevenue: 0,
+    totalOrders: 0,
+    totalProducts: 0,
+    ordersByStatus: {
+      waiting_for_delivery: 0,
+      processed: 0,
+      delivery: 0,
+      delivered: 0,
+      canceled: 0
+    },
+    revenueByMonth: [],
+    topSellingProducts: [],
+    recentOrders: [],
+    lowStockProducts: []
+  };
 
   // Format Vietnamese currency
   const formatCurrency = (value: number) => {
@@ -98,23 +161,30 @@ const DashboardPage = () => {
 
   const getProductStatusLabel = (status: string) => {
     switch (status) {
-      case 'active':
-        return 'Đang bán';
-      case 'inactive':
-        return 'Ngừng bán';
-      case 'out_of_stock':
-        return 'Hết hàng';
+      case 'waiting_for_delivery':
+        return 'Chờ lấy hàng';
+      case 'processed':
+        return 'Đã xử lý';
+      case 'delivery':
+        return 'Đang vận chuyển';
+      case 'delivered':
+        return 'Đã giao';
+      case 'canceled':
+        return 'Đã hủy';
       default:
         return status;
     }
   };
 
-  const formatProductStatusData = (data?: { status: string; count: number }[]) => {
+  const formatOrderStatusData = (data?: OrderStatusCount) => {
     if (!data) return [];
-    return data.map(item => ({
-      name: getProductStatusLabel(item.status),
-      value: item.count
-    }));
+    return [
+      { name: getProductStatusLabel('waiting_for_delivery'), value: data.waiting_for_delivery },
+      { name: getProductStatusLabel('processed'), value: data.processed },
+      { name: getProductStatusLabel('delivery'), value: data.delivery },
+      { name: getProductStatusLabel('delivered'), value: data.delivered },
+      { name: getProductStatusLabel('canceled'), value: data.canceled },
+    ];
   };
 
   if (!userId) {
@@ -128,7 +198,7 @@ const DashboardPage = () => {
     );
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -144,18 +214,18 @@ const DashboardPage = () => {
     );
   }
 
-  if (error) {
+  if (statsError) {
     return (
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-2 p-4 rounded-lg bg-custom-red/20 dark:bg-custom-red/10 text-custom-red border border-custom-red/20 dark:border-custom-red/30">
           <AlertCircle className="h-5 w-5" />
-          <p>Đã xảy ra lỗi khi tải dữ liệu: {error.message}</p>
+          <p>Đã xảy ra lỗi khi tải dữ liệu: {statsError.message}</p>
         </div>
       </div>
     );
   }
 
-  if (!data) {
+  if (!statsData) {
     return (
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-2 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400 border border-blue-100 dark:border-blue-700/30">
@@ -189,7 +259,7 @@ const DashboardPage = () => {
             </div>
           </div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-dark-text mb-1">
-            {formatCurrency(data.totalRevenue)}
+            {formatCurrency(dashboardStats.totalRevenue)}
           </h2>
           <p className="text-gray-500 dark:text-gray-400">Tổng doanh thu</p>
         </div>
@@ -205,7 +275,7 @@ const DashboardPage = () => {
             </div>
           </div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-dark-text mb-1">
-            {data.orderCount}
+            {dashboardStats.totalOrders}
           </h2>
           <p className="text-gray-500 dark:text-gray-400">Số đơn hàng</p>
         </div>
@@ -221,7 +291,7 @@ const DashboardPage = () => {
             </div>
           </div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-dark-text mb-1">
-            {data.productCount}
+            {dashboardStats.totalProducts}
           </h2>
           <p className="text-gray-500 dark:text-gray-400">Số sản phẩm</p>
         </div>
@@ -237,9 +307,9 @@ const DashboardPage = () => {
             </div>
           </div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-dark-text mb-1">
-            {data.averageRating.toFixed(1)}
+            {dashboardStats.topSellingProducts.length}
           </h2>
-          <p className="text-gray-500 dark:text-gray-400">Đánh giá trung bình</p>
+          <p className="text-gray-500 dark:text-gray-400">Sản phẩm bán chạy</p>
         </div>
       </div>
 
@@ -253,7 +323,7 @@ const DashboardPage = () => {
           <div className="h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={data.monthlyRevenue || []}
+                data={dashboardStats.revenueByMonth || []}
                 margin={{ top: 5, right: 30, left: 20, bottom: 30 }}
               >
                 <CartesianGrid 
@@ -307,7 +377,7 @@ const DashboardPage = () => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={formatProductStatusData(data.productStatusCount)}
+                  data={formatOrderStatusData(dashboardStats.ordersByStatus)}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
@@ -317,7 +387,7 @@ const DashboardPage = () => {
                   labelLine={false}
                   label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 >
-                  {formatProductStatusData(data.productStatusCount).map((entry, index) => (
+                  {formatOrderStatusData(dashboardStats.ordersByStatus).map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 
                       fill={isDarkMode ? DARK_COLORS[index % DARK_COLORS.length] : COLORS[index % COLORS.length]} 
@@ -325,7 +395,7 @@ const DashboardPage = () => {
                   ))}
                 </Pie>
                 <RechartsTooltip 
-                  formatter={(value) => [`${value} sản phẩm`, '']}
+                  formatter={(value) => [`${value} đơn hàng`, '']}
                   contentStyle={{
                     backgroundColor: isDarkMode ? '#3C3C3C' : '#fff',
                     border: `1px solid ${isDarkMode ? '#555555' : '#f0f0f0'}`,
@@ -334,7 +404,7 @@ const DashboardPage = () => {
                   }}
                 />
                 <RechartsLegend 
-                  formatter={(value, entry) => (
+                  formatter={(value) => (
                     <span style={{ color: isDarkMode ? '#ECECEC' : '#333333' }}>{value}</span>
                   )}
                 />
@@ -378,63 +448,27 @@ const DashboardPage = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-dark-outline">
-              <tr>
-                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-dark-text">
-                  #ORD-2023-5678
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                  Nguyễn Văn A
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                  15/03/2025
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                  1.250.000 ₫
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap">
-                  <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
-                    Đã giao
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-dark-text">
-                  #ORD-2023-5677
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                  Trần Thị B
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                  14/03/2025
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                  850.000 ₫
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap">
-                  <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400">
-                    Đang giao
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-dark-text">
-                  #ORD-2023-5676
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                  Lê Văn C
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                  13/03/2025
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                  2.350.000 ₫
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap">
-                  <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400">
-                    Chờ xác nhận
-                  </span>
-                </td>
-              </tr>
+              {dashboardStats.recentOrders.map((order) => (
+                <tr key={order.invoice_id}>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-dark-text">
+                    {order.invoice_id}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                    {order.user.user_name}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                    {new Date(order.create_at).toLocaleDateString('vi-VN')}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                    {formatCurrency(order.total_amount)}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400">
+                      {order.order_status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -454,18 +488,18 @@ const DashboardPage = () => {
           </div>
           
           <div className="space-y-4">
-            {[1, 2, 3].map((item) => (
-              <div key={item} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-selected transition-colors">
+            {dashboardStats.topSellingProducts.map((product) => (
+              <div key={product.product_id} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-selected transition-colors">
                 <div className="w-12 h-12 bg-gray-100 dark:bg-dark-selected rounded-md flex items-center justify-center">
-                  <Package className="h-6 w-6 text-gray-400 dark:text-gray-500" />
+                  <img src={product.product.product_images[0].image_url} alt={product.product.product_name} className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-sm font-medium text-gray-800 dark:text-dark-text">Sản phẩm {item}</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Đã bán: {item * 24}</p>
+                  <h3 className="text-sm font-medium text-gray-800 dark:text-dark-text">{product.product.product_name}</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Đã bán: {product.total_quantity}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-800 dark:text-dark-text">{item * 450000} ₫</p>
-                  <p className="text-xs text-green-500">+{item * 5}%</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-dark-text">{formatCurrency(product.total_revenue)}</p>
+                  <p className="text-xs text-green-500">+{product.total_quantity * 5}%</p>
                 </div>
               </div>
             ))}

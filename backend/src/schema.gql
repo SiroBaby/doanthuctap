@@ -262,6 +262,52 @@ type ProductStatus {
   count: Int!
 }
 
+type Invoice {
+  invoice_id: String!
+  payment_method: String
+  payment_status: String
+  order_status: String!
+  total_amount: Float!
+  shipping_fee: Float!
+  id_user: String!
+  cart_id: String!
+  user: User
+  create_at: DateTime
+  update_at: DateTime
+}
+
+type ProductVariationOrder {
+  product_variation_name: String!
+  base_price: Float!
+  percent_discount: Float!
+  status: String!
+  product_name: String!
+  shop_id: String!
+  shop_name: String!
+  image_url: String
+  quantity: Float!
+}
+
+type InvoiceDetail {
+  invoice_id: String!
+  payment_method: String
+  payment_status: String
+  order_status: String!
+  total_amount: Float!
+  shipping_fee: Float!
+  user_name: String!
+  address: String
+  phone: String
+  create_at: DateTime
+  products: [ProductVariationOrder!]
+}
+
+type InvoicePagination {
+  data: [Invoice!]!
+  totalCount: Float!
+  totalPage: Float!
+}
+
 type Query {
   users(pagination: PaginationInput!): UserPagination!
   user(id: String!): User!
@@ -295,12 +341,28 @@ type Query {
   dashboardStats: [DashboardStat!]!
   dashboardStat(id: Int!): DashboardStat!
   getSellerDashboardStats(shopId: String!): SellerDashboardStats!
+  getInvoicesByShop(getInvoicesByShopInput: GetInvoicesByShopInput!): InvoicePagination!
+  getInvoiceDetail(invoice_id: String!): InvoiceDetail!
+  getOutOfStockProducts(getOutOfStockProductsInput: GetOutOfStockProductsInput!): InvoicePagination!
 }
 
 input PaginationInput {
   page: Int = 1
   limit: Int = 10
   search: String
+}
+
+input GetInvoicesByShopInput {
+  shop_id: String!
+  order_status: String
+  page: Int! = 1
+  limit: Int! = 10
+}
+
+input GetOutOfStockProductsInput {
+  shop_id: String!
+  page: Int! = 1
+  limit: Int! = 10
 }
 
 type Mutation {
@@ -342,6 +404,7 @@ type Mutation {
   createDashboardStat(createDashboardStatInput: CreateDashboardStatInput!): DashboardStat!
   updateDashboardStat(updateDashboardStatInput: UpdateDashboardStatInput!): DashboardStat!
   removeDashboardStat(id: Int!): DashboardStat!
+  updateInvoiceStatus(updateInvoiceStatusInput: UpdateInvoiceStatusInput!): Invoice!
 }
 
 input UpdateUserInput {
@@ -534,4 +597,9 @@ input UpdateDashboardStatInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!
+}
+
+input UpdateInvoiceStatusInput {
+  invoice_id: String!
+  order_status: String!
 }

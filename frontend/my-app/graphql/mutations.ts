@@ -290,3 +290,14 @@ export const SET_DEFAULT_SHOP_ADDRESS = gql`
     }
   }
 `;
+
+// Invoice mutations
+export const UPDATE_INVOICE_STATUS = gql`
+  mutation UpdateInvoiceStatus($updateInvoiceStatusInput: UpdateInvoiceStatusInput!) {
+    updateInvoiceStatus(updateInvoiceStatusInput: $updateInvoiceStatusInput) {
+      invoice_id
+      order_status
+      update_at
+    }
+  }
+`;

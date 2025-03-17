@@ -20,6 +20,7 @@ import { ShopModule } from './shop/shop.module';
 import { ShopVoucherModule } from './shop-voucher/shop-voucher.module';
 import { VoucherModule } from './voucher/voucher.module';
 import { DashboardStatsModule } from './dashboard-stats/dashboard-stats.module';
+import { InvoiceModule } from './invoice/invoice.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { DashboardStatsModule } from './dashboard-stats/dashboard-stats.module';
     ShopVoucherModule,
     VoucherModule,
     DashboardStatsModule,
+    InvoiceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
