@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import FilterSidebar from "@/app/components/layout/FilterSidebar";
 import ProductCard from "@/app/components/layout/ProductCard";
 
-function Page() {
-  // Tạo dữ liệu mẫu cho 16 sản phẩm
+const ProductPage = () => {
+  // Tạo dữ liệu mẫu cho 40 sản phẩm
   const sampleProducts = Array(40).fill(null);
 
   // State để quản lý nút sắp xếp đang được chọn
@@ -102,6 +102,6 @@ function Page() {
       </div>
     </div>
   );
-}
+};
 
-export default Page;
+export default ProductPage;

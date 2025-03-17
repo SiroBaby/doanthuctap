@@ -4,7 +4,7 @@ import Banner from "../components/layout/Banner";
 import ProductCategory from "../components/layout/ProductCategory";
 import LiveStream from "../components/layout/LiveStream";
 import Vouchers from "../components/layout/Vouchers";
-import Video from "../components/layout/Video";
+//import Video from "../components/layout/Video";
 import Footer from "../components/layout/Footer";
 import Image from "next/image";
 import "../globals.css";
@@ -14,7 +14,7 @@ const HomePage: React.FC = () => {
   // Tạo mảng 16 sản phẩm mẫu (4 hàng x 4 sản phẩm)
   const sampleProducts = Array(16).fill(null); //hàm array có 16 vị trí chưa có giá trị Array(16) fill(null) điền null vào 16 vị trí đó
   const sampleLiveStream = Array(12).fill(null);
-  const sampleVideo = Array(12).fill(null); // dùng chung với live stream cũng được
+  //const sampleVideo = Array(12).fill(null); // dùng chung với live stream cũng được
 
   return (
     <div className="w-full">
@@ -104,7 +104,7 @@ const HomePage: React.FC = () => {
 
           <div className="border-t border-black my-4"></div>
 
-          {/* VIDEO */}
+          {/* VIDEO 
           <div className="flex items-center mb-4">
             <div className="bg-green-300 px-2 py-1 rounded flex items-center">
               <Image
@@ -119,15 +119,14 @@ const HomePage: React.FC = () => {
               </span>
             </div>
           </div>
-          {/* Grid video: 4 hàng, mỗi hàng 4 video*/}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
             {sampleVideo.map((_, index) => (
               <Video key={index} />
             ))}
           </div>
+          */}
 
-          {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn á*/}
-          <div className="flex justify-center mb-2">
+          {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn á
             <button className="rounded-full" aria-label="button">
               <Image
                 src="/icon/button-bar.png"
@@ -139,6 +138,8 @@ const HomePage: React.FC = () => {
           </div>
 
           <div className="border-t border-black my-4"></div>
+          */}
+          <div className="flex justify-center mb-2"></div>
 
           <div className="flex items-center mb-4">
             <div className="bg-green-300 px-3 py-1 rounded flex items-center">

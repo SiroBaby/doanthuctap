@@ -1,3 +1,5 @@
+//video để tạm thời, không dùng đến
+
 "use client";
 
 import React, { useState } from "react";

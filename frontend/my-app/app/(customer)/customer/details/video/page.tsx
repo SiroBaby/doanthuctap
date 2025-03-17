@@ -28,19 +28,12 @@ export default function VideoDetailsPage() {
   // Hàm giả lập để lấy dữ liệu video - thay thế bằng API thực tế
   const fetchVideoDetails = async (id: string) => {
     try {
-      // Phản hồi API giả lập
-      // Trong ứng dụng thực tế, đây sẽ là cuộc gọi API như:
-      // const response = await fetch(`/api/videos/${id}`);
-      // const data = await response.json();
-
-      // mẫu video mô phỏng
-      //cách chạy http://localhost:3000/customer/details/video?id=1 hoặc id=2 id=3
       const mockVideos: Video[] = [
         {
           id: "1",
           title: "Video Demo",
           description: "Video mẫu để kiểm tra tính năng của ứng dụng",
-          url: "/video/videodemo.mp4", // Sử dụng video mẫu từ public/video/videodemo.mp4
+          url: "/video/videodemo.mp4",
           thumbnailUrl: "/logo/logodemo.png",
           likes: 1024,
         },

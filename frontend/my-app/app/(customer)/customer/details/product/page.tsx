@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
 import ProductOrderInfo from "@/app/components/layout/ProductOrderInfo";
@@ -7,7 +9,7 @@ import ProductDescription from "@/app/components/layout/ProductDescription";
 import ProductReview from "@/app/components/layout/ProductReview";
 import ProductCard from "@/app/components/layout/ProductCard";
 
-const Page = () => {
+export default function Page() {
   const sampleProducts = Array(12).fill(null);
   return (
     <div className="container mx-auto px-4 py-8">
@@ -42,8 +44,6 @@ const Page = () => {
         </div>
 
         {/* Product Order Info */}
-        {/* phần này để hiện dữ liệu mẫu thui*/}
-        {/* Khi call API đổ dữ liệu trực tiếp ở trang này chứ không làm ở ProductOrderInfo */}
         <div className="flex-1">
           <ProductOrderInfo
             productName="Áo thun nam nữ PLAY GAME - Áo thun unisex 100% cotton 2 chiều"
@@ -54,7 +54,7 @@ const Page = () => {
           />
         </div>
       </div>
-      {/* Phần thông tin người bán */}
+      {/* thông tin chủ shop*/}
       <div className="mt-4 pb-4">
         <ProductsSeller
           sellerName="littlebrother"
@@ -63,10 +63,10 @@ const Page = () => {
         />
       </div>
 
-      <div className=" bg-white p-3">
+      <div className="bg-white p-3">
         <ProductDetail />
       </div>
-      <div className=" bg-white p-3">
+      <div className="bg-white p-3">
         <ProductDescription />
       </div>
       <div className="bg-white mt-4">
@@ -88,7 +88,7 @@ const Page = () => {
         </div>
       </div>
 
-      {/* Grid sản phẩm: 3 hàng, mỗi hàng 4 sản phẩm */}
+      {/* Grid sản phẩm */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
         {sampleProducts.map((_, index) => (
           <ProductCard key={index} />
@@ -96,6 +96,4 @@ const Page = () => {
       </div>
     </div>
   );
-};
-
-export default Page;
+}
