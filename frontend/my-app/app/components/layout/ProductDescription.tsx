@@ -3,7 +3,18 @@
 import React, { useState } from "react";
 import Image from "next/image";
 
-const ProductDescription: React.FC = () => {
+interface ProductDescriptionProps {
+  productDescription?: string;
+}
+
+interface ProductImageProps {
+  productImage?: string[];
+}
+
+const ProductDescription: React.FC<ProductDescriptionProps & ProductImageProps> = ({ 
+  productDescription,
+  productImage
+}) => {
   const [activeTab, setActiveTab] = useState("description");
 
   return (
@@ -25,7 +36,7 @@ const ProductDescription: React.FC = () => {
         >
           MÔ TẢ SẢN PHẨM
         </button>
-        <button
+        {/* <button
           className={`px-6 py-3 text-sm font-medium ${
             activeTab === "size"
               ? "border-b-2 border-blue-500 text-blue-600"
@@ -54,7 +65,7 @@ const ProductDescription: React.FC = () => {
           onClick={() => setActiveTab("warranty")}
         >
           CHÍNH SÁCH BẢO HÀNH
-        </button>
+        </button> */}
         <button
           className={`px-6 py-3 text-sm font-medium ${
             activeTab === "image"
@@ -72,20 +83,26 @@ const ProductDescription: React.FC = () => {
         {/* Description Tab */}
         {activeTab === "description" && (
           <div>
-            <h2 className="text-lg font-bold mb-3">
-              ÁO THUN LITTLEBROTHER 100% COTTON
-            </h2>
-            <h3 className="text-md font-semibold mb-2">CHI TIẾT</h3>
-            <ul className="space-y-2">
-              <li>-Chất liệu : 100% sợi cotton dệt</li>
-              <li>-Định lượng : 230gsm</li>
-              <li>
-                -Chất áo mềm mịn, thấm hút tốt khi tiếp xúc trên da, khi gặp
-                nước áo không bị co cứng.
-              </li>
-              <li>- Form áo thoải mái không bị gò bó khi vận động</li>
-              <li>-Hình in chuyển nhiệt sắc nét, độ bền màu cao</li>
-            </ul>
+            {productDescription ? (
+              <div dangerouslySetInnerHTML={{ __html: productDescription }} />
+            ) : (
+              <>
+                <h2 className="text-lg font-bold mb-3">
+                  ÁO THUN LITTLEBROTHER 100% COTTON
+                </h2>
+                <h3 className="text-md font-semibold mb-2">CHI TIẾT</h3>
+                <ul className="space-y-2">
+                  <li>-Chất liệu : 100% sợi cotton dệt</li>
+                  <li>-Định lượng : 230gsm</li>
+                  <li>
+                    -Chất áo mềm mịn, thấm hút tốt khi tiếp xúc trên da, khi gặp
+                    nước áo không bị co cứng.
+                  </li>
+                  <li>- Form áo thoải mái không bị gò bó khi vận động</li>
+                  <li>-Hình in chuyển nhiệt sắc nét, độ bền màu cao</li>
+                </ul>
+              </>
+            )}
           </div>
         )}
 
@@ -147,21 +164,22 @@ const ProductDescription: React.FC = () => {
 
         {/* hình ảnh Tab */}
         {activeTab === "image" && (
-          <div>
-            <Image
-              src="/icon/ao-d.png"
-              alt="shopping"
-              width={440}
-              height={440}
-              className="object-contain"
-            />
-            <Image
-              src="/icon/ao-d2.png"
-              alt="shopping"
-              width={440}
-              height={440}
-              className="object-contain"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {productImage && productImage.length > 0 ? (
+              productImage.map((imageUrl, index) => (
+                <div key={index} className="relative w-full h-64">
+                  <Image
+                    src={imageUrl}
+                    alt={`Product image ${index + 1}`}
+                    fill
+                    style={{ objectFit: "contain" }}
+                    className="rounded-md bg-gray-100"
+                  />
+                </div>
+              ))
+            ) : (
+              <p>Không có hình ảnh nào để hiển thị</p>
+            )}
           </div>
         )}
       </div>

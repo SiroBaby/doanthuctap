@@ -41,6 +41,11 @@ export class ProductResolver {
     return this.productService.findOne(id);
   }
 
+  @Query(() => Product, { name: 'productBySlug' })
+  findBySlug(@Args('slug', { type: () => String }) slug: string) {
+    return this.productService.findBySlug(slug);
+  }
+
   @Mutation(() => Product)
   updateProduct(
     @Args('shopid', { type: () => String }) shopid: string,

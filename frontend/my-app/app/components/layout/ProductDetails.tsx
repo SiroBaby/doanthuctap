@@ -6,11 +6,11 @@ interface ProductDetailProps {
   productData?: {
     category: string;
     warehouse: string;
-    style: string;
-    length: string;
-    origin: string;
+    style?: string;
+    length?: string;
+    origin?: string;
     brand: string;
-    material: string;
+    material?: string;
   };
 }
 
@@ -40,13 +40,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               <td className="px-4 py-3 font-medium text-gray-600 w-36">
                 Danh mục
               </td>
-              <td className="px-4 py-3 font-medium">{productData.category}</td>
+              <td className="px-4 py-3 font-medium">{productData.category}</td> 
             </tr>
             <tr className="border-b border-gray-200">
               <td className="px-4 py-3 font-medium text-gray-600">Kho</td>
-              <td className="px-4 py-3 font-medium">{productData.warehouse}</td>
+              <td className="px-4 py-3 font-medium">{productData.warehouse}</td>{/* Kho được tính bằng tổng của số lượng của phân loại sản phẩm */}
             </tr>
-            <tr className="border-b border-gray-200">
+            {/* <tr className="border-b border-gray-200">
               <td className="px-4 py-3 font-medium text-gray-600">
                 Phong cách
               </td>
@@ -59,17 +59,17 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
             <tr className="border-b border-gray-200">
               <td className="px-4 py-3 font-medium text-gray-600">Xuất xứ</td>
               <td className="px-4 py-3 font-medium">{productData.origin}</td>
-            </tr>
+            </tr> */}
             <tr className="border-b border-gray-200">
               <td className="px-4 py-3 font-medium text-gray-600">
                 Thương hiệu
               </td>
               <td className="px-4 py-3 font-medium">{productData.brand}</td>
             </tr>
-            <tr>
+            {/* <tr>
               <td className="px-4 py-3 font-medium text-gray-600">Chất liệu</td>
               <td className="px-4 py-3 font-medium">{productData.material}</td>
-            </tr>
+            </tr> */}
           </tbody>
         </table>
       </div>

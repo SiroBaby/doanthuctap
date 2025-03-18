@@ -231,6 +231,62 @@ export const GET_PRODUCT_BY_ID = gql`
   }
 `;
 
+//query get product by slug
+export const GET_PRODUCT_BY_SLUG = gql`
+  query ProductBySlug ($slug: String!) {
+      productBySlug(slug: $slug) {
+          product_id
+          product_name
+          brand
+          status
+          product_detail_id
+          category {
+              category_name
+          }
+          shop {
+              shop_id
+              id_user
+              shop_name
+              link
+              status
+              location_id
+              create_at
+              update_at
+              delete_at
+              user {
+                  user_name
+                  avatar
+              }
+          }
+          product_detail {
+              product_detail_id
+              description
+              specifications
+              create_at
+              update_at
+          }
+          product_variations {
+              product_variation_id
+              product_variation_name
+              base_price
+              percent_discount
+              stock_quantity
+              status
+              product_id
+              create_at
+              update_at
+          }
+          product_images {
+              image_id
+              product_id
+              image_url
+              is_thumbnail
+              create_at
+          }
+      }
+  }
+`;
+
 // query shop voucher
 // query get shop vouchers
 export const GET_SHOP_VOUCHERS = gql`

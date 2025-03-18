@@ -324,6 +324,7 @@ type Query {
   products(pagination: PaginationInput!): ProductPagination!
   getProductsByShopId(id: String!, pagination: PaginationInput): ProductPagination!
   product(id: Int!): Product!
+  productBySlug(slug: String!): Product!
   productImages: [ProductImage!]!
   productImage(id: Int!): ProductImage!
   productImagesByProductId(productId: Int!): [ProductImage!]!

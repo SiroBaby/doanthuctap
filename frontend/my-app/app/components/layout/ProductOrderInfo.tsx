@@ -1,66 +1,72 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
 
 interface ProductOrderInfoProps {
   productName: string;
   brandName: string;
-  price: number;
-  colors: string[];
-  sizes: string[];
+  variations: Array<{
+    name: string;
+    basePrice: number;
+    percentDiscount: number;
+    stock_quantity: number;
+  }>;
+  onVariationChange?: (variation: {
+    name: string;
+    basePrice: number;
+    percentDiscount: number;
+    stock_quantity: number;
+  }) => void; // Callback để thông báo thay đổi
 }
 
 const ProductOrderInfo: React.FC<ProductOrderInfoProps> = ({
   productName,
   brandName,
-  price,
-  colors,
-  sizes,
+  variations,
+  onVariationChange,
 }) => {
   const [quantity, setQuantity] = useState(1);
-  const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
-  const [isSizeDropdownOpen, setIsSizeDropdownOpen] = useState(false);
-  const [selectedColor, setSelectedColor] = useState(colors[0]);
-  const [selectedSize, setSelectedSize] = useState(sizes[2]);
+  const [selectedVariation, setSelectedVariation] = useState(variations[0]);
 
   const increaseQuantity = () => {
-    setQuantity((prevQuantity) => prevQuantity + 1);
+    setQuantity((prev) => prev + 1);
   };
 
   const decreaseQuantity = () => {
     if (quantity > 1) {
-      setQuantity((prevQuantity) => prevQuantity - 1);
+      setQuantity((prev) => prev - 1);
     }
   };
 
-  const toggleColorDropdown = () => {
-    setIsColorDropdownOpen(!isColorDropdownOpen);
-  };
-
-  const toggleSizeDropdown = () => {
-    setIsSizeDropdownOpen(!isSizeDropdownOpen);
+  const handleVariationChange = (variation: {
+    name: string;
+    basePrice: number;
+    percentDiscount: number;
+    stock_quantity: number;
+  }) => {
+    setSelectedVariation(variation);
+    if (onVariationChange) {
+      onVariationChange(variation); // Gọi callback để thông báo lên parent
+    }
   };
 
   const formatPrice = (price: number): string => {
     return price.toLocaleString("vi-VN");
   };
 
-  // Thêm các hàm xử lý sự kiện trực tiếp trong component
+  const discountedPrice =
+    selectedVariation.basePrice - ( selectedVariation.basePrice * selectedVariation.percentDiscount);
+
   const handleAddToCart = () => {
-    console.log("Product added to cart");
     console.log(
-      `Added ${quantity} items of ${productName}, color: ${selectedColor}, size: ${selectedSize}`
+      `Added ${quantity} items of ${productName}, variation: ${selectedVariation.name}, price: ${discountedPrice}`
     );
-    // Thêm logic xử lý giỏ hàng ở đây
   };
 
   const handleBuyNow = () => {
-    console.log("Proceeding to checkout");
     console.log(
-      `Buying ${quantity} items of ${productName}, color: ${selectedColor}, size: ${selectedSize}`
+      `Buying ${quantity} items of ${productName}, variation: ${selectedVariation.name}, price: ${discountedPrice}`
     );
-    // Thêm logic xử lý mua ngay ở đây
   };
 
   return (
@@ -69,86 +75,32 @@ const ProductOrderInfo: React.FC<ProductOrderInfoProps> = ({
       <div className="text-sm text-gray-600">Từ {brandName}</div>
 
       <div className="mt-4 text-xl font-semibold text-blue-400">
-        {formatPrice(price)}
+        {formatPrice(discountedPrice)} ₫
+      </div>
+      <div className="text-sm text-gray-500">
+        Giá gốc: <span className="line-through italic">{formatPrice(selectedVariation.basePrice)} ₫</span>
+        {selectedVariation.percentDiscount > 0 && (
+          <> - Giảm: <span className="text-white bg-red-500 rounded-xl px-2">{selectedVariation.percentDiscount * 100}%</span></>
+        )}
+      </div>
+      <div className="text-sm text-gray-500">
+        Kho: <span className="">{selectedVariation.stock_quantity} sản phẩm</span>
       </div>
 
       <div className="mt-6">
-        <div className="flex items-center justify-between mb-2">
-          <div className="font-medium">Màu sắc</div>
-          <button onClick={toggleColorDropdown} className="flex items-center">
-            {isColorDropdownOpen ? (
-              <Image
-                src="/icon/left-arrow.png"
-                alt="arrow"
-                width={160}
-                height={160}
-                className="object-contain"
-              />
-            ) : (
-              <Image
-                src="/icon/right-arrow.png"
-                alt="arrow"
-                width={160}
-                height={160}
-                className="object-contain"
-              />
-            )}
-          </button>
-        </div>
-
+        <div className="font-medium mb-2">Phân loại</div>
         <div className="grid grid-cols-3 gap-2">
-          {colors.map((color) => (
+          {variations.map((variation) => (
             <button
-              key={color}
+              key={variation.name}
               className={`py-2 px-4 text-center border rounded ${
-                selectedColor === color
+                selectedVariation.name === variation.name
                   ? "border-blue-500 bg-blue-50"
                   : "border-gray-300"
               }`}
-              onClick={() => setSelectedColor(color)}
+              onClick={() => handleVariationChange(variation)}
             >
-              {color}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-6">
-        <div className="flex items-center justify-between mb-2">
-          <div className="font-medium">Kích cỡ</div>
-          <button onClick={toggleSizeDropdown} className="flex items-center">
-            {isSizeDropdownOpen ? (
-              <Image
-                src="/logo/left-arrow.png"
-                alt="arrow"
-                width={160}
-                height={160}
-                className="object-contain"
-              />
-            ) : (
-              <Image
-                src="/logo/right-arrow.png"
-                alt="arrow"
-                width={160}
-                height={160}
-                className="object-contain"
-              />
-            )}
-          </button>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2">
-          {sizes.map((size) => (
-            <button
-              key={size}
-              className={`py-2 px-4 text-center border rounded ${
-                selectedSize === size
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-300"
-              }`}
-              onClick={() => setSelectedSize(size)}
-            >
-              {size}
+              {variation.name}
             </button>
           ))}
         </div>

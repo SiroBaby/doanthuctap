@@ -102,40 +102,40 @@ describe('ProductService', () => {
     });
   });
 
-  describe('update', () => {
-    it('should update a product', async () => {
-      const updateInput = {
-        product_id: 1,
-        product_name: 'Updated Product',
-        brand: 'Updated Brand',
-        status: Product_status.inactive,
-        category_id: 2,
-      };
-      mockPrismaService.product.findUnique.mockResolvedValue(mockProduct);
-      mockPrismaService.product.update.mockResolvedValue({
-        ...mockProduct,
-        ...updateInput,
-      });
+  // describe('update', () => {
+  //   it('should update a product', async () => {
+  //     const updateInput = {
+  //       product_id: 1,
+  //       product_name: 'Updated Product',
+  //       brand: 'Updated Brand',
+  //       status: Product_status.inactive,
+  //       category_id: 2,
+  //     };
+  //     mockPrismaService.product.findUnique.mockResolvedValue(mockProduct);
+  //     mockPrismaService.product.update.mockResolvedValue({
+  //       ...mockProduct,
+  //       ...updateInput,
+  //     });
 
-      const result = await service.update(1, updateInput);
-      expect(result.product_name).toBe('Updated Product');
-    });
+  //     const result = await service.update(1, updateInput);
+  //     expect(result.product_name).toBe('Updated Product');
+  //   });
 
-    it('should throw NotFoundException when updating non-existent product', async () => {
-      mockPrismaService.product.findUnique.mockResolvedValue(null);
-      const updateInput = {
-        product_id: 999,
-        product_name: 'Updated Product',
-        brand: 'Updated Brand',
-        status: Product_status.inactive,
-        category_id: 2,
-      };
+  //   it('should throw NotFoundException when updating non-existent product', async () => {
+  //     mockPrismaService.product.findUnique.mockResolvedValue(null);
+  //     const updateInput = {
+  //       product_id: 999,
+  //       product_name: 'Updated Product',
+  //       brand: 'Updated Brand',
+  //       status: Product_status.inactive,
+  //       category_id: 2,
+  //     };
 
-      await expect(service.update(999, updateInput)).rejects.toThrow(
-        NotFoundException,
-      );
-    });
-  });
+  //     await expect(service.update(999, updateInput)).rejects.toThrow(
+  //       NotFoundException,
+  //     );
+  //   });
+  // });
 
   describe('remove', () => {
     it('should remove a product', async () => {

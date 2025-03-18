@@ -158,6 +158,55 @@ export class ProductService {
     }
   }
 
+  async findBySlug(slug: string) {
+    try {
+      // Convert slug format back to potential product name variations
+      const searchName = slug.replace(/-/g, ' ');
+      
+      // Find product with matching product_name (we use simple contains without case sensitivity)
+      const product = await this.prisma.product.findFirst({
+        where: {
+          product_name: {
+            contains: searchName,
+          },
+          status: 'active',
+        },
+        include: {
+          shop: {
+            include: {
+              user: {
+                select: {
+                  user_name: true,
+                  avatar: true,
+                },
+              },
+            },
+          },
+          product_detail: true,
+          product_images: true,
+          product_variations: {
+            where: {
+              status: 'active',
+            },
+          },
+          category: {
+            select: {
+              category_name: true,
+            },
+          },
+        },
+      });
+      
+      if (!product) {
+        throw new NotFoundException(`Product with slug ${slug} not found`);
+      }
+      
+      return product;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async update(
     id: number,
     updateProductInput: UpdateProductInput,
