@@ -40,8 +40,8 @@ export class Product {
   @Field(() => ProductDetail)
   product_detail: ProductDetail;
 
-  @Field(() => [ProductImage])
-  product_images: ProductImage[];
+  @Field(() => [ProductImage], { nullable: true })
+  product_images?: ProductImage[];
 
   @Field(() => [ProductVariation])
   product_variations: ProductVariation[];

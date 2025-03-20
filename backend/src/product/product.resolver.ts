@@ -1,4 +1,5 @@
 import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { Product } from './entities/product.entity';
 import { CreateProductInput } from './dto/create-product.input';
@@ -9,6 +10,11 @@ import ShopPagination from '../shop/entities/shoppagination.entity';
 import { CreateProduct } from './entities/createproduct.entity';
 import { PrismaService } from 'src/prisma.service';
 import { Shop } from 'src/shop/entities/shop.entity';
+import { ProductImage } from 'src/product-image/entities/product-image.entity';
+import { Role } from '@prisma/client';
+import { Roles } from 'src/auth/clerk-auth.guard';
+import { GqlClerkAuthGuard } from 'src/auth/gql-clerk-auth.guard';
+import { ClerkAuthGuard } from 'src/auth/clerk-auth.guard';
 
 @Resolver(() => Product)
 export class ProductResolver {
@@ -28,6 +34,20 @@ export class ProductResolver {
     });
   }
 
+  @ResolveField(() => [ProductImage], { nullable: true })
+  async product_images(@Parent() product: Product) {
+    if (!product.product_id) {
+      return null;
+    }
+    
+    return this.prisma.product_Image.findMany({
+      where: { 
+        product_id: product.product_id,
+        is_thumbnail: true
+      }
+    });
+  }
+
   @Mutation(() => CreateProduct)
   createProduct(
     @Args('createProductInput') createProductInput: CreateProductInput,
@@ -43,6 +63,7 @@ export class ProductResolver {
     return this.productService.findAll(pagination);
   }
 
+  @UseGuards(GqlClerkAuthGuard)
   @Query(() => ProductPagination, { name: 'getProductsByShopId' })
   getProductsByShopId(
     @Args('id', { type: () => String }) id: string,

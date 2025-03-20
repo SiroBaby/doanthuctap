@@ -171,7 +171,7 @@ type Product {
   shop_id: String!
   shop: Shop
   product_detail: ProductDetail!
-  product_images: [ProductImage!]!
+  product_images: [ProductImage!]
   product_variations: [ProductVariation!]!
 }
 

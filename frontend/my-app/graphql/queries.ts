@@ -622,3 +622,31 @@ query Getcart ($id: String!) {
     }
 }
 `;
+
+// query get cart products
+export const GET_CART_PRODUCTS = gql`
+query GetCartProducts($cart_id: String!) {
+    getCartProducts(cart_id: $cart_id) {
+        product_variation {
+            product_variation_name
+            base_price
+            percent_discount
+            product_variation_id
+        }
+        product {
+            product_name
+            shop {
+                shop_name
+                shop_id
+            }
+            product_images {
+                image_id
+                image_url
+            }
+        }
+        quantity
+        is_selected
+        cart_product_id
+    }
+}
+`;

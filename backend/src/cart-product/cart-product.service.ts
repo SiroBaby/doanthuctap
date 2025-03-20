@@ -58,7 +58,9 @@ export class CartProductService {
           include: {
             product: {
               include: {
-                shop: true
+                shop: true,
+                product_images: {
+                }
               }
             }
           }
