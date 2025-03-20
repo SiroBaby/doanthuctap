@@ -609,3 +609,16 @@ export const GET_DASHBOARD_STATS = gql`
     }
   }
 `;
+
+// query get cart
+export const GET_CART = gql`
+query Getcart ($id: String!) {
+    getcart(id: $id) {
+        cart_id
+        id_user
+        status
+        create_at
+        update_at
+    }
+}
+`;

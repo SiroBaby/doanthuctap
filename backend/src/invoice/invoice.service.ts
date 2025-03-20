@@ -185,9 +185,6 @@ export class InvoiceService {
       
       // Lấy thông tin sản phẩm trong đơn hàng
       const cartProducts = await this.prisma.cart_Product.findMany({
-        where: {
-          cart_id: invoice.cart_id
-        },
         include: {
           product_variation: {
             include: {

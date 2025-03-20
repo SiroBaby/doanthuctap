@@ -21,6 +21,8 @@ import { ShopVoucherModule } from './shop-voucher/shop-voucher.module';
 import { VoucherModule } from './voucher/voucher.module';
 import { DashboardStatsModule } from './dashboard-stats/dashboard-stats.module';
 import { InvoiceModule } from './invoice/invoice.module';
+import { CartModule } from './cart/cart.module';
+import { CartProductModule } from './cart-product/cart-product.module';
 
 @Module({
   imports: [
@@ -48,6 +50,8 @@ import { InvoiceModule } from './invoice/invoice.module';
     VoucherModule,
     DashboardStatsModule,
     InvoiceModule,
+    CartModule,
+    CartProductModule,
   ],
   controllers: [AppController],
   providers: [AppService],

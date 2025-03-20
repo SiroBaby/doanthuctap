@@ -84,6 +84,7 @@ model Shop {
   chats           Chat[]
   shop_vouchers   Shop_Voucher[]
   shop_addresses  Shop_address[]
+  invoices        Invoice[]
 }
 
 model Category {
@@ -161,7 +162,6 @@ model Cart {
   
   user       User        @relation(fields: [id_user], references: [id_user])
   cart_products Cart_Product[]
-  invoices   Invoice[]
   
   @@unique([id_user, status]) // Đảm bảo mỗi user chỉ có 1 giỏ hàng active
 }
@@ -234,15 +234,15 @@ model Invoice {
   total_amount           Decimal   @db.Decimal(10, 2)
   shipping_fee           Decimal   @default(0) @db.Decimal(10, 2)
   id_user                String    @db.VarChar(255)
-  cart_id                String    @db.VarChar(255)
+  shop_id            String    @db.VarChar(255)
   voucher_storage_id     Int?
   shipping_address_id    Int?
   create_at              DateTime? @default(now())
   update_at              DateTime? @updatedAt
   
   user                   User             @relation(fields: [id_user], references: [id_user])
-  cart                   Cart             @relation(fields: [cart_id], references: [cart_id])
   voucher_storage        Voucher_storage? @relation(fields: [voucher_storage_id], references: [voucher_storage_id])
+  shop                   Shop             @relation(fields: [shop_id], references: [shop_id])
   invoice_products       Invoice_Product[] // Thêm quan hệ với Invoice_Product
 }
 

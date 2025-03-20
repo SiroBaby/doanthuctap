@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 import CartItemsList from "@/app/components/cart/CartItemsList";
 import CartSummary from "@/app/components/cart/CartSummary";
 import EmptyCart from "@/app/components/cart/EmptyCart";
+import { useParams } from "next/navigation";
+import { GET_CART } from "@/graphql/queries";
+import { useQuery, useMutation } from "@apollo/client";
+
 
 // dữ liệu test
 const cartItemsMock = [
@@ -65,9 +69,14 @@ export interface CartItem {
 }
 
 const CartPage = () => {
+  const { id } = useParams();
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { data } = useQuery(GET_CART, {
+    variables: { id: id?.toString() },
+  });
 
   useEffect(() => {
     // Smô phỏng call API

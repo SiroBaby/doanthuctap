@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
 import { ProductService } from './product.service';
 import { Product } from './entities/product.entity';
 import { CreateProductInput } from './dto/create-product.input';
@@ -7,10 +7,26 @@ import { PaginationInput } from '../common/dto/pagination.input';
 import ProductPagination from './entities/productpagination.entity';
 import ShopPagination from '../shop/entities/shoppagination.entity';
 import { CreateProduct } from './entities/createproduct.entity';
+import { PrismaService } from 'src/prisma.service';
+import { Shop } from 'src/shop/entities/shop.entity';
 
 @Resolver(() => Product)
 export class ProductResolver {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+    private readonly prisma: PrismaService
+  ) {}
+
+  @ResolveField(() => Shop, { nullable: true })
+  async shop(@Parent() product: Product) {
+    if (!product.shop_id) {
+      return null;
+    }
+    
+    return this.prisma.shop.findUnique({
+      where: { shop_id: product.shop_id }
+    });
+  }
 
   @Mutation(() => CreateProduct)
   createProduct(

@@ -1,7 +1,12 @@
+'use client'
 import React from 'react';  
 import Image from "next/image";  
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
 
 const AnotherTopBar= () => {  
+  const router = useRouter();
+  const { userId } = useAuth();
   return (  
     <div className="bg-gradient-to-tr from-left-anothertopbar to-right-anothertopbar ">  
 
@@ -35,7 +40,8 @@ const AnotherTopBar= () => {
           </div>  
 
           <button className="p-2 rounded-full" aria-label="shopping">  
-            <Image src="/icon/shopping.png" width={30} height={30} alt="shopping" />  
+            <Image src="/icon/shopping.png" width={30} height={30} alt="shopping" 
+            onClick={() => router.push(`/customer/shoppingcart/${userId}`)}/>  
           </button>  
         </div>  
       </div>  

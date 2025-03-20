@@ -1,17 +1,23 @@
 "use client";
 
 import React, { useState } from "react";
+import { useMutation, useQuery } from "@apollo/client";
+import { ADD_PRODUCT_TO_CART } from "@/graphql/mutations";
+import { GET_CART } from "@/graphql/queries";
+import { useAuth } from "@clerk/nextjs";
 
 interface ProductOrderInfoProps {
   productName: string;
   brandName: string;
   variations: Array<{
+    product_variation_id: number;
     name: string;
     basePrice: number;
     percentDiscount: number;
     stock_quantity: number;
   }>;
   onVariationChange?: (variation: {
+    product_variation_id: number;
     name: string;
     basePrice: number;
     percentDiscount: number;
@@ -25,9 +31,36 @@ const ProductOrderInfo: React.FC<ProductOrderInfoProps> = ({
   variations,
   onVariationChange,
 }) => {
+  const { userId } = useAuth()
   const [quantity, setQuantity] = useState(1);
   const [selectedVariation, setSelectedVariation] = useState(variations[0]);
-
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  
+  const [addProductToCart, { loading: addProductToCartLoading }] = useMutation(ADD_PRODUCT_TO_CART, {
+    onCompleted: () => {
+      setSuccessMessage("Sản phẩm đã được thêm vào giỏ hàng");
+      setTimeout(() => setSuccessMessage(null), 3000);
+    },
+    onError: (error) => {
+      console.error("Error adding product to cart:", error);
+      if (error.message.includes("Product variation not found")) {
+        setErrorMessage("Phân loại sản phẩm không tồn tại");
+      } else if (error.message.includes("Cart not found")) {
+        setErrorMessage("Giỏ hàng không tồn tại");
+      } else if (error.message.includes("stock quantity is not enough")) {
+        setErrorMessage("Số lượng sản phẩm trong kho không đủ");
+      } else {
+        setErrorMessage("Đã xảy ra lỗi khi thêm sản phẩm vào giỏ hàng");
+      }
+      setTimeout(() => setErrorMessage(null), 5000);
+    }
+  });
+  
+  const { data: cartData, loading: cartLoading, error: cartError } = useQuery(GET_CART, {
+    variables: { id: userId },
+  });
+  
   const increaseQuantity = () => {
     setQuantity((prev) => prev + 1);
   };
@@ -39,6 +72,7 @@ const ProductOrderInfo: React.FC<ProductOrderInfoProps> = ({
   };
 
   const handleVariationChange = (variation: {
+    product_variation_id: number;
     name: string;
     basePrice: number;
     percentDiscount: number;
@@ -58,9 +92,47 @@ const ProductOrderInfo: React.FC<ProductOrderInfoProps> = ({
     selectedVariation.basePrice - ( selectedVariation.basePrice * selectedVariation.percentDiscount);
 
   const handleAddToCart = () => {
-    console.log(
-      `Added ${quantity} items of ${productName}, variation: ${selectedVariation.name}, price: ${discountedPrice}`
-    );
+    // Kiểm tra số lượng còn trong kho
+    if (quantity > selectedVariation.stock_quantity) {
+      setErrorMessage(`Chỉ còn ${selectedVariation.stock_quantity} sản phẩm trong kho`);
+      setTimeout(() => setErrorMessage(null), 5000);
+      return;
+    }
+    
+    // Kiểm tra giỏ hàng đã được tải chưa
+    if (cartLoading) {
+      setErrorMessage("Đang tải thông tin giỏ hàng, vui lòng thử lại");
+      setTimeout(() => setErrorMessage(null), 3000);
+      return;
+    }
+    
+    if (cartError) {
+      setErrorMessage("Không thể tải thông tin giỏ hàng");
+      setTimeout(() => setErrorMessage(null), 3000);
+      return;
+    }
+    
+    if (!cartData || !cartData.getcart) {
+      setErrorMessage("Giỏ hàng chưa được khởi tạo");
+      setTimeout(() => setErrorMessage(null), 3000);
+      return;
+    }
+    
+    // Thực hiện thêm vào giỏ hàng
+    try {
+      addProductToCart({ 
+        variables: { 
+          cart_id: cartData.getcart.cart_id,
+          product_variation_id: selectedVariation.product_variation_id,
+          quantity: quantity,
+          is_selected: false
+        }
+      });
+    } catch (error) {
+      console.error("Error in add to cart:", error);
+      setErrorMessage("Đã xảy ra lỗi khi thêm vào giỏ hàng");
+      setTimeout(() => setErrorMessage(null), 5000);
+    }
   };
 
   const handleBuyNow = () => {
@@ -73,6 +145,18 @@ const ProductOrderInfo: React.FC<ProductOrderInfoProps> = ({
     <div className="flex flex-col w-full max-w-md">
       <h1 className="text-lg font-medium">{productName}</h1>
       <div className="text-sm text-gray-600">Từ {brandName}</div>
+
+      {errorMessage && (
+        <div className="mt-2 p-2 bg-red-100 text-red-700 rounded-md text-sm">
+          {errorMessage}
+        </div>
+      )}
+      
+      {successMessage && (
+        <div className="mt-2 p-2 bg-green-100 text-green-700 rounded-md text-sm">
+          {successMessage}
+        </div>
+      )}
 
       <div className="mt-4 text-xl font-semibold text-blue-400">
         {formatPrice(discountedPrice)} ₫
@@ -130,9 +214,14 @@ const ProductOrderInfo: React.FC<ProductOrderInfoProps> = ({
       <div className="mt-6 flex gap-2">
         <button
           onClick={handleAddToCart}
-          className="flex-1 py-2 px-4 bg-blue-100 text-blue-600 rounded"
+          className="flex-1 py-2 px-4 bg-blue-100 text-blue-600 rounded flex items-center justify-center"
+          disabled={addProductToCartLoading}
         >
-          Thêm vào giỏ hàng
+          {addProductToCartLoading ? (
+            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            "Thêm vào giỏ hàng"
+          )}
         </button>
         <button
           onClick={handleBuyNow}

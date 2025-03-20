@@ -31,6 +31,9 @@ export class Product {
   @Field(() => Int)
   product_detail_id: number;
 
+  @Field(() => String)
+  shop_id: string;
+
   @Field(() => Shop, { nullable: true })
   shop?: Shop;
 
