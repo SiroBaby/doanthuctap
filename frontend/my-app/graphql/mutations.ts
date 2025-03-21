@@ -302,6 +302,22 @@ export const UPDATE_INVOICE_STATUS = gql`
   }
 `;
 
+export const CREATE_INVOICE = gql`
+  mutation CreateInvoice($createInvoiceInput: CreateInvoiceInput!) {
+    createInvoice(createInvoiceInput: $createInvoiceInput) {
+      invoice_id
+      payment_method
+      payment_status
+      order_status
+      total_amount
+      shipping_fee
+      id_user
+      create_at
+      update_at
+    }
+  }
+`;
+
 // mutation cart
 // mutation add product to cart
 export const ADD_PRODUCT_TO_CART = gql`

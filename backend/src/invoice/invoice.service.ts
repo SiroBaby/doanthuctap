@@ -4,10 +4,102 @@ import { UpdateInvoiceStatusInput } from './dto/update-invoice-status.input';
 import { GetInvoicesByShopInput } from './dto/get-invoices-by-shop.input';
 import { GetOutOfStockProductsInput } from './dto/get-out-of-stock-products.input';
 import { InvoicePagination, OrderStatus } from './entities/invoice.entity';
+import { CreateInvoiceInput } from './dto/create-invoice.input';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class InvoiceService {
   constructor(private prisma: PrismaService) {}
+
+  async createInvoice(createInvoiceInput: CreateInvoiceInput) {
+    try {
+      const { 
+        user_id, 
+        shop_id, 
+        payment_method, 
+        shipping_address_id, 
+        products,
+        total_amount,
+        shipping_fee,
+        voucher_storage_id
+      } = createInvoiceInput;
+      
+      // Generate a unique invoice ID
+      const invoice_id = uuidv4();
+      
+      // Use transaction to ensure all operations succeed or fail together
+      return await this.prisma.$transaction(async (prisma) => {
+        // Create the invoice record
+        const invoice = await prisma.invoice.create({
+          data: {
+            invoice_id,
+            id_user: user_id,
+            shop_id,
+            payment_method,
+            // For COD, set payment status as pending
+            payment_status: payment_method === 'COD' ? 'pending' : 'awaiting_payment',
+            // Initial order status is "pending"
+            order_status: 'pending',
+            total_amount,
+            shipping_fee,
+            shipping_address_id,
+            voucher_storage_id,
+            create_at: new Date(),
+            update_at: new Date()
+          },
+          include: {
+            user: true,
+          }
+        });
+        
+        // Create invoice product records for each product
+        const invoiceProducts = await Promise.all(
+          products.map(product => 
+            prisma.invoice_Product.create({
+              data: {
+                invoice_id,
+                product_variation_id: product.product_variation_id,
+                product_name: product.product_name,
+                variation_name: product.variation_name,
+                price: product.price,
+                quantity: product.quantity,
+                discount_percent: product.discount_percent,
+                create_at: new Date()
+              }
+            })
+          )
+        );
+        
+        // Update product stock quantity (reduce stock)
+        await Promise.all(
+          products.map(product => 
+            prisma.product_variation.update({
+              where: { 
+                product_variation_id: product.product_variation_id 
+              },
+              data: {
+                stock_quantity: {
+                  decrement: product.quantity
+                }
+              }
+            })
+          )
+        );
+        
+        return {
+          ...invoice,
+          invoice_products: invoiceProducts
+        };
+      }, {
+        // Transaction options
+        maxWait: 5000, // Maximum time to wait for a transaction to start
+        timeout: 10000, // Maximum time allowed for the transaction to run
+        isolationLevel: 'Serializable' // Highest isolation level for maximum data integrity
+      });
+    } catch (error) {
+      throw new Error(`Failed to create invoice: ${error.message}`);
+    }
+  }
 
   async updateInvoiceStatus(updateInvoiceStatusInput: UpdateInvoiceStatusInput) {
     try {
