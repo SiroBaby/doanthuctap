@@ -442,6 +442,7 @@ type Mutation {
   createDashboardStat(createDashboardStatInput: CreateDashboardStatInput!): DashboardStat!
   updateDashboardStat(updateDashboardStatInput: UpdateDashboardStatInput!): DashboardStat!
   removeDashboardStat(id: Int!): DashboardStat!
+  createInvoice(createInvoiceInput: CreateInvoiceInput!): Invoice!
   updateInvoiceStatus(updateInvoiceStatusInput: UpdateInvoiceStatusInput!): Invoice!
   createCart(createCartInput: CreateCartInput!): Cart!
   updateCart(updateCartInput: UpdateCartInput!): Cart!
@@ -643,6 +644,26 @@ input UpdateDashboardStatInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!
+}
+
+input CreateInvoiceInput {
+  user_id: String!
+  shop_id: String!
+  payment_method: String!
+  shipping_address_id: Int
+  products: [InvoiceProductInput!]!
+  total_amount: Float!
+  shipping_fee: Float!
+  voucher_storage_id: Int
+}
+
+input InvoiceProductInput {
+  product_variation_id: Int!
+  product_name: String!
+  variation_name: String!
+  price: Float!
+  quantity: Int!
+  discount_percent: Float!
 }
 
 input UpdateInvoiceStatusInput {

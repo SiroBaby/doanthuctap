@@ -4,10 +4,16 @@ import { Invoice, InvoiceDetail, InvoicePagination } from './entities/invoice.en
 import { UpdateInvoiceStatusInput } from './dto/update-invoice-status.input';
 import { GetInvoicesByShopInput } from './dto/get-invoices-by-shop.input';
 import { GetOutOfStockProductsInput } from './dto/get-out-of-stock-products.input';
+import { CreateInvoiceInput } from './dto/create-invoice.input';
 
 @Resolver(() => Invoice)
 export class InvoiceResolver {
   constructor(private readonly invoiceService: InvoiceService) {}
+
+  @Mutation(() => Invoice)
+  createInvoice(@Args('createInvoiceInput') createInvoiceInput: CreateInvoiceInput) {
+    return this.invoiceService.createInvoice(createInvoiceInput);
+  }
 
   @Mutation(() => Invoice)
   updateInvoiceStatus(@Args('updateInvoiceStatusInput') updateInvoiceStatusInput: UpdateInvoiceStatusInput) {
