@@ -5,57 +5,45 @@ import { useRouter } from "next/navigation";
 import PaymentForm, { OrderData } from "@/app/components/purchase/PaymentForm";
 import { CartItem } from "@/app/(customer)/customer/shoppingcart/[id]/page";
 import OrderSummary from "@/app/components/purchase/OrderSummary";
+import { toast } from "react-hot-toast";
 
 const Page = () => {
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Dữ liệu mẫu để test
-  const cartItemsMock = [
-    {
-      id: "item1",
-      productId: "p1",
-      name: "Áo thun cotton nam nữ form rộng",
-      price: 150000,
-      originalPrice: 200000,
-      quantity: 2,
-      image: "/placeholder/product1.jpg",
-      variation: "Trắng, XL",
-      isSelected: true,
-      shopId: "shop1",
-      shopName: "Shop ABC",
-    },
-    {
-      id: "item2",
-      productId: "p2",
-      name: "Quần jean nam baggy",
-      price: 350000,
-      originalPrice: 350000,
-      quantity: 1,
-      image: "/placeholder/product2.jpg",
-      variation: "Xanh đậm, 32",
-      isSelected: true,
-      shopId: "shop1",
-      shopName: "Shop ABC",
-    },
-  ];
+  const [subtotal, setSubtotal] = useState(0);
 
   useEffect(() => {
-    // Simulating API call to fetch selected cart items
-    setTimeout(() => {
-      // Trong thực tế, chỉ lấy các sản phẩm đã được chọn
-      const selectedItems = cartItemsMock.filter((item) => item.isSelected);
-      setCartItems(selectedItems);
+    // Lấy dữ liệu từ sessionStorage
+    try {
+      const checkoutDataString = sessionStorage.getItem('checkoutData');
+      
+      if (!checkoutDataString) {
+        // Không có dữ liệu trong session, chuyển hướng về giỏ hàng
+        toast.error("Không có sản phẩm để thanh toán");
+        router.push("/customer/shoppingcart");
+        return;
+      }
+      
+      const checkoutData = JSON.parse(checkoutDataString);
+      
+      if (!checkoutData.items || checkoutData.items.length === 0) {
+        // Không có sản phẩm, chuyển hướng về giỏ hàng
+        toast.error("Không có sản phẩm để thanh toán");
+        router.push("/customer/shoppingcart");
+        return;
+      }
+      
+      // Cập nhật state với dữ liệu từ session
+      setCartItems(checkoutData.items);
+      setSubtotal(checkoutData.subtotal || 0);
       setIsLoading(false);
-    }, 500);
-  }, []);
-
-  // Tính tổng tiền đơn hàng (chưa bao gồm phí vận chuyển)
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+    } catch (error) {
+      console.error("Lỗi khi đọc dữ liệu thanh toán:", error);
+      toast.error("Có lỗi xảy ra, vui lòng thử lại");
+      router.push("/customer/shoppingcart");
+    }
+  }, [router]);
 
   // Phí vận chuyển mẫu (trong thực tế sẽ tính dựa trên địa chỉ và trọng lượng)
   const shippingFee = 30000;
@@ -70,8 +58,18 @@ const Page = () => {
 
     // Mô phỏng gửi dữ liệu lên API
     try {
+      // Hiển thị loading toast
+      const loadingToast = toast.loading("Đang xử lý đơn hàng...");
+      
       // Trong thực tế, sẽ gọi API để tạo đơn hàng
       await new Promise((resolve) => setTimeout(resolve, 1500));
+      
+      // Xóa dữ liệu session sau khi đặt hàng thành công
+      sessionStorage.removeItem('checkoutData');
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      toast.success("Đặt hàng thành công!");
 
       // Sau khi tạo đơn hàng thành công, chuyển hướng đến trang xác nhận
       router.push("/customer/user/payment");
@@ -80,6 +78,7 @@ const Page = () => {
       return true;
     } catch (error) {
       console.error("Lỗi khi tạo đơn hàng:", error);
+      toast.error("Có lỗi xảy ra khi đặt hàng");
       return false;
     }
   };

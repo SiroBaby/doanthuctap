@@ -50,6 +50,10 @@ type AddressPagination {
   totalPage: Int!
 }
 
+type AddressByUserId {
+  address: [Address!]
+}
+
 type ShopAddress {
   address_id: Int!
   shop_id: String!
@@ -342,6 +346,7 @@ type Query {
   user(id: String!): User!
   locations: [Location!]!
   location(location_id: String!): Location!
+  addressByUserId(id: String!): AddressByUserId!
   addresss(addresss: PaginationInput!): AddressPagination!
   address(id: Int!): Address!
   shopAddresss: [ShopAddress!]!
@@ -443,7 +448,7 @@ type Mutation {
   removeCart(id: Int!): Cart!
   addProductToCart(addProductToCartInput: CreateCartProductInput!): CartProduct!
   updateCartProduct(updateCartProductInput: UpdateCartProductInput!): CartProduct!
-  removeCartProduct(id: Int!): CartProduct!
+  removeCartProduct(cartproductid: Int!, productvariationid: Int!): CartProduct!
 }
 
 input UpdateUserInput {
@@ -468,6 +473,7 @@ input UpdateLocationInput {
 
 input CreateAddressInput {
   full_name: String!
+  address_name: String!
   phone: String!
   address: String!
   id_user: String!
@@ -476,6 +482,7 @@ input CreateAddressInput {
 
 input UpdateAddressInput {
   full_name: String!
+  address_name: String
   phone: String!
   address: String!
   id_user: String

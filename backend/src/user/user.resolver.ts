@@ -5,7 +5,6 @@ import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { PaginationInput } from 'src/common/dto/pagination.input';
 import { UserPagination } from './entities/userpagination.entity';
-
 @Resolver(() => User)
 export class UserResolver {
   constructor(private readonly userService: UserService) { }

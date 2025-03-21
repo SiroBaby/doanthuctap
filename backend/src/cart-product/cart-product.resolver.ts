@@ -57,7 +57,9 @@ export class CartProductResolver {
   }
 
   @Mutation(() => CartProduct)
-  removeCartProduct(@Args('id', { type: () => Int }) id: number) {
-    return this.cartProductService.remove(id);
+  removeCartProduct(
+    @Args('cartproductid', { type: () => Int }) cartproductid: number,
+    @Args('productvariationid', { type: () => Int }) productvariationid: number) {
+    return this.cartProductService.remove(cartproductid, productvariationid);
   }
 }

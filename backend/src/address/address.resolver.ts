@@ -5,7 +5,7 @@ import { CreateAddressInput } from './dto/create-address.input';
 import { UpdateAddressInput } from './dto/update-address.input';
 import { PaginationInput } from '../common/dto/pagination.input';
 import AddressPagination from './entities/addresspagination.entity';
-
+import { AddressByUserId } from './entities/addressbyuserid.entity';
 @Resolver(() => Address)
 export class AddressResolver {
   constructor(private readonly addressService: AddressService) { }
@@ -13,6 +13,11 @@ export class AddressResolver {
   @Mutation(() => Address)
   createAddress(@Args('createAddressInput') createAddressInput: CreateAddressInput) {
     return this.addressService.create(createAddressInput);
+  }
+
+  @Query(() => AddressByUserId, { name: 'addressByUserId' })
+  addressByUserId(@Args('id', { type: () => String }) id: string) {
+    return this.addressService.addressByUserId(id);
   }
 
   @Query(() => AddressPagination, { name: 'addresss' })

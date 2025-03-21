@@ -11,8 +11,10 @@ import EmptyCart from "@/app/components/cart/EmptyCart";
 import { useParams } from "next/navigation";
 import { GET_CART, GET_CART_PRODUCTS } from "@/graphql/queries";
 import { useQuery, useMutation } from "@apollo/client";
+import { REMOVE_PRODUCT_VARIATION_FROM_CART_PRODUCT } from "@/graphql/mutations";
+import { toast } from "react-hot-toast";
 
-export interface CartItem {
+export interface CartItem{
   id: string;
   productId: string;
   name: string;
@@ -35,6 +37,8 @@ const CartPage = () => {
   const { data: cartData, loading: cartLoading, error: cartError } = useQuery(GET_CART, {
     variables: { id: id?.toString() },
   });
+
+  const [removeCartProduct, { loading: removeCartProductLoading, error: removeCartProductError }] = useMutation(REMOVE_PRODUCT_VARIATION_FROM_CART_PRODUCT);
   
   const cartId = cartData?.getcart?.cart_id;
   
@@ -87,8 +91,49 @@ const CartPage = () => {
     );
   };
 
-  const handleRemoveItem = (itemId: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
+  const handleRemoveItem = (cartproductid: number, productvariationid: number) => {
+    // Show confirmation dialog
+    if (!window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?")) {
+      return; // User canceled the operation
+    }
+    
+    try {
+      // Show loading toast
+      const loadingToast = toast.loading("Đang xóa sản phẩm...");
+      
+      // Call the mutation
+      removeCartProduct({
+        variables: {
+          cartproductid: cartproductid,
+          productvariationid: productvariationid,
+        },
+        onCompleted: () => {
+          // Dismiss loading toast and show success
+          toast.dismiss(loadingToast);
+          toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
+          
+          // Remove the item immediately from the UI
+          setCartItems((prevItems) => 
+            prevItems.filter((item) => parseInt(item.id) !== cartproductid)
+          );
+        },
+        onError: (error) => {
+          // Dismiss loading toast and show error
+          toast.dismiss(loadingToast);
+          toast.error(`Lỗi khi xóa sản phẩm: ${error.message}`);
+        },
+        // Refetch cart products after mutation to ensure data consistency
+        refetchQueries: [
+          {
+            query: GET_CART_PRODUCTS,
+            variables: { cart_id: cartId }
+          }
+        ]
+      });
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi xóa sản phẩm");
+      console.error("Error removing item from cart:", error);
+    }
   };
 
   const handleSelectItem = (itemId: string, isSelected: boolean) => {
@@ -107,14 +152,37 @@ const CartPage = () => {
     );
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     const selectedItems = cartItems.filter((item) => item.isSelected);
     if (selectedItems.length === 0) {
-      alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán");
+      toast.error("Vui lòng chọn ít nhất một sản phẩm để thanh toán");
       return;
     }
-    // Chuyển hướng đến trang thanh toán
-    router.push("/customer/payment");
+
+    try {
+      // Tính tổng tiền các sản phẩm được chọn
+      const subtotal = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      
+      // Chuẩn bị dữ liệu để lưu
+      const checkoutData = {
+        items: selectedItems,
+        subtotal: subtotal,
+        timestamp: new Date().toISOString(),
+        userId: id
+      };
+
+      // Lưu dữ liệu vào sessionStorage để duy trì giữa các trang
+      sessionStorage.setItem('checkoutData', JSON.stringify(checkoutData));
+      
+      // Hiển thị thông báo thành công
+      toast.success("Đang chuyển đến trang thanh toán");
+      
+      // Chuyển hướng đến trang thanh toán
+      router.push("/customer/payment");
+    } catch (error) {
+      console.error('Error saving to session:', error);
+      toast.error('Có lỗi xảy ra khi chuẩn bị thanh toán. Vui lòng thử lại.');
+    }
   };
 
   // Tính tổng số sản phẩm được chọn
