@@ -41,7 +41,7 @@ const AnotherTopBar = () => {
           <div className="flex items-center space-x-4">
             {user && (
               <div className="flex items-center gap-3">
-                <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-black to-red-500">
+                <span className="text-white font-bold shadow-text">
                   Hi, {userName}
                 </span>
               </div>
