@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { CartItem } from "@/app/(customer)/customer/shoppingcart/page";
+import { CartItem } from "@/app/(customer)/customer/shoppingcart/[id]/page";
 
 interface OrderSummaryProps {
   items: CartItem[];

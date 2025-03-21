@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import * as express from 'express';
 import { join } from 'path';
-
+import * as cookieParser from 'cookie-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -17,6 +17,7 @@ async function bootstrap() {
   // Không cần multer global nữa
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  app.use(cookieParser());
 
   // Log incoming request
   app.use((req, res, next) => {

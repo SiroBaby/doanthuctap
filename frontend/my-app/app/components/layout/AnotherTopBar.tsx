@@ -1,18 +1,16 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-//import { UserButton } from "@clerk/nextjs"; // Button hiển thị avatar người dùng
-import { useUser } from "@clerk/nextjs"; // Hook lấy thông tin người dùng
+import { useRouter } from "next/navigation";
+import { UserButton } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 
 const AnotherTopBar = () => {
-  // Lấy thông tin người dùng
+  const router = useRouter();
+  const { userId } = useAuth();
   const { user } = useUser();
-
-  // Lưu tên người dùng
   const [userName, setUserName] = useState("");
-
-  // Kiểm tra component đã được render
   const [mounted, setMounted] = useState(false);
 
   // Đánh dấu đã render
@@ -20,14 +18,14 @@ const AnotherTopBar = () => {
     setMounted(true);
   }, []);
 
-  // Cập nhật tên người dùng khi có dữ liệu
+  // Cập nhật tên người dùng
   useEffect(() => {
     if (user) {
       setUserName(`${user.firstName} ${user.lastName}`);
     }
   }, [user]);
 
-  // Trả về null nếu chưa render xong
+  // Tránh lỗi hydration
   if (!mounted) {
     return null;
   }
@@ -40,15 +38,13 @@ const AnotherTopBar = () => {
             <span className="text-white cursor-pointer">Kênh người bán</span>
             <span className="text-white cursor-pointer">Kết nối Facebook</span>
           </div>
-
           <div className="flex items-center space-x-4">
-            {/* Hiển thị khi đã đăng nhập */}
             {user && (
               <div className="flex items-center gap-3">
+                <UserButton />
                 <span className="text-white">Hi, {userName}</span>
               </div>
             )}
-            {/* Hiển thị khi chưa đăng nhập */}
             {!user && <span className="text-white">User</span>}
           </div>
         </div>
@@ -82,6 +78,7 @@ const AnotherTopBar = () => {
               width={30}
               height={30}
               alt="shopping"
+              onClick={() => router.push(`/customer/shoppingcart/${userId}`)}
             />
           </button>
         </div>

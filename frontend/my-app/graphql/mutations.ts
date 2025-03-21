@@ -301,3 +301,25 @@ export const UPDATE_INVOICE_STATUS = gql`
     }
   }
 `;
+
+// mutation cart
+// mutation add product to cart
+export const ADD_PRODUCT_TO_CART = gql`
+mutation AddProductToCart ($product_variation_id: Int!, $cart_id: String!, $quantity: Int!) {
+    addProductToCart(
+        addProductToCartInput: {
+            product_variation_id: $product_variation_id
+            cart_id: $cart_id
+            quantity: $quantity
+            is_selected: false
+        }
+    ) {
+        cart_id
+        product_variation_id
+        quantity
+        create_at
+        update_at
+        is_selected
+    }
+}
+`;

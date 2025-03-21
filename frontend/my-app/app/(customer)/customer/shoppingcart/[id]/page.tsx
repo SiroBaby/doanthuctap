@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,49 +8,9 @@ import { useRouter } from "next/navigation";
 import CartItemsList from "@/app/components/cart/CartItemsList";
 import CartSummary from "@/app/components/cart/CartSummary";
 import EmptyCart from "@/app/components/cart/EmptyCart";
-
-// dữ liệu test
-const cartItemsMock = [
-  {
-    id: "item1",
-    productId: "p1",
-    name: "Áo thun cotton nam nữ form rộng",
-    price: 150000,
-    originalPrice: 200000,
-    quantity: 2,
-    image: "/placeholder/product1.jpg",
-    variation: "Trắng, XL",
-    isSelected: true,
-    shopId: "shop1",
-    shopName: "Shop ABC",
-  },
-  {
-    id: "item2",
-    productId: "p2",
-    name: "Quần jean nam baggy",
-    price: 350000,
-    originalPrice: 350000,
-    quantity: 1,
-    image: "/placeholder/product2.jpg",
-    variation: "Xanh đậm, 32",
-    isSelected: true,
-    shopId: "shop1",
-    shopName: "Shop ABC",
-  },
-  {
-    id: "item3",
-    productId: "p3",
-    name: "Giày thể thao nam nữ",
-    price: 450000,
-    originalPrice: 500000,
-    quantity: 1,
-    image: "/placeholder/product3.jpg",
-    variation: "Đen, 40",
-    isSelected: false,
-    shopId: "shop2",
-    shopName: "Shop XYZ",
-  },
-];
+import { useParams } from "next/navigation";
+import { GET_CART, GET_CART_PRODUCTS } from "@/graphql/queries";
+import { useQuery, useMutation } from "@apollo/client";
 
 export interface CartItem {
   id: string;
@@ -65,17 +27,55 @@ export interface CartItem {
 }
 
 const CartPage = () => {
+  const { id } = useParams();
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const { data: cartData, loading: cartLoading, error: cartError } = useQuery(GET_CART, {
+    variables: { id: id?.toString() },
+  });
+  
+  const cartId = cartData?.getcart?.cart_id;
+  
+  const { data: cartProductsData, loading: cartProductsLoading, error: cartProductsError } = useQuery(GET_CART_PRODUCTS, {
+    variables: { cart_id: cartId },
+    skip: !cartId,
+  });
+
   useEffect(() => {
-    // Smô phỏng call API
-    setTimeout(() => {
-      setCartItems(cartItemsMock);
+    if (!cartProductsLoading && cartProductsData?.getCartProducts) {
+      // Chuyển đổi dữ liệu từ response GraphQL sang định dạng CartItem[]
+      const transformedItems = cartProductsData.getCartProducts.map((item: any) => ({
+        id: item.cart_product_id.toString(),
+        productId: item.product_variation.product_variation_id.toString(),
+        name: item.product.product_name,
+        price: item.product_variation.base_price * (1 - item.product_variation.percent_discount),
+        originalPrice: item.product_variation.base_price,
+        quantity: item.quantity,
+        image: item.product.product_images?.[0]?.image_url || '',
+        variation: item.product_variation.product_variation_name,
+        isSelected: item.is_selected,
+        shopId: item.product.shop.shop_id,
+        shopName: item.product.shop.shop_name,
+      }));
+      
+      setCartItems(transformedItems);
       setIsLoading(false);
-    }, 700);
-  }, []);
+    }
+  }, [cartProductsData, cartProductsLoading]);
+
+  if (!id) {
+    return <div>Không tìm thấy ID giỏ hàng</div>;
+  }
+
+  if (cartError) {
+    return <div>Có lỗi khi tải giỏ hàng: {cartError.message}</div>;
+  }
+
+  if (cartProductsError) {
+    return <div>Có lỗi khi tải sản phẩm trong giỏ hàng: {cartProductsError.message}</div>;
+  }
 
   const handleQuantityChange = (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return;

@@ -113,6 +113,7 @@ export default function ProductDetailPage() {
 
   const product = data.product;
   const variations = product.product_variations.map((v) => ({
+    product_variation_id: v.product_variation_id,
     name: v.product_variation_name,
     basePrice: v.base_price,
     percentDiscount: v.percent_discount,

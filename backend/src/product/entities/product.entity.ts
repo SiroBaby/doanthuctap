@@ -31,14 +31,17 @@ export class Product {
   @Field(() => Int)
   product_detail_id: number;
 
+  @Field(() => String)
+  shop_id: string;
+
   @Field(() => Shop, { nullable: true })
   shop?: Shop;
 
   @Field(() => ProductDetail)
   product_detail: ProductDetail;
 
-  @Field(() => [ProductImage])
-  product_images: ProductImage[];
+  @Field(() => [ProductImage], { nullable: true })
+  product_images?: ProductImage[];
 
   @Field(() => [ProductVariation])
   product_variations: ProductVariation[];

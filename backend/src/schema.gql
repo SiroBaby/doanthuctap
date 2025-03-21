@@ -168,9 +168,10 @@ type Product {
   status: Product_status!
   category: Category!
   product_detail_id: Int!
+  shop_id: String!
   shop: Shop
   product_detail: ProductDetail!
-  product_images: [ProductImage!]!
+  product_images: [ProductImage!]
   product_variations: [ProductVariation!]!
 }
 
@@ -308,6 +309,34 @@ type InvoicePagination {
   totalPage: Float!
 }
 
+type CartProduct {
+  cart_product_id: Int!
+  cart_id: String!
+  product_variation_id: Int!
+  quantity: Int!
+  create_at: DateTime
+  update_at: DateTime
+  is_selected: Boolean!
+  product_variation: ProductVariation!
+  product: Product
+}
+
+type Cart {
+  cart_id: String!
+  id_user: String!
+  status: Cart_status!
+  create_at: DateTime
+  update_at: DateTime
+  cart_products: [CartProduct!]!
+}
+
+"""Trạng thái của giỏ hàng"""
+enum Cart_status {
+  active
+  checkout
+  abandoned
+}
+
 type Query {
   users(pagination: PaginationInput!): UserPagination!
   user(id: String!): User!
@@ -345,6 +374,9 @@ type Query {
   getInvoicesByShop(getInvoicesByShopInput: GetInvoicesByShopInput!): InvoicePagination!
   getInvoiceDetail(invoice_id: String!): InvoiceDetail!
   getOutOfStockProducts(getOutOfStockProductsInput: GetOutOfStockProductsInput!): InvoicePagination!
+  getcart(id: String!): Cart!
+  getCartProducts(cart_id: String!): [CartProduct!]!
+  cartProduct(id: Int!): CartProduct!
 }
 
 input PaginationInput {
@@ -406,6 +438,12 @@ type Mutation {
   updateDashboardStat(updateDashboardStatInput: UpdateDashboardStatInput!): DashboardStat!
   removeDashboardStat(id: Int!): DashboardStat!
   updateInvoiceStatus(updateInvoiceStatusInput: UpdateInvoiceStatusInput!): Invoice!
+  createCart(createCartInput: CreateCartInput!): Cart!
+  updateCart(updateCartInput: UpdateCartInput!): Cart!
+  removeCart(id: Int!): Cart!
+  addProductToCart(addProductToCartInput: CreateCartProductInput!): CartProduct!
+  updateCartProduct(updateCartProductInput: UpdateCartProductInput!): CartProduct!
+  removeCartProduct(id: Int!): CartProduct!
 }
 
 input UpdateUserInput {
@@ -603,4 +641,32 @@ input UpdateDashboardStatInput {
 input UpdateInvoiceStatusInput {
   invoice_id: String!
   order_status: String!
+}
+
+input CreateCartInput {
+  cart_id: String!
+  id_user: String!
+  status: Cart_status!
+}
+
+input UpdateCartInput {
+  cart_id: String
+  id_user: String
+  status: Cart_status
+  id: Int!
+}
+
+input CreateCartProductInput {
+  cart_id: String!
+  product_variation_id: Int!
+  quantity: Int! = 1
+  is_selected: Boolean! = false
+}
+
+input UpdateCartProductInput {
+  cart_id: String
+  product_variation_id: Int
+  quantity: Int = 1
+  is_selected: Boolean = false
+  id: Int!
 }

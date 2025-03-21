@@ -609,3 +609,44 @@ export const GET_DASHBOARD_STATS = gql`
     }
   }
 `;
+
+// query get cart
+export const GET_CART = gql`
+query Getcart ($id: String!) {
+    getcart(id: $id) {
+        cart_id
+        id_user
+        status
+        create_at
+        update_at
+    }
+}
+`;
+
+// query get cart products
+export const GET_CART_PRODUCTS = gql`
+query GetCartProducts($cart_id: String!) {
+    getCartProducts(cart_id: $cart_id) {
+        product_variation {
+            product_variation_name
+            base_price
+            percent_discount
+            product_variation_id
+        }
+        product {
+            product_name
+            shop {
+                shop_name
+                shop_id
+            }
+            product_images {
+                image_id
+                image_url
+            }
+        }
+        quantity
+        is_selected
+        cart_product_id
+    }
+}
+`;

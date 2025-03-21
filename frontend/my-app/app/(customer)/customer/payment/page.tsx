@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PaymentForm, { OrderData } from "@/app/components/purchase/PaymentForm";
-import { CartItem } from "@/app/(customer)/customer/shoppingcart/page";
+import { CartItem } from "@/app/(customer)/customer/shoppingcart/[id]/page";
 import OrderSummary from "@/app/components/purchase/OrderSummary";
 
 const Page = () => {
