@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { UserButton } from "@clerk/nextjs";
+//import { UserButton } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
 import { useAuth } from "@clerk/nextjs";
 
@@ -31,7 +31,7 @@ const AnotherTopBar = () => {
   }
 
   return (
-    <div className="bg-gradient-to-tr from-left-anothertopbar to-right-anothertopbar ">
+    <div className="bg-gradient-to-tr from-left-anothertopbar to-right-anothertopbar pt-2">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex space-x-6">
@@ -41,8 +41,9 @@ const AnotherTopBar = () => {
           <div className="flex items-center space-x-4">
             {user && (
               <div className="flex items-center gap-3">
-                <UserButton />
-                <span className="text-white">Hi, {userName}</span>
+                <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-black to-red-500">
+                  Hi, {userName}
+                </span>
               </div>
             )}
             {!user && <span className="text-white">User</span>}
