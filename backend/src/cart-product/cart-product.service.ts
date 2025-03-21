@@ -130,7 +130,19 @@ export class CartProductService {
     return `This action updates a #${id} cartProduct`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} cartProduct`;
+  async remove(cartproductid: number, productvariationid: number) {
+    const cartProduct = await this.prisma.cart_Product.findUnique({
+      where: {
+        cart_product_id: cartproductid,
+        product_variation_id: productvariationid,
+      },
+    });
+    if (!cartProduct) {
+      throw new Error('Cart product not found');  
+    }
+
+    return this.prisma.cart_Product.delete({
+      where: { cart_product_id: cartproductid, product_variation_id: productvariationid },
+    });
   }
 }

@@ -34,6 +34,25 @@ export const GET_USER_BY_ID = gql`
   }
 `;
 
+//query address
+//query get address by user id
+export const GET_ADDRESS_BY_USER_ID = gql`
+  query AddressByUserId($id: String!) {
+    addressByUserId(id: $id) {
+      address {
+          address_id
+          full_name
+          phone
+          address
+          id_user
+          is_default
+          create_at
+          update_at
+          delete_at
+      }
+    }
+  }
+`;
 //query shop
 //query get shops
 export const GET_SHOPS = gql`

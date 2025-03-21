@@ -1,11 +1,10 @@
 import React from "react";
 import Image from "next/image";
 import { CartItem } from "@/app/(customer)/customer/shoppingcart/[id]/page";
-
 interface CartItemsListProps {
   itemsByShop: Record<string, CartItem[]>;
   onQuantityChange: (itemId: string, quantity: number) => void;
-  onRemoveItem: (itemId: string) => void;
+  onRemoveItem: (cartproductid: number, productvariationid: number) => void;
   onSelectItem: (itemId: string, isSelected: boolean) => void;
   onSelectAllItems: (shopId: string, isSelected: boolean) => void;
 }
@@ -155,7 +154,10 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                     </div>
 
                     <button
-                      onClick={() => onRemoveItem(item.id)}
+                      onClick={() => onRemoveItem(
+                        parseInt(item.id),
+                        parseInt(item.productId)
+                      )}
                       className="ml-4 text-gray-400 hover:text-custom-red"
                       aria-label={`Xóa sản phẩm ${item.name}`}
                       title={`Xóa sản phẩm ${item.name}`}

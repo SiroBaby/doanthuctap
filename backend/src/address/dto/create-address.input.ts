@@ -4,7 +4,10 @@ import { InputType, Int, Field } from '@nestjs/graphql';
 export class CreateAddressInput {
   @Field(() => String, {nullable: false})
   full_name: string;
-
+ 
+  @Field(() => String, {nullable: false})
+  address_name: string;
+  
   @Field(() => String, {nullable: false})
   phone: string;
 

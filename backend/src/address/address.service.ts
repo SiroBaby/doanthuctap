@@ -14,6 +14,19 @@ export class AddressService {
     });
   }
 
+  async addressByUserId(userId: string) {
+    const addresses = await this.prisma.address.findMany({
+      where: {
+        id_user: userId,
+      },
+    });
+
+    // Trả về đối tượng đầy đủ theo cấu trúc AddressByUserId
+    return {
+      address: addresses,
+    };
+  }
+
   async findAll({ page, limit }: PaginationInput) {
     try {
       const skip = (page - 1) * limit;

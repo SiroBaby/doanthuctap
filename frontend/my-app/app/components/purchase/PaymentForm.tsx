@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { GET_ADDRESS_BY_USER_ID } from "@/graphql/queries";
+import { useQuery } from "@apollo/client";
 
 interface PaymentFormProps {
   totalAmount: number;
@@ -16,8 +18,6 @@ export interface OrderData {
   };
   shippingAddress: {
     address: string;
-    district: string;
-    city: string;
     phone: string;
     note?: string;
   };
@@ -28,10 +28,21 @@ interface SavedAddress {
   id: string;
   name: string;
   address: string;
-  district: string;
-  city: string;
   phone: string;
   isDefault: boolean;
+}
+
+// Định nghĩa kiểu dữ liệu cho Address từ API
+interface ApiAddress {
+  __typename: string;
+  address_id: number;
+  full_name: string;
+  address: string;
+  phone: string;
+  is_default: boolean;
+  create_at: string | null;
+  update_at: string | null;
+  delete_at: string | null;
 }
 
 const PaymentForm: React.FC<PaymentFormProps> = ({
@@ -48,8 +59,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     },
     shippingAddress: {
       address: "",
-      district: "",
-      city: "",
       phone: "",
       note: "",
     },
@@ -60,64 +69,50 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   const [useNewAddress, setUseNewAddress] = useState(false);
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
-  const [newAddressName, setNewAddressName] = useState("");
-  const [newAddressPhone, setNewAddressPhone] = useState("");
+  // const [newAddressName, setNewAddressName] = useState("");
+  // const [newAddressPhone, setNewAddressPhone] = useState("");
 
-  // Fetch địa chỉ đã lưu của khách hàng
+  const checkoutData = sessionStorage.getItem("checkoutData");
+  const checkoutDataJson = JSON.parse(checkoutData || "{}");
+  const userid = checkoutDataJson.userId;
+
+  const { data: addressData } = useQuery(GET_ADDRESS_BY_USER_ID, {
+    variables: { id: userid },
+  });
+
   useEffect(() => {
-    // Trong thực tế, sẽ gọi API để lấy danh sách địa chỉ của khách hàng
-    const mockAddresses: SavedAddress[] = [
-      {
-        id: "addr1",
-        name: "Nhà riêng",
-        address: "123 Đường Nguyễn Văn A",
-        district: "Quận 1",
-        city: "TP HCM",
-        phone: "+84901234567",
-        isDefault: true,
-      },
-      {
-        id: "addr2",
-        name: "Công ty",
-        address: "456 Đường Lê Lợi",
-        district: "Quận 3",
-        city: "TP HCM",
-        phone: "+84909876543",
-        isDefault: false,
-      },
-      {
-        id: "addr3",
-        name: "Nhà bạn",
-        address: "789 Đường Trần Hưng Đạo",
-        district: "Quận 5",
-        city: "TP HCM",
-        phone: "+84912345678",
-        isDefault: false,
-      },
-    ];
-
-    setSavedAddresses(mockAddresses);
-    // Chọn địa chỉ mặc định nếu có
-    const defaultAddress = mockAddresses.find((addr) => addr.isDefault);
-    if (defaultAddress) {
-      setSelectedAddressId(defaultAddress.id);
-      setFormData((prev) => ({
-        ...prev,
-        shippingAddress: {
-          address: defaultAddress.address,
-          district: defaultAddress.district,
-          city: defaultAddress.city,
-          phone: defaultAddress.phone,
-          note: prev.shippingAddress.note,
-        },
-        customerInfo: {
-          ...prev.customerInfo,
-          fullName: defaultAddress.name,
-          phone: defaultAddress.phone,
-        },
+    if (addressData && addressData.addressByUserId && addressData.addressByUserId.address) {
+      // Biến đổi dữ liệu từ API thành định dạng SavedAddress
+      const transformedAddresses = addressData.addressByUserId.address.map((addr: ApiAddress) => ({
+        id: addr.address_id.toString(), // Chuyển address_id thành id và đảm bảo là string
+        name: addr.full_name, // Tạo tên mặc định vì API không trả về name
+        address: addr.address,
+        phone: addr.phone,
+        isDefault: addr.is_default
       }));
+      
+      setSavedAddresses(transformedAddresses);
+      
+      // Chọn địa chỉ mặc định nếu có
+      const defaultAddress = transformedAddresses.find((addr: SavedAddress) => addr.isDefault);
+      if (defaultAddress) {
+        setSelectedAddressId(defaultAddress.id);
+        setFormData((prev) => ({
+          ...prev,
+          shippingAddress: {
+            address: defaultAddress.address,
+            phone: defaultAddress.phone,
+            note: prev.shippingAddress.note,
+          },
+          customerInfo: {
+            ...prev.customerInfo,
+            fullName: defaultAddress.name,
+            phone: defaultAddress.phone,
+          },
+        }));
+      }
     }
-  }, []);
+  }, [addressData]);
 
   // Định dạng số tiền VND
   const formatCurrency = (amount: number) => {
@@ -129,47 +124,47 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       .replace("₫", "đ");
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
-    section: "customerInfo" | "shippingAddress"
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [name]: value,
-      },
-    }));
-  };
+  // const handleInputChange = (
+  //   e: React.ChangeEvent<
+  //     HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+  //   >,
+  //   section: "customerInfo" | "shippingAddress"
+  // ) => {
+  //   const { name, value } = e.target;
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     [section]: {
+  //       ...prev[section],
+  //       [name]: value,
+  //     },
+  //   }));
+  // };
 
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewAddressName(e.target.value);
-    setFormData((prev) => ({
-      ...prev,
-      customerInfo: {
-        ...prev.customerInfo,
-        fullName: e.target.value,
-      },
-    }));
-  };
+  // const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   setNewAddressName(e.target.value);
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     customerInfo: {
+  //       ...prev.customerInfo,
+  //       fullName: e.target.value,
+  //     },
+  //   }));
+  // };
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewAddressPhone(e.target.value);
-    setFormData((prev) => ({
-      ...prev,
-      customerInfo: {
-        ...prev.customerInfo,
-        phone: e.target.value,
-      },
-      shippingAddress: {
-        ...prev.shippingAddress,
-        phone: e.target.value,
-      },
-    }));
-  };
+  // const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   setNewAddressPhone(e.target.value);
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     customerInfo: {
+  //       ...prev.customerInfo,
+  //       phone: e.target.value,
+  //     },
+  //     shippingAddress: {
+  //       ...prev.shippingAddress,
+  //       phone: e.target.value,
+  //     },
+  //   }));
+  // };
 
   //chỗ này không biết nhe để tượng trưng é
   const handlePaymentMethodChange = (method: "cod" | "banking") => {
@@ -191,8 +186,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         ...prev,
         shippingAddress: {
           address: selectedAddress.address,
-          district: selectedAddress.district,
-          city: selectedAddress.city,
           phone: selectedAddress.phone,
           note: prev.shippingAddress.note,
         },
@@ -205,22 +198,20 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     }
   };
 
-  const handleUseNewAddress = () => {
-    setUseNewAddress(true);
-    setSelectedAddressId("");
-    setFormData((prev) => ({
-      ...prev,
-      shippingAddress: {
-        address: "",
-        district: "",
-        city: "",
-        phone: "",
-        note: prev.shippingAddress.note,
-      },
-    }));
-    setNewAddressName("");
-    setNewAddressPhone("");
-  };
+  // const handleUseNewAddress = () => {
+  //   setUseNewAddress(true);
+  //   setSelectedAddressId("");
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     shippingAddress: {
+  //       address: "",
+  //       phone: "",
+  //       note: prev.shippingAddress.note,
+  //     },
+  //   }));
+  //   setNewAddressName("");
+  //   setNewAddressPhone("");
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -280,12 +271,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                       SĐT: {address.phone}
                     </div>
                     <div className="text-sm text-gray-700">
-                      {address.address}, {address.district}, {address.city}
+                      {address.address}
                     </div>
                   </div>
                 </label>
               ))}
-
+{/* 
               <label
                 className={`flex items-center p-3 border rounded cursor-pointer hover:bg-gray-50 ${
                   useNewAddress ? "border-custom-red bg-red-50" : ""
@@ -299,13 +290,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                   className="h-5 w-5 text-custom-red focus:ring-custom-red"
                 />
                 <div className="ml-3 font-medium">Thêm địa chỉ mới</div>
-              </label>
+              </label> */}
             </div>
           </div>
         )}
 
         {/* Form địa chỉ mới */}
-        {(useNewAddress || savedAddresses.length === 0) && (
+        {/* {(useNewAddress || savedAddresses.length === 0) && (
           <div className="space-y-4">
             <div>
               <label
@@ -370,50 +361,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                 aria-required="true"
               />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="district"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Quận/Huyện <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="district"
-                  name="district"
-                  required
-                  value={formData.shippingAddress.district}
-                  onChange={(e) => handleInputChange(e, "shippingAddress")}
-                  className="w-full p-2 border border-gray-300 rounded focus:ring-custom-red focus:border-custom-red"
-                  aria-required="true"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="city"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Tỉnh/Thành phố <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  required
-                  value={formData.shippingAddress.city}
-                  onChange={(e) => handleInputChange(e, "shippingAddress")}
-                  className="w-full p-2 border border-gray-300 rounded focus:ring-custom-red focus:border-custom-red"
-                  aria-required="true"
-                />
-              </div>
-            </div>
           </div>
-        )}
+        )} */}
 
-        <div className="mt-4">
+        {/* <div className="mt-4">
           <label
             htmlFor="note"
             className="block text-sm font-medium text-gray-700 mb-1"
@@ -429,14 +380,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
             className="w-full p-2 border border-gray-300 rounded focus:ring-custom-red focus:border-custom-red"
             placeholder="Ví dụ: Giao hàng giờ hành chính, gọi trước khi giao,..."
           ></textarea>
-        </div>
+        </div> */}
       </div>
 
       {/* Phương thức thanh toán */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-medium mb-4">Phương thức thanh toán</h2>
         <div className="space-y-3">
-          <label className="flex items-center p-3 border rounded cursor-pointer hover:bg-gray-50">
+          <label key="payment-cod" className="flex items-center p-3 border rounded cursor-pointer hover:bg-gray-50">
             <input
               type="radio"
               name="payment"
@@ -452,7 +403,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
             </div>
           </label>
 
-          <label className="flex items-center p-3 border rounded cursor-pointer hover:bg-gray-50">
+          <label key="payment-banking" className="flex items-center p-3 border rounded cursor-pointer hover:bg-gray-50">
             <input
               type="radio"
               name="payment"

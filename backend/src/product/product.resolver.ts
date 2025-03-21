@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ResolveField, Parent, Info } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { Product } from './entities/product.entity';
@@ -15,6 +15,7 @@ import { Role } from '@prisma/client';
 import { Roles } from 'src/auth/clerk-auth.guard';
 import { GqlClerkAuthGuard } from 'src/auth/gql-clerk-auth.guard';
 import { ClerkAuthGuard } from 'src/auth/clerk-auth.guard';
+import { GraphQLResolveInfo } from 'graphql';
 
 @Resolver(() => Product)
 export class ProductResolver {
@@ -35,15 +36,22 @@ export class ProductResolver {
   }
 
   @ResolveField(() => [ProductImage], { nullable: true })
-  async product_images(@Parent() product: Product) {
+  async product_images(@Parent() product: Product, @Info() info: GraphQLResolveInfo) {
     if (!product.product_id) {
       return null;
     }
     
+    // Get the name of the parent query operation
+    const operationName = info.operation.name?.value;
+    
+    // Check if this is the individual product query (from GET_PRODUCT_BY_ID)
+    const isDetailQuery = operationName === 'Product';
+    
+    // If it's the detail query, return all images, otherwise only return thumbnails
     return this.prisma.product_Image.findMany({
       where: { 
         product_id: product.product_id,
-        is_thumbnail: true
+        ...(isDetailQuery ? {} : { is_thumbnail: true })
       }
     });
   }
@@ -63,7 +71,6 @@ export class ProductResolver {
     return this.productService.findAll(pagination);
   }
 
-  @UseGuards(GqlClerkAuthGuard)
   @Query(() => ProductPagination, { name: 'getProductsByShopId' })
   getProductsByShopId(
     @Args('id', { type: () => String }) id: string,

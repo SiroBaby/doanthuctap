@@ -38,9 +38,10 @@ model User {
 
 model Address {
   address_id  Int       @id @default(autoincrement())
-  full_name   String?   @db.VarChar(255)
-  phone       String?   @db.VarChar(20)
-  address     String?   @db.Text
+  address_name   String   @db.VarChar(255)
+  full_name   String   @db.VarChar(255)
+  phone       String   @db.VarChar(20)
+  address     String   @db.Text
   is_default  Boolean?  @default(false)
   id_user     String    @db.VarChar(255)
   create_at   DateTime?
@@ -70,6 +71,7 @@ model Shop_address {
 model Shop {
   shop_id         String     @id @db.VarChar(255)
   shop_name       String?    @db.VarChar(255)
+  logo            String?    @db.VarChar(255)
   link            String?    @db.VarChar(255)
   status          Shop_status
   location_id     String?    @db.VarChar(255)

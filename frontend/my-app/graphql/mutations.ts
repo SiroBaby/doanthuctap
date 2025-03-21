@@ -323,3 +323,18 @@ mutation AddProductToCart ($product_variation_id: Int!, $cart_id: String!, $quan
     }
 }
 `;
+
+// mutation remove product variation from cart product
+export const REMOVE_PRODUCT_VARIATION_FROM_CART_PRODUCT = gql`
+mutation RemoveCartProduct($cartproductid: Int!, $productvariationid: Int!) {
+    removeCartProduct(cartproductid: $cartproductid, productvariationid: $productvariationid) {
+        cart_product_id
+        cart_id
+        product_variation_id
+        quantity
+        create_at
+        update_at
+        is_selected
+    }
+}
+`;
