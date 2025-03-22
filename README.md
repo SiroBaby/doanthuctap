@@ -1,6 +1,13 @@
-# doanthuctap
+# HỌC VIỆN HÀNG KHÔNG VIỆT NAM
+# ĐỒ ÁN THỰC TẬP
+# Khoa: CÔNG NGHỆ THÔNG TIN
 
-## Hướng dẫn chạy code
+## Thành viên:
+### Huỳnh Ngọc Phát - 2254810056 (Nhóm trưởng)
+### Trần Thị Thanh Huyền - 2254810057
+### Lê Trâm Anh - 2254810093
+
+## Hướng dẫn chạy code:
 
 ## Với Backend
 
