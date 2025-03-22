@@ -221,6 +221,8 @@ model Voucher_storage {
   voucher_id          Int
   voucher_type        Voucher_type
   claimed_at          DateTime?
+  is_used             Boolean         @default(false)
+  used_at             DateTime?
   
   user                User            @relation(fields: [user_id], references: [id_user])
   voucher             Voucher?        @relation(fields: [voucher_id], references: [id], map: "Voucher_storage_voucher_fk")
@@ -255,8 +257,10 @@ model Invoice_Product {
   product_name        String    @db.VarChar(255)
   variation_name      String    @db.VarChar(255)
   price               Decimal   @db.Decimal(10, 2)
+  original_price      Decimal?  @db.Decimal(10, 2)
   quantity            Int
   discount_percent    Decimal   @db.Decimal(5, 2)
+  discount_amount     Decimal?  @db.Decimal(10, 2) @default(0)
   create_at           DateTime? @default(now())
   
   invoice             Invoice           @relation(fields: [invoice_id], references: [invoice_id])

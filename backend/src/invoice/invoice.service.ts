@@ -24,78 +24,101 @@ export class InvoiceService {
         voucher_storage_id
       } = createInvoiceInput;
       
+      // Calculate the actual total for this shop's products
+      const shopProductsTotal = products.reduce((sum, product) => 
+        sum + (product.price * product.quantity), 0);
+      
+      // If total_amount is negative or doesn't make sense, recalculate it
+      let finalAmount = shopProductsTotal;
+      
+      // Only apply a discount if it makes sense (positive and not too large)
+      if (shopProductsTotal > total_amount && total_amount >= 0) {
+        finalAmount = total_amount;
+      }
+      
+      // Ensure final amount is never negative
+      finalAmount = Math.max(0, finalAmount);
+      
       // Generate a unique invoice ID
       const invoice_id = uuidv4();
       
-      // Use transaction to ensure all operations succeed or fail together
-      return await this.prisma.$transaction(async (prisma) => {
-        // Create the invoice record
-        const invoice = await prisma.invoice.create({
+      // Create the invoice record
+      const invoice = await this.prisma.invoice.create({
+        data: {
+          invoice_id,
+          id_user: user_id,
+          shop_id,
+          payment_method,
+          // For COD, set payment status as pending
+          payment_status: payment_method === 'COD' ? 'pending' : 'awaiting_payment',
+          // Initial order status is "pending"
+          order_status: 'pending',
+          total_amount: finalAmount,
+          shipping_fee,
+          shipping_address_id,
+          voucher_storage_id,
+          create_at: new Date(),
+          update_at: new Date()
+        },
+        include: {
+          user: true,
+        }
+      });
+      
+      // Create invoice product records for each product
+      const invoiceProducts: any[] = [];
+      for (const product of products) {
+        const invoiceProduct = await this.prisma.invoice_Product.create({
           data: {
             invoice_id,
-            id_user: user_id,
-            shop_id,
-            payment_method,
-            // For COD, set payment status as pending
-            payment_status: payment_method === 'COD' ? 'pending' : 'awaiting_payment',
-            // Initial order status is "pending"
-            order_status: 'pending',
-            total_amount,
-            shipping_fee,
-            shipping_address_id,
-            voucher_storage_id,
-            create_at: new Date(),
-            update_at: new Date()
-          },
-          include: {
-            user: true,
+            product_variation_id: product.product_variation_id,
+            product_name: product.product_name,
+            variation_name: product.variation_name,
+            price: product.price, // Final price after all discounts
+            original_price: product.original_price || product.price, // Store original price if provided
+            discount_percent: product.discount_percent || 0, // Product's built-in discount
+            discount_amount: product.discount_amount || null, // Additional voucher discount
+            quantity: product.quantity,
+            create_at: new Date()
           }
         });
+        invoiceProducts.push(invoiceProduct);
+      }
+      
+      // Update product stock quantity (reduce stock)
+      for (const product of products) {
+        await this.prisma.product_variation.update({
+          where: { 
+            product_variation_id: product.product_variation_id 
+          },
+          data: {
+            stock_quantity: {
+              decrement: product.quantity
+            }
+          }
+        });
+      }
+      
+      // Log the use of voucher rather than trying to update it
+      if (voucher_storage_id) {
+        console.log(`Voucher with ID ${voucher_storage_id} was used in invoice ${invoice_id}`);
         
-        // Create invoice product records for each product
-        const invoiceProducts = await Promise.all(
-          products.map(product => 
-            prisma.invoice_Product.create({
-              data: {
-                invoice_id,
-                product_variation_id: product.product_variation_id,
-                product_name: product.product_name,
-                variation_name: product.variation_name,
-                price: product.price,
-                quantity: product.quantity,
-                discount_percent: product.discount_percent,
-                create_at: new Date()
-              }
-            })
-          )
-        );
-        
-        // Update product stock quantity (reduce stock)
-        await Promise.all(
-          products.map(product => 
-            prisma.product_variation.update({
-              where: { 
-                product_variation_id: product.product_variation_id 
-              },
-              data: {
-                stock_quantity: {
-                  decrement: product.quantity
-                }
-              }
-            })
-          )
-        );
-        
-        return {
-          ...invoice,
-          invoice_products: invoiceProducts
-        };
-      }, {
-        // Transaction options
-        maxWait: 5000, // Maximum time to wait for a transaction to start
-        timeout: 10000, // Maximum time allowed for the transaction to run
-        isolationLevel: 'Serializable' // Highest isolation level for maximum data integrity
-      });
+        try {
+          // Try to manually execute SQL to mark voucher as used
+          await this.prisma.$executeRaw`
+            UPDATE Voucher_storage 
+            SET is_used = 1
+            WHERE voucher_storage_id = ${Number(voucher_storage_id)}
+          `;
+        } catch (updateError) {
+          console.warn(`Could not mark voucher as used: ${updateError.message}`);
+        }
+      }
+      
+      return {
+        ...invoice,
+        invoice_products: invoiceProducts
+      };
     } catch (error) {
       throw new Error(`Failed to create invoice: ${error.message}`);
     }

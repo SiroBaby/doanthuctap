@@ -341,6 +341,22 @@ enum Cart_status {
   abandoned
 }
 
+type VoucherStorage {
+  voucher_storage_id: Int!
+  user_id: String!
+  voucher_id: String!
+  voucher_type: Voucher_type!
+  claimed_at: DateTime
+  voucher: Voucher
+  shop_voucher: ShopVoucher
+}
+
+"""Loại voucher"""
+enum Voucher_type {
+  voucher
+  shop_voucher
+}
+
 type Query {
   users(pagination: PaginationInput!): UserPagination!
   user(id: String!): User!
@@ -382,6 +398,9 @@ type Query {
   getcart(id: String!): Cart!
   getCartProducts(cart_id: String!): [CartProduct!]!
   cartProduct(id: Int!): CartProduct!
+  getUserVouchersByUserId(userId: String!): [VoucherStorage!]!
+  getUserVouchersForCheckout(userId: String!, shopId: String!): [VoucherStorage!]!
+  voucherStorage(id: Int!): VoucherStorage!
 }
 
 input PaginationInput {
@@ -450,6 +469,9 @@ type Mutation {
   addProductToCart(addProductToCartInput: CreateCartProductInput!): CartProduct!
   updateCartProduct(updateCartProductInput: UpdateCartProductInput!): CartProduct!
   removeCartProduct(cartproductid: Int!, productvariationid: Int!): CartProduct!
+  createVoucherStorage(createVoucherStorageInput: CreateVoucherStorageInput!): VoucherStorage!
+  updateVoucherStorage(updateVoucherStorageInput: UpdateVoucherStorageInput!): VoucherStorage!
+  removeVoucherStorage(id: Int!): VoucherStorage!
 }
 
 input UpdateUserInput {
@@ -662,8 +684,10 @@ input InvoiceProductInput {
   product_name: String!
   variation_name: String!
   price: Float!
+  original_price: Float
   quantity: Int!
-  discount_percent: Float!
+  discount_percent: Float
+  discount_amount: Float
 }
 
 input UpdateInvoiceStatusInput {
@@ -696,5 +720,16 @@ input UpdateCartProductInput {
   product_variation_id: Int
   quantity: Int = 1
   is_selected: Boolean = false
+  id: Int!
+}
+
+input CreateVoucherStorageInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateVoucherStorageInput {
+  """Example field (placeholder)"""
+  exampleField: Int
   id: Int!
 }

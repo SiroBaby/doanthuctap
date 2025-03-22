@@ -669,3 +669,43 @@ query GetCartProducts($cart_id: String!) {
     }
 }
 `;
+
+//query get vouchers for checkout
+export const GET_USER_VOUCHERS_FOR_CHECKOUT = gql`
+  query GetUserVouchersForCheckout($userId: String!, $shopId: String!) {
+    getUserVouchersForCheckout(userId: $userId, shopId: $shopId) {
+      voucher_storage_id
+      user_id
+      voucher_id
+      voucher_type
+      claimed_at
+      voucher {
+        id
+        code
+        discount_percent
+        minimum_require_price
+        max_discount_price
+        quantity
+        max_use_per_user
+        valid_from
+        valid_to
+        create_at
+        delete_at
+      }
+      shop_voucher {
+        id
+        code
+        discount_percent
+        minimum_require_price
+        max_discount_price
+        quantity
+        max_use_per_user
+        valid_from
+        valid_to
+        create_at
+        delete_at
+        shop_id
+      }
+    }
+  }
+`;

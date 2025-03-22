@@ -163,12 +163,17 @@ const CartPage = () => {
       // Tính tổng tiền các sản phẩm được chọn
       const subtotal = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
       
+      // Lấy shopId từ sản phẩm được chọn (giả định rằng tất cả sản phẩm từ cùng một shop)
+      // Nếu có nhiều shop, chỉ lấy shopId đầu tiên cho đơn giản
+      const shopId = selectedItems[0]?.shopId || '';
+      
       // Chuẩn bị dữ liệu để lưu
       const checkoutData = {
         items: selectedItems,
         subtotal: subtotal,
         timestamp: new Date().toISOString(),
-        userId: id
+        userId: id,
+        shopId: shopId
       };
 
       // Lưu dữ liệu vào sessionStorage để duy trì giữa các trang
