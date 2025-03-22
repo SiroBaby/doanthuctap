@@ -7,11 +7,11 @@ export class InvoiceProductInput {
   @IsNotEmpty()
   product_variation_id: number;
 
-  @Field()
+  @Field(() => String)
   @IsNotEmpty()
   product_name: string;
 
-  @Field()
+  @Field(() => String)
   @IsNotEmpty()
   variation_name: string;
 
@@ -20,15 +20,25 @@ export class InvoiceProductInput {
   @Min(0)
   price: number;
 
+  @Field(() => Float, { nullable: true })
+  @IsOptional()
+  @Min(0)
+  original_price?: number;
+
   @Field(() => Int)
   @IsNotEmpty()
   @Min(1)
   quantity: number;
 
-  @Field(() => Float)
-  @IsNotEmpty()
+  @Field(() => Float, { nullable: true })
+  @IsOptional()
   @Min(0)
-  discount_percent: number;
+  discount_percent?: number;
+
+  @Field(() => Float, { nullable: true })
+  @IsOptional()
+  @Min(0)
+  discount_amount?: number;
 }
 
 @InputType()

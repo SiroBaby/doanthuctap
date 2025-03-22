@@ -23,6 +23,7 @@ import { DashboardStatsModule } from './dashboard-stats/dashboard-stats.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { CartModule } from './cart/cart.module';
 import { CartProductModule } from './cart-product/cart-product.module';
+import { VoucherStorageModule } from './voucher-storage/voucher-storage.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { CartProductModule } from './cart-product/cart-product.module';
     InvoiceModule,
     CartModule,
     CartProductModule,
+    VoucherStorageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

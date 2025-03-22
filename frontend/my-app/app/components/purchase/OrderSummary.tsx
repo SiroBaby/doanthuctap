@@ -7,6 +7,7 @@ interface OrderSummaryProps {
   subtotal: number;
   shippingFee: number;
   totalAmount: number;
+  discountAmount?: number;
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({
@@ -14,6 +15,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   subtotal,
   shippingFee,
   totalAmount,
+  discountAmount = 0,
 }) => {
   // Định dạng số tiền VND
   const formatCurrency = (amount: number) => {
@@ -24,6 +26,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
       .format(amount)
       .replace("₫", "đ");
   };
+
+  // Calculate total including discount
+  const finalAmount = totalAmount - discountAmount;
 
   return (
     <div className="bg-white rounded-lg shadow sticky top-4">
@@ -74,13 +79,19 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             <span className="text-gray-600">Phí vận chuyển:</span>
             <span>{formatCurrency(shippingFee)}</span>
           </div>
+          {discountAmount > 0 && (
+            <div className="flex justify-between text-custom-red">
+              <span>Giảm giá (voucher):</span>
+              <span>-{formatCurrency(discountAmount)}</span>
+            </div>
+          )}
         </div>
 
         <div className="mt-4 pt-4 border-t">
           <div className="flex justify-between items-center text-lg font-medium">
             <span>Tổng cộng:</span>
             <span className="text-custom-red">
-              {formatCurrency(totalAmount)}
+              {formatCurrency(finalAmount)}
             </span>
           </div>
         </div>
