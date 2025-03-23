@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { GET_ADDRESS_BY_USER_ID, GET_USER_VOUCHERS_FOR_CHECKOUT } from "@/graphql/queries";
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
+import { REMOVE_EXPIRED_VOUCHERS } from "@/graphql/mutations";
+import { toast } from "react-hot-toast";
 
 // Define interfaces for the discount calculation
 interface DiscountedProduct {
@@ -94,6 +96,14 @@ interface UserVoucher {
   shop_voucher: VoucherDetails | null;
 }
 
+// Add type interface for remove expired vouchers response
+interface RemoveExpiredVouchersResponse {
+  removeExpiredVouchers: {
+    count: number;
+    message: string;
+  }
+}
+
 const PaymentForm: React.FC<PaymentFormProps> = ({
   totalAmount,
   products,
@@ -102,6 +112,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 }) => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAddressLoading, setIsAddressLoading] = useState(true);
   const [formData, setFormData] = useState<OrderData>({
     customerInfo: {
       fullName: "",
@@ -117,12 +128,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   });
 
   // Trạng thái cho việc chọn địa chỉ
-  const [useNewAddress, setUseNewAddress] = useState(false);
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
   
   // Trạng thái cho việc chọn voucher
   const [availableVouchers, setAvailableVouchers] = useState<UserVoucher[]>([]);
+  const [expiredVouchersCount, setExpiredVouchersCount] = useState<number>(0);
   const [selectedVoucherId, setSelectedVoucherId] = useState<number | null>(null);
 
   // Modal state for voucher details
@@ -139,61 +150,108 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     variables: { id: userid },
   });
 
-  const { data: voucherData } = useQuery(GET_USER_VOUCHERS_FOR_CHECKOUT, {
+  const { data: voucherData, refetch: refetchVouchers } = useQuery(GET_USER_VOUCHERS_FOR_CHECKOUT, {
     variables: { userId: userid, shopId: shopId },
   });
 
-  useEffect(() => {
-    if (addressData && addressData.addressByUserId && addressData.addressByUserId.address) {
-      // Biến đổi dữ liệu từ API thành định dạng SavedAddress
-      const transformedAddresses = addressData.addressByUserId.address.map((addr: AddressData) => ({
-        id: addr.address_id.toString(), // Đảm bảo là string
-        name: addr.full_name,
-        address: addr.address,
-        phone: addr.phone,
-        isDefault: addr.is_default
-      }));
-      
-      setSavedAddresses(transformedAddresses);
-      
-      // Chọn địa chỉ mặc định nếu có
-      const defaultAddress = transformedAddresses.find((addr: SavedAddress) => addr.isDefault);
-      if (defaultAddress) {
-        setSelectedAddressId(defaultAddress.id);
-        setFormData((prev) => ({
-          ...prev,
-          addressId: defaultAddress.id, // Important: Set the addressId field for the default address
-          shippingAddress: {
-            address: defaultAddress.address,
-            phone: defaultAddress.phone,
-            note: prev.shippingAddress.note,
-          },
-          customerInfo: {
-            ...prev.customerInfo,
-            fullName: defaultAddress.name,
-            phone: defaultAddress.phone,
-          },
-        }));
-      }
-    }
-  }, [addressData]);
-
-  // Cập nhật vouchers từ API
-  useEffect(() => {
-    if (voucherData && voucherData.getUserVouchersForCheckout) {
-      setAvailableVouchers(voucherData.getUserVouchersForCheckout);
-    }
-  }, [voucherData]);
+  // Function to remove expired vouchers
+  const [removeExpiredVouchers, { loading: removingExpiredVouchers }] = useMutation(REMOVE_EXPIRED_VOUCHERS);
 
   // Lấy thông tin chi tiết voucher dựa theo loại voucher
-  const getVoucherDetails = (voucher: UserVoucher): VoucherDetails | null => {
+  const getVoucherDetails = useCallback((voucher: UserVoucher): VoucherDetails | null => {
     if (voucher.voucher_type === 'voucher' && voucher.voucher) {
       return voucher.voucher;
     } else if (voucher.voucher_type === 'shop_voucher' && voucher.shop_voucher) {
       return voucher.shop_voucher;
     }
     return null;
-  };
+  }, []);
+
+  // Check if a voucher is valid (not expired)
+  const isVoucherValid = useCallback((voucher: UserVoucher): boolean => {
+    const voucherDetails = getVoucherDetails(voucher);
+    if (!voucherDetails) return false;
+
+    const now = new Date();
+    const validTo = new Date(voucherDetails.valid_to);
+    const validFrom = new Date(voucherDetails.valid_from);
+
+    // If voucher is deleted (delete_at is not null), it's invalid
+    if (voucherDetails.delete_at) return false;
+
+    return now >= validFrom && now <= validTo;
+  }, [getVoucherDetails]);
+
+  useEffect(() => {
+    if (addressData) {
+      setIsAddressLoading(false);
+      
+      if (addressData.addressByUserId && addressData.addressByUserId.address) {
+        // Biến đổi dữ liệu từ API thành định dạng SavedAddress
+        const transformedAddresses = addressData.addressByUserId.address
+          .filter((addr: AddressData) => !addr.delete_at) // Lọc ra các địa chỉ chưa bị xóa
+          .map((addr: AddressData) => ({
+            id: addr.address_id.toString(), 
+            name: addr.full_name,
+            address: addr.address,
+            phone: addr.phone,
+            isDefault: addr.is_default
+          }));
+        
+        setSavedAddresses(transformedAddresses);
+        
+        // Chọn địa chỉ mặc định nếu có
+        const defaultAddress = transformedAddresses.find((addr: SavedAddress) => addr.isDefault);
+        if (defaultAddress) {
+          setSelectedAddressId(defaultAddress.id);
+          setFormData((prev) => ({
+            ...prev,
+            addressId: defaultAddress.id,
+            shippingAddress: {
+              address: defaultAddress.address,
+              phone: defaultAddress.phone,
+              note: prev.shippingAddress.note,
+            },
+            customerInfo: {
+              ...prev.customerInfo,
+              fullName: defaultAddress.name,
+              phone: defaultAddress.phone,
+            },
+          }));
+        } else if (transformedAddresses.length > 0) {
+          // Nếu không có địa chỉ mặc định, chọn địa chỉ đầu tiên
+          const firstAddress = transformedAddresses[0];
+          setSelectedAddressId(firstAddress.id);
+          setFormData((prev) => ({
+            ...prev,
+            addressId: firstAddress.id,
+            shippingAddress: {
+              address: firstAddress.address,
+              phone: firstAddress.phone,
+              note: prev.shippingAddress.note,
+            },
+            customerInfo: {
+              ...prev.customerInfo,
+              fullName: firstAddress.name,
+              phone: firstAddress.phone,
+            },
+          }));
+        }
+      }
+    }
+  }, [addressData]);
+
+  // Fetch available vouchers
+  useEffect(() => {
+    if (voucherData && voucherData.getUserVouchersForCheckout) {
+      const vouchers = voucherData.getUserVouchersForCheckout;
+      setAvailableVouchers(vouchers);
+      
+      // Count expired vouchers
+      const expiredCount = vouchers.filter((voucher: UserVoucher) => !isVoucherValid(voucher)).length;
+      setExpiredVouchersCount(expiredCount);
+    }
+  }, [voucherData, isVoucherValid]);
 
   // Định dạng số tiền VND
   const formatCurrency = (amount: number) => {
@@ -214,7 +272,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 
   const handleAddressSelect = (addressId: string) => {
     setSelectedAddressId(addressId);
-    setUseNewAddress(false);
 
     const selectedAddress = savedAddresses.find(
       (addr) => addr.id === addressId
@@ -367,21 +424,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     return Math.max(0, totalAmount - totalDiscount);
   };
 
-  // Check if a voucher is valid (not expired)
-  const isVoucherValid = (voucher: UserVoucher): boolean => {
-    const voucherDetails = getVoucherDetails(voucher);
-    if (!voucherDetails) return false;
-
-    const now = new Date();
-    const validTo = new Date(voucherDetails.valid_to);
-    const validFrom = new Date(voucherDetails.valid_from);
-
-    // If voucher is deleted (delete_at is not null), it's invalid
-    if (voucherDetails.delete_at) return false;
-
-    return now >= validFrom && now <= validTo;
-  };
-
   // Check if a voucher is eligible based on order amount
   const getVoucherEligibilityMessage = (voucher: UserVoucher): string | null => {
     const voucherDetails = getVoucherDetails(voucher);
@@ -448,13 +490,53 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     };
   }, [showVoucherModal]);
 
+  // Function to remove expired vouchers
+  const handleRemoveExpiredVouchers = () => {
+    if (!userid) return;
+    
+    removeExpiredVouchers({
+      variables: {
+        userId: userid
+      }
+    })
+    .then((response: { data?: RemoveExpiredVouchersResponse }) => {
+      if (response.data?.removeExpiredVouchers) {
+        const { message } = response.data.removeExpiredVouchers;
+        
+        // Show success message
+        toast.success(`${message}`);
+        
+        // Reset expired vouchers count
+        setExpiredVouchersCount(0);
+        
+        // Refresh vouchers list
+        refetchVouchers();
+      }
+    })
+    .catch((error: Error) => {
+      toast.error("Không thể xóa voucher hết hạn: " + error.message);
+    });
+  };
+
   // Replace the voucher dropdown with a custom dropdown
   const renderVoucherSection = () => {
     if (availableVouchers.length === 0) return null;
     
     return (
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-medium mb-4">Mã giảm giá</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-medium">Voucher</h2>
+          {expiredVouchersCount > 0 && (
+            <button
+              type="button"
+              onClick={handleRemoveExpiredVouchers}
+              disabled={removingExpiredVouchers}
+              className="text-sm px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded text-gray-700 transition-colors"
+            >
+              {removingExpiredVouchers ? "Đang xóa..." : `Xóa ${expiredVouchersCount} voucher hết hạn`}
+            </button>
+          )}
+        </div>
         
         <div className="relative">
           <div className="w-full border border-gray-300 rounded overflow-hidden">
@@ -592,30 +674,43 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form data
+    if (!selectedAddressId && savedAddresses.length > 0) {
+      toast.error("Vui lòng chọn một địa chỉ giao hàng");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      // If there's a selected voucher, add the discounted product information
+      // Create order data
       const updatedFormData = {...formData};
       
+      // Set addressId
+      updatedFormData.addressId = selectedAddressId;
+      
+      // Add discounted product info if voucher is selected
       if (selectedVoucherId !== null) {
         const selectedVoucher = availableVouchers.find(v => v.voucher_storage_id === selectedVoucherId);
         if (selectedVoucher) {
           const { discountedProducts } = calculateVoucherDiscount(selectedVoucher);
-          // The parent component's onPlaceOrder will need to handle this discounted product info
           updatedFormData.discountedProducts = discountedProducts;
         }
       }
       
+      console.log("Dữ liệu đơn hàng:", updatedFormData);
+      
       const success = await onPlaceOrder(updatedFormData);
       if (success) {
+        toast.success("Đặt hàng thành công!");
         router.push("/customer/user/purchase");
       } else {
-        alert("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.");
+        toast.error("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.");
       }
     } catch (error) {
       console.error("Lỗi khi đặt hàng:", error);
-      alert("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.");
+      toast.error("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.");
     } finally {
       setIsSubmitting(false);
     }
@@ -629,44 +724,79 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           Thông tin địa chỉ giao hàng
         </h2>
 
-        {/* Phần chọn địa chỉ đã lưu */}
-        {savedAddresses.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">
-              Chọn địa chỉ đã lưu
-            </h3>
-            <div className="space-y-3">
-              {savedAddresses.map((address) => (
-                <label
-                  key={address.id}
-                  className={`flex items-start p-3 border rounded cursor-pointer hover:bg-gray-50 ${
-                    selectedAddressId === address.id && !useNewAddress
-                      ? "border-custom-red bg-red-50"
-                      : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="savedAddress"
-                    checked={selectedAddressId === address.id && !useNewAddress}
-                    onChange={() => handleAddressSelect(address.id)}
-                    className="h-5 w-5 mt-1 text-custom-red focus:ring-custom-red"
-                  />
-                  <div className="ml-3">
-                    <div className="font-medium">
-                      {address.name} {address.isDefault && "(Mặc định)"}
-                    </div>
-                    <div className="text-sm text-gray-700">
-                      SĐT: {address.phone}
-                    </div>
-                    <div className="text-sm text-gray-700">
-                      {address.address}
-                    </div>
-                  </div>
-                </label>
-              ))}
-            </div>
+        {isAddressLoading ? (
+          <div className="py-6 text-center">
+            <svg className="animate-spin h-8 w-8 mx-auto text-custom-red" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p className="mt-2 text-gray-600">Đang tải thông tin địa chỉ...</p>
           </div>
+        ) : (
+          <>
+            {/* Phần chọn địa chỉ đã lưu */}
+            {savedAddresses.length > 0 ? (
+              <div>
+                <div className="space-y-3">
+                  {savedAddresses.map((address) => (
+                    <label
+                      key={address.id}
+                      className={`flex items-start p-3 border rounded cursor-pointer hover:bg-gray-50 ${
+                        selectedAddressId === address.id
+                          ? "border-custom-red bg-red-50"
+                          : ""
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="savedAddress"
+                        checked={selectedAddressId === address.id}
+                        onChange={() => handleAddressSelect(address.id)}
+                        className="h-5 w-5 mt-1 text-custom-red focus:ring-custom-red"
+                      />
+                      <div className="ml-3">
+                        <div className="font-medium">
+                          {address.name} {address.isDefault && "(Mặc định)"}
+                        </div>
+                        <div className="text-sm text-gray-700">
+                          SĐT: {address.phone}
+                        </div>
+                        <div className="text-sm text-gray-700">
+                          {address.address}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={() => router.push('/customer/user/address')}
+                    className="text-custom-red hover:underline"
+                  >
+                    Quản lý địa chỉ
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-6 mb-4">
+                <div className="mb-4 text-yellow-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-800 mb-2">Bạn chưa có địa chỉ giao hàng</h3>
+                <p className="text-gray-600 mb-4">Vui lòng thêm địa chỉ mới trong trang quản lý địa chỉ</p>
+                <button
+                  type="button"
+                  onClick={() => router.push('/customer/user/address')}
+                  className="px-6 py-2 mb-4 bg-custom-red text-white rounded-md hover:bg-red-700 transition-colors"
+                >
+                  Thêm địa chỉ mới
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -715,27 +845,27 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                       </div>
                     </div>
                     
-                    <div className="space-y-4">
-                      <div>
+          <div className="space-y-4">
+            <div>
                         <div className="text-sm text-gray-500">Mô tả</div>
                         <div className="font-medium">
                           Giảm {discountPercent}% tối đa {formatCurrency(voucherDetails.max_discount_price)} cho đơn hàng từ {formatCurrency(voucherDetails.minimum_require_price)}
                         </div>
-                      </div>
-                      
-                      <div>
+            </div>
+
+            <div>
                         <div className="text-sm text-gray-500">Thời gian sử dụng</div>
                         <div>
                           {new Date(voucherDetails.valid_from).toLocaleDateString('vi-VN')} - {new Date(voucherDetails.valid_to).toLocaleDateString('vi-VN')}
                         </div>
-                      </div>
-                      
-                      <div>
+            </div>
+
+            <div>
                         <div className="text-sm text-gray-500">Số lượng</div>
                         <div>
                           {voucherDetails.quantity} voucher
-                        </div>
-                      </div>
+            </div>
+          </div>
                       
                       <div>
                         <div className="text-sm text-gray-500">Trạng thái</div>
@@ -749,7 +879,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                           </div>
                         )}
                       </div>
-                    </div>
+      </div>
                     
                     <div className="mt-6 flex gap-2">
                       <button
@@ -841,11 +971,18 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           <span className="text-custom-red">{formatCurrency(calculateFinalAmount())}</span>
         </div>
 
+        {/* Nút đặt hàng */}
         <button
           type="submit"
-          className="w-full py-3 bg-custom-red hover:bg-red-700 text-white font-medium rounded transition-colors"
-          disabled={isSubmitting}
+          disabled={isSubmitting || savedAddresses.length === 0}
+          className="w-full py-3 bg-custom-red hover:bg-red-700 text-white font-medium rounded transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
         >
+          {isSubmitting && (
+            <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          )}
           {isSubmitting ? "Đang xử lý..." : "Đặt hàng"}
         </button>
       </div>

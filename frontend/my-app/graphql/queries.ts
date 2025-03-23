@@ -539,6 +539,17 @@ export const GET_INVOICE_DETAIL = gql`
         address
         phone
       }
+      products {
+        product_variation_name
+        base_price
+        percent_discount
+        status
+        product_name
+        shop_id
+        shop_name
+        image_url
+        quantity
+      }
       invoice_products {
         invoice_product_id
         product_name
@@ -548,11 +559,9 @@ export const GET_INVOICE_DETAIL = gql`
         discount_percent
         product_variation_id
         product_variation {
-          product {
-            product_images {
-              image_url
-              is_thumbnail
-            }
+          product_images {
+            image_url
+            is_thumbnail
           }
         }
       }
@@ -739,6 +748,36 @@ export const GET_USER_VOUCHERS_FOR_CHECKOUT = gql`
         delete_at
         shop_id
       }
+    }
+  }
+`;
+
+// Query cho admin để lấy tất cả invoice trong hệ thống
+export const GET_ALL_INVOICES = gql`
+  query GetAllInvoices($getAllInvoicesInput: GetAllInvoicesInput!) {
+    getAllInvoices(getAllInvoicesInput: $getAllInvoicesInput) {
+      data {
+        invoice_id
+        payment_method
+        payment_status
+        order_status
+        total_amount
+        shipping_fee
+        id_user
+        shop_id
+        create_at
+        update_at
+        user {
+          user_name
+          email
+          phone
+        }
+        shop {
+          shop_name
+        }
+      }
+      totalCount
+      totalPage
     }
   }
 `;

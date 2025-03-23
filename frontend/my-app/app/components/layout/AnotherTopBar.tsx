@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation";
 //import { UserButton } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
 import { useAuth } from "@clerk/nextjs";
+import { useApolloClient } from "@apollo/client";
+import { GET_CART, GET_CART_PRODUCTS } from "@/graphql/queries";
 
 const AnotherTopBar = () => {
   const router = useRouter();
   const { userId } = useAuth();
   const { user } = useUser();
+  const apolloClient = useApolloClient();
   const [userName, setUserName] = useState("");
   const [mounted, setMounted] = useState(false);
 
@@ -24,6 +27,39 @@ const AnotherTopBar = () => {
       setUserName(`${user.firstName} ${user.lastName}`);
     }
   }, [user]);
+
+  // Xử lý khi click vào nút giỏ hàng
+  const handleCartClick = async () => {
+    if (userId) {
+      try {
+        // Xóa cache cho các query liên quan đến giỏ hàng
+        await apolloClient.cache.evict({ fieldName: 'getcart' });
+        await apolloClient.cache.evict({ fieldName: 'getCartProducts' });
+        await apolloClient.cache.gc();
+        
+        // Hoặc refetch dữ liệu
+        const { data: cartData } = await apolloClient.query({
+          query: GET_CART,
+          variables: { id: userId },
+          fetchPolicy: 'network-only'
+        });
+        
+        if (cartData?.getcart?.cart_id) {
+          await apolloClient.query({
+            query: GET_CART_PRODUCTS,
+            variables: { cart_id: cartData.getcart.cart_id },
+            fetchPolicy: 'network-only'
+          });
+        }
+        
+        // Chuyển hướng đến trang giỏ hàng
+        router.push(`/customer/shoppingcart/${userId}`);
+      } catch (error) {
+        console.error("Error refreshing cart data:", error);
+        router.push(`/customer/shoppingcart/${userId}`);
+      }
+    }
+  };
 
   // Tránh lỗi hydration
   if (!mounted) {
@@ -79,7 +115,7 @@ const AnotherTopBar = () => {
               width={30}
               height={30}
               alt="shopping"
-              onClick={() => router.push(`/customer/shoppingcart/${userId}`)}
+              onClick={handleCartClick}
             />
           </button>
         </div>

@@ -129,4 +129,50 @@ export class VoucherStorageService {
   remove(id: number) {
     return `This action removes a #${id} voucherStorage`;
   }
+
+  async removeExpiredVouchers(userId: string) {
+    const currentDate = new Date();
+    
+    // Find expired vouchers in user's storage
+    const expiredVouchers = await this.prisma.voucher_storage.findMany({
+      where: {
+        user_id: userId,
+        OR: [
+          {
+            voucher_type: 'voucher',
+            voucher: {
+              valid_to: {
+                lt: currentDate,
+              },
+            },
+          },
+          {
+            voucher_type: 'shop_voucher',
+            shop_voucher: {
+              valid_to: {
+                lt: currentDate,
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    // Delete expired vouchers
+    if (expiredVouchers.length > 0) {
+      const voucherIds = expiredVouchers.map(v => v.voucher_storage_id);
+      await this.prisma.voucher_storage.deleteMany({
+        where: {
+          voucher_storage_id: {
+            in: voucherIds,
+          },
+        },
+      });
+    }
+
+    return {
+      count: expiredVouchers.length,
+      message: `Removed ${expiredVouchers.length} expired vouchers`,
+    };
+  }
 }

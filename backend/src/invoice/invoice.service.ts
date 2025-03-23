@@ -3,7 +3,8 @@ import { PrismaService } from '../prisma.service';
 import { UpdateInvoiceStatusInput } from './dto/update-invoice-status.input';
 import { GetInvoicesByShopInput } from './dto/get-invoices-by-shop.input';
 import { GetOutOfStockProductsInput } from './dto/get-out-of-stock-products.input';
-import { InvoicePagination, OrderStatus } from './entities/invoice.entity';
+import { GetAllInvoicesInput } from './dto/get-all-invoices.input';
+import { Invoice, InvoicePagination, OrderStatus } from './entities/invoice.entity';
 import { CreateInvoiceInput } from './dto/create-invoice.input';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -52,7 +53,7 @@ export class InvoiceService {
           // For COD, set payment status as pending
           payment_status: payment_method === 'COD' ? 'pending' : 'awaiting_payment',
           // Initial order status is "pending"
-          order_status: 'pending',
+          order_status: OrderStatus.WAITING_FOR_DELIVERY,
           total_amount: finalAmount,
           shipping_fee,
           shipping_address_id,
@@ -287,6 +288,7 @@ export class InvoiceService {
 
   async getInvoiceDetail(invoice_id: string) {
     try {
+      // Get the invoice data with user
       const invoice = await this.prisma.invoice.findUnique({
         where: { invoice_id },
         include: {
@@ -298,18 +300,22 @@ export class InvoiceService {
         throw new Error(`Invoice with ID ${invoice_id} not found`);
       }
       
-      // Lấy thông tin sản phẩm trong đơn hàng
-      const cartProducts = await this.prisma.cart_Product.findMany({
+      // Get shipping address if available
+      const shippingAddress = invoice.shipping_address_id 
+        ? await this.prisma.address.findUnique({
+            where: { address_id: invoice.shipping_address_id }
+          })
+        : null;
+      
+      // Get invoice products
+      const invoiceProducts = await this.prisma.invoice_Product.findMany({
+        where: { invoice_id },
         include: {
           product_variation: {
             include: {
               product: {
                 include: {
-                  shop: true,
-                  product_images: {
-                    where: { is_thumbnail: true },
-                    take: 1
-                  }
+                  product_images: true
                 }
               }
             }
@@ -317,21 +323,23 @@ export class InvoiceService {
         }
       });
       
-      const products = cartProducts.map(cp => {
-        const pv = cp.product_variation;
-        const product = pv.product;
-        const thumbnailUrl = product.product_images[0]?.image_url;
+      // Format products for products field (legacy)
+      const products = invoiceProducts.map(ip => {
+        const pv = ip.product_variation;
+        const product = pv?.product;
+        const thumbnailUrl = product?.product_images.find(img => img.is_thumbnail)?.image_url 
+          || product?.product_images[0]?.image_url;
         
         return {
-          product_variation_name: pv.product_variation_name,
-          base_price: parseFloat(pv.base_price.toString()),
-          percent_discount: parseFloat(pv.percent_discount.toString()),
-          status: pv.status,
-          product_name: product.product_name,
-          shop_id: product.shop_id,
-          shop_name: product.shop.shop_name,
-          image_url: thumbnailUrl,
-          quantity: cp.quantity
+          product_variation_name: pv?.product_variation_name || ip.variation_name,
+          base_price: parseFloat((pv?.base_price || ip.price).toString()),
+          percent_discount: parseFloat((pv?.percent_discount || ip.discount_percent).toString()),
+          status: pv?.status || 'unknown',
+          product_name: product?.product_name || ip.product_name,
+          shop_id: product?.shop_id || '',
+          shop_name: '',
+          image_url: thumbnailUrl || '',
+          quantity: ip.quantity
         };
       });
       
@@ -339,15 +347,171 @@ export class InvoiceService {
         invoice_id: invoice.invoice_id,
         payment_method: invoice.payment_method,
         payment_status: invoice.payment_status,
-        order_status: (invoice as any).order_status,
+        order_status: invoice.order_status,
         total_amount: parseFloat(invoice.total_amount.toString()),
         shipping_fee: parseFloat(invoice.shipping_fee.toString()),
         user_name: invoice.user.user_name,
+        address: shippingAddress?.address || '',
+        phone: shippingAddress?.phone || invoice.user.phone || '',
         create_at: invoice.create_at,
-        products
+        // New fields
+        user: invoice.user,
+        shipping_address: {
+          address: shippingAddress?.address || '',
+          phone: shippingAddress?.phone || invoice.user.phone || ''
+        },
+        products,
+        invoice_products: invoiceProducts
       };
     } catch (error) {
       throw new Error(`Failed to get invoice detail: ${error.message}`);
+    }
+  }
+
+  async getAllInvoices(getAllInvoicesInput: GetAllInvoicesInput): Promise<InvoicePagination> {
+    try {
+      const { page = 1, limit = 10, order_status, search } = getAllInvoicesInput;
+      const skip = (page - 1) * limit;
+
+      // Build the count query
+      let countQuery = `
+        SELECT COUNT(DISTINCT i.invoice_id) as total
+        FROM Invoice i
+        JOIN User u ON i.id_user = u.id_user
+        WHERE 1=1
+      `;
+      
+      const countParams: string[] = [];
+      
+      // Add filters to count query
+      if (order_status) {
+        countQuery += ` AND i.order_status = ?`;
+        countParams.push(order_status);
+      }
+      
+      if (search) {
+        countQuery += ` AND (i.invoice_id LIKE ? OR u.user_name LIKE ? OR u.email LIKE ?)`;
+        const searchTerm = `%${search}%`;
+        countParams.push(searchTerm, searchTerm, searchTerm);
+      }
+      
+      // Execute count query
+      const countResult = await this.prisma.$queryRawUnsafe(countQuery, ...countParams) as Array<{total: number}>;
+      const totalCount = countResult[0]?.total ? Number(countResult[0].total) : 0;
+      const totalPage = Math.ceil(totalCount / limit);
+
+      // Build the data query
+      let dataQuery = `
+        SELECT
+          i.invoice_id,
+          i.payment_method,
+          i.payment_status,
+          i.order_status,
+          i.total_amount,
+          i.shipping_fee,
+          i.id_user,
+          i.shop_id,
+          i.create_at,
+          i.update_at,
+          u.user_name,
+          u.email,
+          u.phone,
+          s.shop_name
+        FROM Invoice i
+        JOIN User u ON i.id_user = u.id_user
+        JOIN Shop s ON i.shop_id = s.shop_id
+        WHERE 1=1
+      `;
+      
+      const dataParams = [...countParams];
+      
+      // Add the same filters to data query
+      if (order_status) {
+        dataQuery += ` AND i.order_status = ?`;
+      }
+      
+      if (search) {
+        dataQuery += ` AND (i.invoice_id LIKE ? OR u.user_name LIKE ? OR u.email LIKE ?)`;
+        const searchTerm = `%${search}%`;
+        if (!order_status) {
+          dataParams.push(searchTerm, searchTerm, searchTerm);
+        }
+      }
+      
+      dataQuery += ` ORDER BY i.create_at DESC LIMIT ? OFFSET ?`;
+      dataParams.push(String(limit), String(skip));
+      
+      interface InvoiceRaw {
+        invoice_id: string;
+        payment_method: string;
+        payment_status: string;
+        order_status: string;
+        total_amount: string | number;
+        shipping_fee: string | number;
+        id_user: string;
+        shop_id: string;
+        create_at: Date;
+        update_at: Date;
+        user_name: string;
+        email: string;
+        phone: string;
+        shop_name: string;
+      }
+      
+      interface AdminInvoice {
+        invoice_id: string;
+        payment_method: string;
+        payment_status: string;
+        order_status: string;
+        total_amount: number;
+        shipping_fee: number;
+        id_user: string;
+        shop_id: string;
+        cart_id: string;
+        create_at: Date;
+        update_at: Date;
+        user: {
+          user_name: string;
+          email: string;
+          phone: string;
+        };
+        shop: {
+          shop_name: string;
+        };
+      }
+      
+      const invoices = await this.prisma.$queryRawUnsafe(dataQuery, ...dataParams) as InvoiceRaw[];
+      
+      // Transform the raw result to match the expected format
+      const formattedInvoices = invoices.map(invoice => ({
+        invoice_id: invoice.invoice_id,
+        payment_method: invoice.payment_method,
+        payment_status: invoice.payment_status,
+        order_status: invoice.order_status,
+        total_amount: parseFloat(invoice.total_amount.toString()),
+        shipping_fee: parseFloat(invoice.shipping_fee.toString()),
+        id_user: invoice.id_user,
+        shop_id: invoice.shop_id,
+        cart_id: '', // Add an empty cart_id as it's required by GraphQL schema but not in the database
+        create_at: invoice.create_at,
+        update_at: invoice.update_at,
+        user: {
+          user_name: invoice.user_name,
+          email: invoice.email,
+          phone: invoice.phone
+        },
+        shop: {
+          shop_name: invoice.shop_name
+        }
+      }));
+      
+      return {
+        data: formattedInvoices as unknown as Invoice[],
+        totalCount,
+        totalPage
+      };
+    } catch (error) {
+      throw new Error(`Failed to get all invoices: ${error.message}`);
     }
   }
 } 

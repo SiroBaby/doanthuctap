@@ -34,18 +34,34 @@ const CartPage = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { data: cartData, loading: cartLoading, error: cartError } = useQuery(GET_CART, {
+  const { data: cartData, loading: cartLoading, error: cartError, refetch: refetchCart } = useQuery(GET_CART, {
     variables: { id: id?.toString() },
+    fetchPolicy: 'network-only', // Luôn lấy dữ liệu mới từ server
   });
 
   const [removeCartProduct, { loading: removeCartProductLoading, error: removeCartProductError }] = useMutation(REMOVE_PRODUCT_VARIATION_FROM_CART_PRODUCT);
   
   const cartId = cartData?.getcart?.cart_id;
   
-  const { data: cartProductsData, loading: cartProductsLoading, error: cartProductsError } = useQuery(GET_CART_PRODUCTS, {
+  const { data: cartProductsData, loading: cartProductsLoading, error: cartProductsError, refetch: refetchCartProducts } = useQuery(GET_CART_PRODUCTS, {
     variables: { cart_id: cartId },
     skip: !cartId,
+    fetchPolicy: 'network-only', // Luôn lấy dữ liệu mới từ server
   });
+
+  // Refetch dữ liệu khi component mount
+  useEffect(() => {
+    if (id) {
+      refetchCart();
+    }
+  }, [id, refetchCart]);
+
+  // Refetch dữ liệu sản phẩm khi có cartId
+  useEffect(() => {
+    if (cartId) {
+      refetchCartProducts();
+    }
+  }, [cartId, refetchCartProducts]);
 
   useEffect(() => {
     if (!cartProductsLoading && cartProductsData?.getCartProducts) {
@@ -116,19 +132,15 @@ const CartPage = () => {
           setCartItems((prevItems) => 
             prevItems.filter((item) => parseInt(item.id) !== cartproductid)
           );
+          
+          // Refetch dữ liệu để đảm bảo UI đồng bộ với server
+          refetchCartProducts();
         },
         onError: (error) => {
           // Dismiss loading toast and show error
           toast.dismiss(loadingToast);
           toast.error(`Lỗi khi xóa sản phẩm: ${error.message}`);
-        },
-        // Refetch cart products after mutation to ensure data consistency
-        refetchQueries: [
-          {
-            query: GET_CART_PRODUCTS,
-            variables: { cart_id: cartId }
-          }
-        ]
+        }
       });
     } catch (error) {
       toast.error("Có lỗi xảy ra khi xóa sản phẩm");
@@ -206,7 +218,7 @@ const CartPage = () => {
     return groups;
   }, {} as Record<string, CartItem[]>);
 
-  if (isLoading) {
+  if (isLoading || cartLoading || cartProductsLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-custom-red"></div>

@@ -276,7 +276,9 @@ type Invoice {
   shipping_fee: Float!
   id_user: String!
   cart_id: String!
+  shop_id: String!
   user: User
+  shop: Shop
   create_at: DateTime
   update_at: DateTime
 }
@@ -293,6 +295,11 @@ type ProductVariationOrder {
   quantity: Float!
 }
 
+type ShippingAddress {
+  address: String
+  phone: String
+}
+
 type InvoiceDetail {
   invoice_id: String!
   payment_method: String
@@ -304,7 +311,26 @@ type InvoiceDetail {
   address: String
   phone: String
   create_at: DateTime
+  user: User
+  shipping_address: ShippingAddress
   products: [ProductVariationOrder!]
+  invoice_products: [InvoiceProduct!]
+}
+
+type ProductVariationDetail {
+  product: ProductDetail
+  product_images: [ProductImage!]
+}
+
+type InvoiceProduct {
+  invoice_product_id: Int!
+  product_name: String!
+  variation_name: String!
+  price: Float!
+  quantity: Int!
+  discount_percent: Float!
+  product_variation_id: Int!
+  product_variation: ProductVariationDetail
 }
 
 type InvoicePagination {
@@ -357,6 +383,11 @@ enum Voucher_type {
   shop_voucher
 }
 
+type RemoveExpiredVouchersResponse {
+  count: Int!
+  message: String!
+}
+
 type Query {
   users(pagination: PaginationInput!): UserPagination!
   user(id: String!): User!
@@ -395,6 +426,7 @@ type Query {
   getInvoicesByShop(getInvoicesByShopInput: GetInvoicesByShopInput!): InvoicePagination!
   getInvoiceDetail(invoice_id: String!): InvoiceDetail!
   getOutOfStockProducts(getOutOfStockProductsInput: GetOutOfStockProductsInput!): InvoicePagination!
+  getAllInvoices(getAllInvoicesInput: GetAllInvoicesInput!): InvoicePagination!
   getcart(id: String!): Cart!
   getCartProducts(cart_id: String!): [CartProduct!]!
   cartProduct(id: Int!): CartProduct!
@@ -420,6 +452,13 @@ input GetOutOfStockProductsInput {
   shop_id: String!
   page: Int! = 1
   limit: Int! = 10
+}
+
+input GetAllInvoicesInput {
+  order_status: String
+  page: Int! = 1
+  limit: Int! = 10
+  search: String
 }
 
 type Mutation {
@@ -472,6 +511,7 @@ type Mutation {
   createVoucherStorage(createVoucherStorageInput: CreateVoucherStorageInput!): VoucherStorage!
   updateVoucherStorage(updateVoucherStorageInput: UpdateVoucherStorageInput!): VoucherStorage!
   removeVoucherStorage(id: Int!): VoucherStorage!
+  removeExpiredVouchers(userId: String!): RemoveExpiredVouchersResponse!
 }
 
 input UpdateUserInput {

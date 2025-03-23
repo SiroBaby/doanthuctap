@@ -365,3 +365,13 @@ mutation RemoveCartProduct($cartproductid: Int!, $productvariationid: Int!) {
     }
 }
 `;
+
+// Remove expired vouchers from a user's storage
+export const REMOVE_EXPIRED_VOUCHERS = gql`
+mutation RemoveExpiredVouchers($userId: String!) {
+    removeExpiredVouchers(userId: $userId) {
+        count
+        message
+    }
+}
+`;

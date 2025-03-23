@@ -160,6 +160,7 @@ export default function ProductDetailPage() {
               alt={product.product_name}
               fill={true}
               style={{ objectFit: "contain" }}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               priority
             />
           </div>

@@ -6,6 +6,7 @@ import { useQuery } from '@apollo/client';
 import { GET_PRODUCT_BY_ID } from '@/graphql/queries';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
+import Image from 'next/image';
 
 // MUI Components
 import {
@@ -82,10 +83,12 @@ const ProductDetailPage = () => {
             {/* Thumbnail images */}
             <Box className="flex gap-2 p-4 overflow-x-auto bg-white dark:bg-dark-sidebar">
               {product.product_images?.map((image: any) => (
-                <img
+                <Image
                   key={image.image_id}
                   src={image.image_url}
                   alt={`${product.product_name} thumbnail`}
+                  width={80}
+                  height={80}
                   className={`w-20 h-20 object-cover cursor-pointer rounded-md border-2 transition-opacity ${
                     mainImage === image.image_url
                       ? 'border-blue-500 opacity-100'

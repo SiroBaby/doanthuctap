@@ -3,6 +3,7 @@ import { VoucherStorageService } from './voucher-storage.service';
 import { VoucherStorage } from './entities/voucher-storage.entity';
 import { CreateVoucherStorageInput } from './dto/create-voucher-storage.input';
 import { UpdateVoucherStorageInput } from './dto/update-voucher-storage.input';
+import { RemoveExpiredVouchersResponse } from './entities/remove-expired-vouchers.entity';
 
 @Resolver(() => VoucherStorage)
 export class VoucherStorageResolver {
@@ -46,5 +47,10 @@ export class VoucherStorageResolver {
   @Mutation(() => VoucherStorage)
   removeVoucherStorage(@Args('id', { type: () => Int }) id: number) {
     return this.voucherStorageService.remove(id);
+  }
+
+  @Mutation(() => RemoveExpiredVouchersResponse)
+  removeExpiredVouchers(@Args('userId', { type: () => String }) userId: string) {
+    return this.voucherStorageService.removeExpiredVouchers(userId);
   }
 }

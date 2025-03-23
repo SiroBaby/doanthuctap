@@ -1,12 +1,15 @@
-import { ObjectType, Field, Float, registerEnumType } from '@nestjs/graphql';
+import { ObjectType, Field, Float, Int, registerEnumType } from '@nestjs/graphql';
 import { User } from '../../user/entities/user.entity';
+import { Shop } from '../../shop/entities/shop.entity';
+import { ProductImage } from '../../product-image/entities/product-image.entity';
+import { ProductDetail } from '../../product-detail/entities/product-detail.entity';
 
 export enum OrderStatus {
-  WAITING_FOR_DELIVERY = 'waiting_for_delivery',
-  PROCESSED = 'processed',
-  DELIVERY = 'delivery',
-  DELIVERED = 'delivered',
-  CANCELED = 'canceled',
+  WAITING_FOR_DELIVERY = 'WAITING_FOR_DELIVERY',
+  PROCESSED = 'PROCESSED',
+  DELIVERY = 'DELIVERY',
+  DELIVERED = 'DELIVERED',
+  CANCELED = 'CANCELED',
 }
 
 registerEnumType(OrderStatus, {
@@ -40,8 +43,14 @@ export class Invoice {
   @Field()
   cart_id: string;
 
+  @Field()
+  shop_id: string;
+
   @Field(() => User, { nullable: true })
   user?: User;
+
+  @Field(() => Shop, { nullable: true })
+  shop?: Shop;
 
   @Field(() => Date, { nullable: true })
   create_at?: Date;
@@ -81,6 +90,15 @@ export class ProductVariationOrder {
 }
 
 @ObjectType()
+export class ShippingAddress {
+  @Field(() => String, { nullable: true })
+  address?: string;
+  
+  @Field(() => String, { nullable: true })
+  phone?: string;
+}
+
+@ObjectType()
 export class InvoiceDetail {
   @Field()
   invoice_id: string;
@@ -99,7 +117,7 @@ export class InvoiceDetail {
 
   @Field(() => Float)
   shipping_fee: number;
-
+  
   @Field(() => String)
   user_name: string;
 
@@ -111,9 +129,54 @@ export class InvoiceDetail {
 
   @Field(() => Date, { nullable: true })
   create_at?: Date;
+  
+  @Field(() => User, { nullable: true })
+  user?: User;
 
+  @Field(() => ShippingAddress, { nullable: true })
+  shipping_address?: ShippingAddress;
+  
   @Field(() => [ProductVariationOrder], { nullable: true })
   products?: ProductVariationOrder[];
+  
+  @Field(() => [InvoiceProduct], { nullable: true })
+  invoice_products?: InvoiceProduct[];
+}
+
+@ObjectType()
+export class ProductVariationDetail {
+  @Field(() => ProductDetail, { nullable: true })
+  product?: ProductDetail;
+  
+  @Field(() => [ProductImage], { nullable: true })
+  product_images?: ProductImage[];
+}
+
+@ObjectType()
+export class InvoiceProduct {
+  @Field(() => Int)
+  invoice_product_id: number;
+  
+  @Field(() => String)
+  product_name: string;
+  
+  @Field(() => String)
+  variation_name: string;
+  
+  @Field(() => Float)
+  price: number;
+  
+  @Field(() => Int)
+  quantity: number;
+  
+  @Field(() => Float)
+  discount_percent: number;
+  
+  @Field(() => Int)
+  product_variation_id: number;
+  
+  @Field(() => ProductVariationDetail, { nullable: true })
+  product_variation?: ProductVariationDetail;
 }
 
 @ObjectType()

@@ -4,6 +4,7 @@ import { Invoice, InvoiceDetail, InvoicePagination } from './entities/invoice.en
 import { UpdateInvoiceStatusInput } from './dto/update-invoice-status.input';
 import { GetInvoicesByShopInput } from './dto/get-invoices-by-shop.input';
 import { GetOutOfStockProductsInput } from './dto/get-out-of-stock-products.input';
+import { GetAllInvoicesInput } from './dto/get-all-invoices.input';
 import { CreateInvoiceInput } from './dto/create-invoice.input';
 
 @Resolver(() => Invoice)
@@ -33,5 +34,10 @@ export class InvoiceResolver {
   @Query(() => InvoicePagination, { name: 'getOutOfStockProducts' })
   getOutOfStockProducts(@Args('getOutOfStockProductsInput') getOutOfStockProductsInput: GetOutOfStockProductsInput) {
     return this.invoiceService.getOutOfStockProducts(getOutOfStockProductsInput);
+  }
+
+  @Query(() => InvoicePagination, { name: 'getAllInvoices' })
+  getAllInvoices(@Args('getAllInvoicesInput') getAllInvoicesInput: GetAllInvoicesInput) {
+    return this.invoiceService.getAllInvoices(getAllInvoicesInput);
   }
 } 
