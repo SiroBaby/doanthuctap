@@ -231,6 +231,17 @@ export const REMOVE_SHOP_VOUCHER = gql`
   }
 `;
 
+// System voucher mutations
+export const REMOVE_VOUCHER = gql`
+  mutation RemoveVoucher($id: Int!) {
+    removeVoucher(id: $id) {
+      id
+      code
+      delete_at
+    }
+  }
+`;
+
 // Shop mutations
 export const UPDATE_SHOP = gql`
   mutation UpdateShop($updateShopInput: UpdateShopInput!) {

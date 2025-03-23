@@ -61,6 +61,7 @@ export class ProductService {
             product_variations: true,
             category: {
               select: {
+                category_id: true,
                 category_name: true,
               },
             },

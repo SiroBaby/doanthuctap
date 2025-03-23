@@ -144,9 +144,40 @@ const CategoryPage = () => {
     // Loading state
     if (loading) {
         return (
-            <div className="h-screen flex items-center justify-center">
-                <CircularProgress />
-                <Typography className="ml-3">Đang tải danh mục...</Typography>
+            <div className="h-screen flex flex-col">
+                {/* Always show search bar and Add button */}
+                <div className="p-6">
+                    <Card className="!bg-white dark:!bg-dark-sidebar shadow-lg">
+                        <CardContent className="!p-0">
+                            <div className="p-4 bg-gray-50 dark:bg-dark-sidebar border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                                <div className="flex-grow mr-3">
+                                    <SearchBar
+                                        onSearch={handleSearch}
+                                        placeholder="Tìm kiếm danh mục..."
+                                        initialValue={search}
+                                        buttonText="Search"
+                                    />
+                                </div>
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => router.push('/admin/category/add')}
+                                    className="whitespace-nowrap h-10"
+                                    startIcon={<AddIcon />}
+                                >
+                                    Thêm danh mục
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+                
+                {/* Loading indicator */}
+                <div className="flex-grow flex items-center justify-center">
+                    <CircularProgress />
+                    <Typography className="ml-3">Đang tải danh mục...</Typography>
+                </div>
             </div>
         );
     }
@@ -154,17 +185,48 @@ const CategoryPage = () => {
     // Error state
     if (error) {
         return (
-            <div className="h-screen flex flex-col items-center justify-center p-4">
-                <Alert severity="error" className="mb-4 w-full max-w-2xl">
-                    <Typography variant="h6">Lỗi khi tải dữ liệu</Typography>
-                    <Typography>{error.message || 'Đã xảy ra lỗi không xác định'}</Typography>
-                </Alert>
-                <Button
-                    variant="contained"
-                    onClick={() => window.location.reload()}
-                >
-                    Thử lại
-                </Button>
+            <div className="h-screen flex flex-col">
+                {/* Always show search bar and Add button */}
+                <div className="p-6">
+                    <Card className="!bg-white dark:!bg-dark-sidebar shadow-lg">
+                        <CardContent className="!p-0">
+                            <div className="p-4 bg-gray-50 dark:bg-dark-sidebar border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                                <div className="flex-grow mr-3">
+                                    <SearchBar
+                                        onSearch={handleSearch}
+                                        placeholder="Tìm kiếm danh mục..."
+                                        initialValue={search}
+                                        buttonText="Search"
+                                    />
+                                </div>
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => router.push('/admin/category/add')}
+                                    className="whitespace-nowrap h-10"
+                                    startIcon={<AddIcon />}
+                                >
+                                    Thêm danh mục
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+                
+                {/* Error message */}
+                <div className="flex-grow flex flex-col items-center justify-center p-4">
+                    <Alert severity="error" className="mb-4 w-full max-w-2xl">
+                        <Typography variant="h6">Lỗi khi tải dữ liệu</Typography>
+                        <Typography>{error.message || 'Đã xảy ra lỗi không xác định'}</Typography>
+                    </Alert>
+                    <Button
+                        variant="contained"
+                        onClick={() => window.location.reload()}
+                    >
+                        Thử lại
+                    </Button>
+                </div>
             </div>
         );
     }

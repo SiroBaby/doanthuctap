@@ -1,5 +1,38 @@
 import { gql } from '@apollo/client';
 
+
+//QUERY CHO TH
+// Get products for homepage
+export const GET_PRODUCTS_FOR_HOMEPAGE = gql`
+query Products ($page: Int!, $limit: Int!, $search: String) {
+    products(pagination: { page: $page, limit: $limit , search: $search}) {
+        data {
+            product_name
+            status
+            product_images {
+                image_id
+                image_url
+                is_thumbnail
+            }
+            product_variations {
+                product_variation_id
+                base_price
+                percent_discount
+                status
+                create_at
+            }
+            product_id
+            category {
+                category_name
+                category_id
+            }
+        }
+        totalCount
+        totalPage
+    }
+}
+`;
+
 //query user
 //query get users
 export const GET_USERS = gql`
@@ -711,27 +744,3 @@ export const GET_USER_VOUCHERS_FOR_CHECKOUT = gql`
 `;
 
 
-//QUERY CHO TH
-// Get products for homepage
-export const GET_PRODUCTS_FOR_HOMEPAGE = gql`
-query Products ($page: Int!, $limit: Int!) {
-    products(pagination: { page: $page, limit: $limit }) {
-        data {
-            product_name
-            status
-            product_images {
-                image_id
-                image_url
-                is_thumbnail
-            }
-            product_variations {
-                product_variation_id
-                base_price
-                percent_discount
-                status
-            }
-            product_id
-        }
-    }
-}
-`;
