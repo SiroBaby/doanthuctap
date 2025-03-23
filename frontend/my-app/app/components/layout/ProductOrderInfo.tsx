@@ -9,6 +9,8 @@ import { useAuth } from "@clerk/nextjs";
 interface ProductOrderInfoProps {
   productName: string;
   brandName: string;
+  shopId: string;
+  mainImageUrl: string;
   variations: Array<{
     product_variation_id: number;
     name: string;
@@ -28,6 +30,8 @@ interface ProductOrderInfoProps {
 const ProductOrderInfo: React.FC<ProductOrderInfoProps> = ({
   productName,
   brandName,
+  shopId,
+  mainImageUrl,
   variations,
   onVariationChange,
 }) => {
@@ -136,9 +140,49 @@ const ProductOrderInfo: React.FC<ProductOrderInfoProps> = ({
   };
 
   const handleBuyNow = () => {
-    console.log(
-      `Buying ${quantity} items of ${productName}, variation: ${selectedVariation.name}, price: ${discountedPrice}`
-    );
+    // Kiểm tra số lượng còn trong kho
+    if (quantity > selectedVariation.stock_quantity) {
+      setErrorMessage(`Chỉ còn ${selectedVariation.stock_quantity} sản phẩm trong kho`);
+      setTimeout(() => setErrorMessage(null), 5000);
+      return;
+    }
+
+    // Kiểm tra người dùng đã đăng nhập chưa
+    if (!userId) {
+      setErrorMessage("Vui lòng đăng nhập để mua hàng");
+      setTimeout(() => setErrorMessage(null), 5000);
+      return;
+    }
+
+    // Tạo dữ liệu sản phẩm mua ngay
+    const product = {
+      id: `buy-now-${Date.now()}`, // ID tạm thời cho mục đích mua ngay
+      productId: selectedVariation.product_variation_id.toString(),
+      name: productName,
+      variation: selectedVariation.name,
+      price: discountedPrice,
+      originalPrice: selectedVariation.basePrice,
+      quantity: quantity,
+      image: mainImageUrl,
+      shopId: shopId,
+      shopName: brandName,
+      checked: true
+    };
+
+    // Chuẩn bị dữ liệu để lưu vào sessionStorage
+    const checkoutData = {
+      userId: userId,
+      shopId: shopId,
+      items: [product],
+      subtotal: product.price * product.quantity,
+      isBuyNow: true
+    };
+
+    // Lưu vào sessionStorage
+    sessionStorage.setItem('checkoutData', JSON.stringify(checkoutData));
+
+    // Chuyển hướng đến trang thanh toán
+    window.location.href = '/customer/payment';
   };
 
   return (

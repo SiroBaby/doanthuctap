@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
     Card,
     CardContent,
@@ -39,7 +39,7 @@ const AddShopVoucherPage = () => {
         minimum_require_price: '',
         max_discount_price: '',
         quantity: '',
-        max_use_per_user: '',
+        max_use_per_user: '1',
         valid_from: moment().format('YYYY-MM-DDTHH:mm'), // Default to current time
         valid_to: moment().add(7, 'days').format('YYYY-MM-DDTHH:mm'), // Default to 7 days from now
     });
@@ -51,8 +51,14 @@ const AddShopVoucherPage = () => {
     const [snackbar, setSnackbar] = useState({
         open: false,
         message: '',
-        severity: 'success' as 'success' | 'error',
+        severity: 'success' as 'success' | 'error' | 'info' | 'warning',
     });
+
+    // Thêm state để theo dõi khi nào mutation hoàn thành
+    const [mutationCompleted, setMutationCompleted] = useState(false);
+
+    // Thêm state để theo dõi nếu thêm voucher thành công
+    const [voucherAdded, setVoucherAdded] = useState(false);
 
     // Fetch shop_id from user_id
     const { loading: shopIdLoading } = useQuery<ShopIdResponse>(GET_SHOP_ID_BY_USER_ID, {
@@ -66,16 +72,32 @@ const AddShopVoucherPage = () => {
     });
 
     // Mutation hook
-    const [createVoucher, { loading }] = useMutation(ADD_SHOP_VOUCHER, {
-        onCompleted: () => {
+    const [createVoucher, { loading, data: mutationData }] = useMutation(ADD_SHOP_VOUCHER, {
+        onCompleted: (data) => {
+            console.log("Voucher added successfully, redirecting...", data);
             setSnackbar({
                 open: true,
                 message: 'Thêm voucher thành công!',
                 severity: 'success',
             });
-            setTimeout(() => router.push('/seller/voucher'), 2000); // Redirect after 2s
+            
+            // Đánh dấu mutation đã hoàn tất và voucher đã được thêm
+            setMutationCompleted(true);
+            setVoucherAdded(true);
+            
+            // Thử nhiều cách chuyển hướng khác nhau để đảm bảo hoạt động
+            try {
+                window.location.href = '/seller/voucher';
+            } catch (error) {
+                console.error("Error during redirect:", error);
+                // Nếu cách trên thất bại, thử cách khác
+                setTimeout(() => {
+                    window.location.replace('/seller/voucher');
+                }, 500);
+            }
         },
         onError: (error) => {
+            console.error("Error adding voucher:", error);
             setSnackbar({
                 open: true,
                 message: `Lỗi khi thêm voucher: ${error.message}`,
@@ -83,6 +105,19 @@ const AddShopVoucherPage = () => {
             });
         },
     });
+
+    // Effect để theo dõi khi mutation hoàn tất
+    useEffect(() => {
+        if (mutationCompleted && mutationData) {
+            console.log("Using useEffect to redirect");
+            // Thêm một cách chuyển hướng khác dùng useEffect
+            const redirectTimer = setTimeout(() => {
+                router.push('/seller/voucher');
+            }, 800);
+            
+            return () => clearTimeout(redirectTimer);
+        }
+    }, [mutationCompleted, mutationData, router]);
 
     // Handle input change
     const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,9 +175,16 @@ const AddShopVoucherPage = () => {
     // Handle form submission
     const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!validateForm()) return;
+        console.log("Form submitted, validating...");
+        
+        if (!validateForm()) {
+            console.log("Form validation failed", errors);
+            return;
+        }
+        
+        console.log("ShopId:", shopId);
         if (!shopId) {
+            console.error("Shop ID missing");
             setSnackbar({
                 open: true,
                 message: 'Không thể xác định shop ID. Vui lòng thử lại sau.',
@@ -159,14 +201,42 @@ const AddShopVoucherPage = () => {
             max_discount_price: parseInt(formData.max_discount_price) || 0,
             quantity: parseInt(formData.quantity) || 0,
             max_use_per_user: parseInt(formData.max_use_per_user) || 0,
-            valid_from: formData.valid_from ? new Date(formData.valid_from).toISOString() : '',
-            valid_to: formData.valid_to ? new Date(formData.valid_to).toISOString() : '',
+            valid_from: formData.valid_from ? 
+                // Tạo Date object và để nó giữ nguyên định dạng local time 
+                // Khi chuyển sang ISO sẽ điều chỉnh sang UTC tự động
+                new Date(formData.valid_from).toISOString() : '',
+            valid_to: formData.valid_to ? 
+                // Tạo Date object và để nó giữ nguyên định dạng local time
+                // Khi chuyển sang ISO sẽ điều chỉnh sang UTC tự động
+                new Date(formData.valid_to).toISOString() : '',
             shop_id: shopId,
         };
 
-        // Execute mutation
-        createVoucher({ variables: { createShopVoucherInput } });
-    }, [formData, createVoucher, validateForm, shopId]);
+        // Hiển thị thông báo đang xử lý
+        setSnackbar({
+            open: true,
+            message: 'Đang thêm voucher, vui lòng đợi...',
+            severity: 'info',
+        });
+
+        console.log("Sending mutation with data:", { createShopVoucherInput });
+        createVoucher({ 
+            variables: { createShopVoucherInput },
+            onCompleted(data) {
+                console.log("Mutation successful directly from handleSubmit:", data);
+                // Đặt một flag trong localStorage để đánh dấu chuyển hướng cần xảy ra
+                localStorage.setItem('voucher_added_redirect', '1');
+                
+                // Thử cả phương pháp chuyển hướng trực tiếp từ đây
+                setTimeout(() => {
+                    window.location.href = '/seller/voucher';
+                }, 1000);
+            },
+            onError(error) {
+                console.error("Mutation error:", error);
+            }
+        });
+    }, [formData, createVoucher, validateForm, shopId, errors]);
 
     // Handle snackbar close
     const handleCloseSnackbar = useCallback(() => {
@@ -187,6 +257,22 @@ const AddShopVoucherPage = () => {
 
     return (
         <div className="overflow-y-auto p-6">
+            {voucherAdded && (
+                <div className="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative flex justify-between items-center">
+                    <div>
+                        <strong className="font-bold">Thành công!</strong>
+                        <span className="block sm:inline"> Voucher đã được thêm thành công.</span>
+                    </div>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => window.location.href = '/seller/voucher'}
+                    >
+                        Quay về trang voucher
+                    </Button>
+                </div>
+            )}
+            
             <Box className="flex justify-between items-center mb-6">
                 <Button
                     variant="outlined"
@@ -275,7 +361,7 @@ const AddShopVoucherPage = () => {
                                     error={!!errors.quantity}
                                     helperText={errors.quantity}
                                 />
-                                <TextField
+                                {/* <TextField
                                     fullWidth
                                     label="Số lần sử dụng tối đa mỗi người"
                                     name="max_use_per_user"
@@ -288,7 +374,7 @@ const AddShopVoucherPage = () => {
                                     inputProps={{ min: 1 }}
                                     error={!!errors.max_use_per_user}
                                     helperText={errors.max_use_per_user}
-                                />
+                                /> */}
                                 <TextField
                                     fullWidth
                                     label="Hiệu lực từ"
@@ -329,9 +415,46 @@ const AddShopVoucherPage = () => {
                                 >
                                     {loading ? 'Đang thêm...' : 'Thêm Voucher'}
                                 </Button>
+                                <Button
+                                    type="button"
+                                    variant="outlined"
+                                    color="secondary"
+                                    size="large"
+                                    className="ml-4"
+                                    onClick={() => {
+                                        // Reset form về giá trị mặc định
+                                        setFormData({
+                                            code: '',
+                                            discount_percent: '',
+                                            minimum_require_price: '',
+                                            max_discount_price: '',
+                                            quantity: '',
+                                            max_use_per_user: '1',
+                                            valid_from: moment().format('YYYY-MM-DDTHH:mm'),
+                                            valid_to: moment().add(7, 'days').format('YYYY-MM-DDTHH:mm'),
+                                        });
+                                        setErrors({});
+                                    }}
+                                >
+                                    Đặt lại
+                                </Button>
                             </Grid>
                         </Grid>
                     </form>
+                    
+                    <Box className="mt-6 p-4 bg-gray-50 rounded border border-gray-200">
+                        <Typography variant="subtitle1" className="font-semibold mb-2">
+                            Hướng dẫn tạo voucher:
+                        </Typography>
+                        <ul className="list-disc pl-5 space-y-1">
+                            <li>Mã voucher không được trùng với mã đã tồn tại</li>
+                            <li>Phần trăm giảm giá là số từ 1-100%</li>
+                            <li>Giá tối thiểu là giá trị đơn hàng tối thiểu để áp dụng voucher</li>
+                            <li>Giảm tối đa là số tiền giảm tối đa mà voucher này có thể giảm</li>
+                            <li>Thời gian hiệu lực và hết hạn quyết định khoảng thời gian voucher có thể được sử dụng</li>
+                            <li>Sau khi tạo voucher, bạn sẽ được chuyển về trang quản lý voucher</li>
+                        </ul>
+                    </Box>
                 </CardContent>
             </Card>
 
@@ -341,8 +464,27 @@ const AddShopVoucherPage = () => {
                 onClose={handleCloseSnackbar}
                 anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-                <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+                <Alert 
+                    onClose={handleCloseSnackbar} 
+                    severity={snackbar.severity}
+                    action={
+                        mutationCompleted ? (
+                            <Button 
+                                color="inherit" 
+                                size="small"
+                                onClick={() => window.location.href = '/seller/voucher'}
+                            >
+                                Đi đến trang voucher
+                            </Button>
+                        ) : null
+                    }
+                >
                     {snackbar.message}
+                    {mutationCompleted && (
+                        <div className="mt-2">
+                            Nếu không được chuyển hướng tự động, hãy click vào nút bên phải.
+                        </div>
+                    )}
                 </Alert>
             </Snackbar>
         </div>

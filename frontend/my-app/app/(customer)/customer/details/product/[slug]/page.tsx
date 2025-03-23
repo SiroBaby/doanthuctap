@@ -190,6 +190,8 @@ export default function ProductDetailPage() {
           <ProductOrderInfo
             productName={product.product_name}
             brandName={product.brand}
+            shopId={product.shop.shop_id}
+            mainImageUrl={selectedImage || product.product_images[0]?.image_url || "/icon/product-placeholder.png"}
             variations={variations}
             onVariationChange={handleVariationChange}
           />

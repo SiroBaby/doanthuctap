@@ -172,13 +172,30 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     const voucherDetails = getVoucherDetails(voucher);
     if (!voucherDetails) return false;
 
+    // Lấy thời gian hiện tại theo giờ địa phương
     const now = new Date();
+    
+    // Xử lý thời gian từ database (UTC) sang giờ địa phương cho công bằng khi so sánh
+    // Sử dụng Date constructor mặc định sẽ chuyển đổi thời gian UTC sang local time
     const validTo = new Date(voucherDetails.valid_to);
     const validFrom = new Date(voucherDetails.valid_from);
+
+    // Ghi log cho mục đích debug
+    console.log('Voucher validity check:', {
+      code: voucher.voucher_type === 'voucher' ? voucher.voucher?.code : voucher.shop_voucher?.code,
+      now: now.toISOString(),
+      validFrom: validFrom.toISOString(),
+      validTo: validTo.toISOString(),
+      nowLocal: now.toString(),
+      validFromLocal: validFrom.toString(),
+      validToLocal: validTo.toString(),
+      isValid: now >= validFrom && now <= validTo
+    });
 
     // If voucher is deleted (delete_at is not null), it's invalid
     if (voucherDetails.delete_at) return false;
 
+    // So sánh thời gian local với local
     return now >= validFrom && now <= validTo;
   }, [getVoucherDetails]);
 

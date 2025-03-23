@@ -140,9 +140,9 @@ const EditShopVoucherPage = () => {
             newErrors.quantity = 'Số lượng phải lớn hơn 0';
         }
 
-        if (!formData.max_use_per_user || parseInt(formData.max_use_per_user) <= 0) {
-            newErrors.max_use_per_user = 'Số lần sử dụng tối đa phải lớn hơn 0';
-        }
+        // if (!formData.max_use_per_user || parseInt(formData.max_use_per_user) <= 0) {
+        //     newErrors.max_use_per_user = 'Số lần sử dụng tối đa phải lớn hơn 0';
+        // }
 
         if (!formData.valid_from) newErrors.valid_from = 'Thời gian hiệu lực không được để trống';
         if (!formData.valid_to) newErrors.valid_to = 'Thời gian hết hạn không được để trống';
@@ -358,7 +358,7 @@ const EditShopVoucherPage = () => {
                                     error={!!errors.quantity}
                                     helperText={errors.quantity}
                                 />
-                                <TextField
+                                {/* <TextField
                                     fullWidth
                                     label="Số lần sử dụng tối đa mỗi người"
                                     name="max_use_per_user"
@@ -371,7 +371,7 @@ const EditShopVoucherPage = () => {
                                     inputProps={{ min: 1 }}
                                     error={!!errors.max_use_per_user}
                                     helperText={errors.max_use_per_user}
-                                />
+                                /> */}
                                 <TextField
                                     fullWidth
                                     label="Hiệu lực từ"
