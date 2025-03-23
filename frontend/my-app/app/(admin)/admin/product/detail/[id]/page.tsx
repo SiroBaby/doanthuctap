@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // app/products/[id]/page.tsx
 'use client';
 
@@ -60,7 +61,7 @@ const ProductDetailPage = () => {
 
   // Hàm tính giá sau khi giảm
   const calculateDiscountedPrice = (basePrice: number, percentDiscount: number) => {
-    return basePrice * (1 - percentDiscount / 100);
+    return basePrice - (basePrice * percentDiscount);
   };
 
   return (
@@ -161,7 +162,7 @@ const ProductDetailPage = () => {
                       <Typography className="text-gray-700 dark:text-gray-300">
                         <span className="font-medium">Giảm giá:</span>{' '}
                         <span className="text-red-500 dark:text-custom-red">
-                          {variation.percent_discount}%
+                          {variation.percent_discount * 100}%
                         </span>
                       </Typography>
                     )}
