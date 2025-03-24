@@ -14,13 +14,11 @@ export interface InvoiceProduct {
   quantity: number;
   discount_percent: number;
   product_variation_id: number;
-  product_variation?: {
-    product?: {
-      product_images?: Array<{
-        image_url: string;
-        is_thumbnail: boolean;
-      }>;
-    };
+  product_variation: {
+    product_images: Array<{
+      image_url: string;
+      is_thumbnail: boolean;
+    }>;
   };
 }
 

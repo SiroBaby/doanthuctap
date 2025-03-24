@@ -241,23 +241,23 @@ const InvoiceDetailPage = () => {
   }, 0);
   
   return (
-    <Container className="py-6">
+    <Container className="py-6 dark:bg-dark-primary min-h-screen">
       <Box className="mb-6">
         <Breadcrumbs aria-label="breadcrumb" className="mb-4">
           <Link href="/seller/order" passHref>
-            <MuiLink underline="hover" color="inherit">
+            <MuiLink underline="hover" className="dark:!text-gray-300">
               Quản lý đơn hàng
             </MuiLink>
           </Link>
-          <Typography color="text.primary">Chi tiết đơn hàng</Typography>
+          <Typography className="dark:!text-gray-400">Chi tiết đơn hàng</Typography>
         </Breadcrumbs>
         
         <Box className="flex justify-between items-center mb-4">
           <Box>
-            <Typography variant="h4" component="h1" className="font-bold">
+            <Typography variant="h4" component="h1" className="font-bold dark:!text-gray-200">
               Chi tiết đơn hàng
             </Typography>
-            <Typography color="textSecondary">
+            <Typography className="dark:!text-gray-400">
               Mã đơn hàng: {invoice.invoice_id}
             </Typography>
           </Box>
@@ -265,13 +265,14 @@ const InvoiceDetailPage = () => {
             variant="outlined"
             startIcon={<ArrowBackIcon />}
             onClick={() => router.back()}
+            className="dark:!text-gray-300 dark:!border-gray-600"
           >
             Quay lại
           </Button>
         </Box>
         
         <Box className="flex items-center mb-4">
-          <Typography variant="body1" className="mr-2">
+          <Typography variant="body1" className="mr-2 dark:!text-gray-300">
             Trạng thái:
           </Typography>
           {getStatusChip(invoice.order_status)}
@@ -280,78 +281,78 @@ const InvoiceDetailPage = () => {
       
       <Grid container spacing={3}>
         <Grid item xs={12} md={8}>
-          <Paper className="p-4 mb-4">
-            <Typography variant="h6" className="mb-3 font-semibold">
+          <Paper className="p-4 mb-4 dark:!bg-dark-sidebar">
+            <Typography variant="h6" className="mb-3 font-semibold dark:!text-gray-200">
               Thông tin đơn hàng
             </Typography>
             
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="body2" className="dark:text-dark-text">
                   Ngày đặt hàng
                 </Typography>
-                <Typography variant="body1" className="font-medium">
+                <Typography variant="body1" className="font-medium dark:!text-gray-200">
                   {formatDate(invoice.create_at)}
                 </Typography>
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="body2" className="dark:text-dark-text">
                   Phương thức thanh toán
                 </Typography>
-                <Typography variant="body1" className="font-medium">
+                <Typography variant="body1" className="font-medium dark:!text-gray-200">
                   {invoice.payment_method || 'Thanh toán khi nhận hàng'}
                 </Typography>
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="body2" className="dark:text-dark-text">
                   Trạng thái thanh toán
                 </Typography>
-                <Typography variant="body1" className="font-medium">
+                <Typography variant="body1" className="font-medium dark:!text-gray-200">
                   {invoice.payment_status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}
                 </Typography>
               </Grid>
             </Grid>
           </Paper>
           
-          <Paper className="p-4 mb-4">
-            <Typography variant="h6" className="mb-3 font-semibold">
+          <Paper className="p-4 mb-4 dark:!bg-dark-sidebar">
+            <Typography variant="h6" className="mb-3 font-semibold dark:!text-gray-200">
               Thông tin khách hàng
             </Typography>
             
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="body2" className="dark:text-dark-text">
                   Tên khách hàng
                 </Typography>
-                <Typography variant="body1" className="font-medium">
+                <Typography variant="body1" className="font-medium dark:!text-gray-200">
                   {invoice.user.user_name}
                 </Typography>
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="body2" className="dark:text-dark-text">
                   Số điện thoại
                 </Typography>
-                <Typography variant="body1" className="font-medium">
-                  {invoice.user.phone || 'Không có'}
+                <Typography variant="body1" className="font-medium dark:!text-gray-200">
+                  {invoice.shipping_address?.phone || 'Không có'}
                 </Typography>
               </Grid>
               
               <Grid item xs={12}>
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="body2" className="dark:text-dark-text">
                   Địa chỉ giao hàng
                 </Typography>
-                <Typography variant="body1" className="font-medium">
+                <Typography variant="body1" className="font-medium dark:!text-gray-200">
                   {invoice.shipping_address?.address || 'Không có'}
                 </Typography>
               </Grid>
             </Grid>
           </Paper>
           
-          <Paper className="p-4">
-            <Typography variant="h6" className="mb-3 font-semibold">
+          <Paper className="p-4 dark:!bg-dark-sidebar">
+            <Typography variant="h6" className="mb-3 font-semibold dark:text-dark-text">
               Sản phẩm
             </Typography>
             
@@ -359,10 +360,10 @@ const InvoiceDetailPage = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Sản phẩm</TableCell>
-                    <TableCell align="center">Đơn giá</TableCell>
-                    <TableCell align="center">Số lượng</TableCell>
-                    <TableCell align="right">Thành tiền</TableCell>
+                    <TableCell  className="dark:text-dark-text">Sản phẩm</TableCell>
+                    <TableCell align="center" className="dark:text-dark-text">Đơn giá</TableCell>
+                    <TableCell align="center" className="dark:text-dark-text">Số lượng</TableCell>
+                    <TableCell align="right" className="dark:text-dark-text">Thành tiền</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -370,7 +371,8 @@ const InvoiceDetailPage = () => {
                     const price = product.price || 0;
                     const discountPercent = product.discount_percent || 0;
                     const discountedPrice = calculatePrice(price, discountPercent);
-                    const imageUrl = product.product_variation?.product?.product_images?.[0]?.image_url;
+                    const imageUrl = product.product_variation?.product_images?.find(img => img.is_thumbnail)?.image_url
+                      || product.product_variation?.product_images?.[0]?.image_url;
                     
                     return (
                       <TableRow key={product.invoice_product_id || index}>
@@ -392,10 +394,10 @@ const InvoiceDetailPage = () => {
                               </Box>
                             )}
                             <Box>
-                              <Typography variant="body1" className="font-medium">
+                              <Typography variant="body1" className="font-medium dark:text-dark-text">
                                 {product.product_name}
                               </Typography>
-                              <Typography variant="body2" color="textSecondary">
+                              <Typography variant="body2" className="dark:text-dark-text">
                                 {product.variation_name}
                               </Typography>
                             </Box>
@@ -403,20 +405,20 @@ const InvoiceDetailPage = () => {
                         </TableCell>
                         <TableCell align="center">
                           <Box>
-                            <Typography variant="body2" className="font-medium">
+                            <Typography variant="body2" className="font-medium !text-inherit dark:!text-dark-text">
                               {formatCurrency(discountedPrice)}
                             </Typography>
                             {discountPercent > 0 && (
-                              <Typography variant="body2" color="textSecondary" className="line-through">
+                              <Typography variant="body2" className="!text-inherit dark:!text-dark-text line-through opacity-75">
                                 {formatCurrency(price)}
                               </Typography>
                             )}
                           </Box>
                         </TableCell>
-                        <TableCell align="center">
+                        <TableCell align="center" className="!text-inherit dark:!text-dark-text">
                           {product.quantity}
                         </TableCell>
-                        <TableCell align="right">
+                        <TableCell align="right" className="!text-inherit dark:!text-dark-text">
                           {formatCurrency(discountedPrice * product.quantity)}
                         </TableCell>
                       </TableRow>
@@ -429,26 +431,26 @@ const InvoiceDetailPage = () => {
         </Grid>
         
         <Grid item xs={12} md={4}>
-          <Paper className="p-4 mb-4">
-            <Typography variant="h6" className="mb-3 font-semibold">
+          <Paper className="p-4 mb-4 dark:!bg-dark-sidebar">
+            <Typography variant="h6" className="mb-3 font-semibold dark:!text-gray-200">
               Tóm tắt đơn hàng
             </Typography>
             
             <Box className="mb-2 flex justify-between">
-              <Typography variant="body1">Tạm tính</Typography>
-              <Typography variant="body1">{formatCurrency(subtotal)}</Typography>
+              <Typography variant="body1" className="dark:!text-gray-300">Tạm tính</Typography>
+              <Typography variant="body1" className="dark:!text-gray-200">{formatCurrency(subtotal)}</Typography>
             </Box>
             
             <Box className="mb-2 flex justify-between">
-              <Typography variant="body1">Phí vận chuyển</Typography>
-              <Typography variant="body1">{formatCurrency(invoice.shipping_fee)}</Typography>
+              <Typography variant="body1" className="dark:!text-gray-300">Phí vận chuyển</Typography>
+              <Typography variant="body1" className="dark:!text-gray-200">{formatCurrency(invoice.shipping_fee)}</Typography>
             </Box>
             
             <Divider className="my-3" />
             
             <Box className="mb-2 flex justify-between">
-              <Typography variant="h6">Tổng cộng</Typography>
-              <Typography variant="h6" className="font-bold">
+              <Typography variant="h6" className="dark:!text-gray-300">Tổng cộng</Typography>
+              <Typography variant="h6" className="font-bold dark:!text-gray-200">
                 {formatCurrency(invoice.total_amount)}
               </Typography>
             </Box>
@@ -456,8 +458,8 @@ const InvoiceDetailPage = () => {
           
           {invoice.order_status !== OrderStatus.DELIVERED && 
            invoice.order_status !== OrderStatus.CANCELED && (
-            <Paper className="p-4">
-              <Typography variant="h6" className="mb-3 font-semibold">
+            <Paper className="p-4 dark:!bg-dark-sidebar">
+              <Typography variant="h6" className="mb-3 font-semibold dark:!text-gray-200">
                 Thao tác
               </Typography>
               
@@ -470,6 +472,7 @@ const InvoiceDetailPage = () => {
                     color="error"
                     startIcon={<CancelIcon />}
                     onClick={() => handleActionClick(OrderStatus.CANCELED)}
+                    className="dark:!text-gray-300 dark:!border-gray-600"
                   >
                     Hủy đơn hàng
                   </Button>

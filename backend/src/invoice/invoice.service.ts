@@ -383,43 +383,64 @@ export class InvoiceService {
         where: { invoice_id },
         include: {
           user: true,
-        }
-      });
-      
-      if (!invoice) {
-        throw new Error(`Invoice with ID ${invoice_id} not found`);
-      }
-      
-      // Get shipping address if available
-      const shippingAddress = invoice.shipping_address_id 
-        ? await this.prisma.address.findUnique({
-            where: { address_id: invoice.shipping_address_id }
-          })
-        : null;
-      
-      // Get invoice products
-      const invoiceProducts = await this.prisma.invoice_Product.findMany({
-        where: { invoice_id },
-        include: {
-          product_variation: {
+          invoice_products: {
             include: {
-              product: {
+              product_variation: {
                 include: {
-                  product_images: true
+                  product: {
+                    include: {
+                      product_images: true,
+                      shop: true
+                    }
+                  }
                 }
               }
             }
           }
         }
       });
-      
-      // Format products for products field (legacy)
-      const products = invoiceProducts.map(ip => {
+
+      if (!invoice) {
+        throw new Error(`Invoice with ID ${invoice_id} not found`);
+      }
+
+      // Get shipping address if available
+      const shippingAddress = invoice.shipping_address_id
+        ? await this.prisma.address.findUnique({
+            where: { address_id: invoice.shipping_address_id }
+          })
+        : null;
+
+      // Format invoice products to include product images
+      const formattedInvoiceProducts = invoice.invoice_products.map(ip => ({
+        invoice_product_id: ip.invoice_product_id,
+        product_name: ip.product_name,
+        variation_name: ip.variation_name,
+        price: parseFloat(ip.price.toString()),
+        quantity: ip.quantity,
+        discount_percent: parseFloat(ip.discount_percent.toString()),
+        discount_amount: ip.discount_amount ? parseFloat(ip.discount_amount.toString()) : undefined,
+        product_variation_id: ip.product_variation_id,
+        product_variation: {
+          product_variation_name: ip.product_variation?.product_variation_name || ip.variation_name,
+          base_price: parseFloat((ip.product_variation?.base_price || ip.price).toString()),
+          percent_discount: parseFloat((ip.product_variation?.percent_discount || ip.discount_percent).toString()),
+          status: ip.product_variation?.status || 'unknown',
+          product_images: ip.product_variation?.product?.product_images?.map(img => ({
+            image_url: img.image_url,
+            is_thumbnail: img.is_thumbnail || false
+          })) || []
+        }
+      }));
+
+      // Format products for legacy support
+      const products = invoice.invoice_products.map(ip => {
         const pv = ip.product_variation;
         const product = pv?.product;
-        const thumbnailUrl = product?.product_images.find(img => img.is_thumbnail)?.image_url 
-          || product?.product_images[0]?.image_url;
-        
+        const thumbnailUrl = product?.product_images?.find(img => img.is_thumbnail)?.image_url
+          || product?.product_images?.[0]?.image_url
+          || '';
+
         return {
           product_variation_name: pv?.product_variation_name || ip.variation_name,
           base_price: parseFloat((pv?.base_price || ip.price).toString()),
@@ -427,20 +448,12 @@ export class InvoiceService {
           status: pv?.status || 'unknown',
           product_name: product?.product_name || ip.product_name,
           shop_id: product?.shop_id || '',
-          shop_name: '',
-          image_url: thumbnailUrl || '',
+          shop_name: product?.shop?.shop_name || '',
+          image_url: thumbnailUrl,
           quantity: ip.quantity
         };
       });
 
-      // Format invoice products to include discount_amount
-      const formattedInvoiceProducts = invoiceProducts.map(ip => ({
-        ...ip,
-        price: parseFloat(ip.price.toString()),
-        discount_percent: parseFloat(ip.discount_percent.toString()),
-        discount_amount: ip.discount_amount ? parseFloat(ip.discount_amount.toString()) : 0
-      }));
-      
       return {
         invoice_id: invoice.invoice_id,
         payment_method: invoice.payment_method,
@@ -448,20 +461,20 @@ export class InvoiceService {
         order_status: invoice.order_status,
         total_amount: parseFloat(invoice.total_amount.toString()),
         shipping_fee: parseFloat(invoice.shipping_fee.toString()),
-        user_name: invoice.user.user_name,
-        address: shippingAddress?.address || '',
-        phone: shippingAddress?.phone || invoice.user.phone || '',
         create_at: invoice.create_at,
-        // New fields
         user: invoice.user,
-        shipping_address: {
-          address: shippingAddress?.address || '',
-          phone: shippingAddress?.phone || invoice.user.phone || ''
+        shipping_address: shippingAddress ? {
+          address: shippingAddress.address,
+          phone: shippingAddress.phone
+        } : {
+          address: '',
+          phone: invoice.user.phone || ''
         },
         products,
         invoice_products: formattedInvoiceProducts
       };
     } catch (error) {
+      console.error('Error getting invoice detail:', error);
       throw new Error(`Failed to get invoice detail: ${error.message}`);
     }
   }

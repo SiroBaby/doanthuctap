@@ -193,7 +193,7 @@ export class ProductVariationDetail {
   @Field()
   status: string;
 
-  @Field(() => [SimpleProductImage])
+  @Field(() => [SimpleProductImage], { defaultValue: [] })
   product_images: SimpleProductImage[];
 }
 

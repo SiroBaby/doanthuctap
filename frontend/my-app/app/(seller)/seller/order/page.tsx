@@ -521,13 +521,13 @@ const OrderManagementPage = () => {
                       {config.icon}
                     </span>
                     {config.title}
-                  </Typography>
+        </Typography>
                   <Typography 
                     variant="h4" 
                     className={`mt-2 ${selectedTab === key ? 'text-blue-600' : 'text-gray-600'} dark:text-blue-400 font-bold text-center`}
                   >
                     {orderCounts[key] || 0}
-                  </Typography>
+        </Typography>
                 </CardContent>
               </Card>
             </Grid>
@@ -751,11 +751,11 @@ const OrderManagementPage = () => {
 
         {/* Order Tabs */}
         <Paper className="mb-6 shadow-md hover:shadow-lg transition-shadow duration-300 max-w-6xl mx-auto dark:bg-dark-sidebar dark:text-dark-text">
-          <Tabs
-            value={selectedTab}
-            onChange={handleTabChange}
-            variant="scrollable"
-            scrollButtons="auto"
+        <Tabs
+          value={selectedTab}
+          onChange={handleTabChange}
+          variant="scrollable"
+          scrollButtons="auto"
             className="border-b border-gray-200 dark:border-gray-700"
             TabIndicatorProps={{
               style: {
@@ -788,13 +788,13 @@ const OrderManagementPage = () => {
                 `}
               />
             ))}
-          </Tabs>
+        </Tabs>
         </Paper>
 
         {/* Orders Table */}
         <TableContainer component={Paper} className="shadow-md max-w-6xl mx-auto dark:bg-dark-sidebar">
-          <Table>
-            <TableHead>
+                <Table>
+                  <TableHead>
               <TableRow className="bg-gray-50 dark:bg-dark-sidebar">
                 <TableCell className="font-semibold dark:text-dark-text">Mã đơn hàng</TableCell>
                 <TableCell className="font-semibold dark:text-dark-text">Khách hàng</TableCell>
@@ -803,9 +803,9 @@ const OrderManagementPage = () => {
                 <TableCell className="font-semibold dark:text-dark-text">Ngày đặt</TableCell>
                 <TableCell className="font-semibold dark:text-dark-text">Trạng thái</TableCell>
                 <TableCell align="right" className="font-semibold dark:text-dark-text">Thao tác</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
               {invoicesData?.getInvoicesByShop.data.map((invoice) => (
                 <TableRow 
                   key={invoice.invoice_id}
@@ -821,53 +821,53 @@ const OrderManagementPage = () => {
                   <TableCell className="text-blue-600 dark:text-blue-400 font-medium">{formatCurrency(invoice.total_amount)}</TableCell>
                   <TableCell className="dark:text-dark-text">{countTotalProducts(invoice)}</TableCell>
                   <TableCell className="dark:text-dark-text">{formatDate(invoice.create_at)}</TableCell>
-                  <TableCell>{getStatusChip(invoice.order_status)}</TableCell>
+                        <TableCell>{getStatusChip(invoice.order_status)}</TableCell>
                   <TableCell align="right">
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleMenuOpen(e, invoice.invoice_id)}
+                              <IconButton
+                                size="small"
+                                onClick={(e) => handleMenuOpen(e, invoice.invoice_id)}
                       className="hover:bg-gray-100 dark:hover:bg-dark-hover dark:text-dark-text"
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                              >
+                                <MoreVertIcon />
+                              </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
 
         {/* Pagination */}
         <Box className="flex justify-center mt-6">
-          <Pagination
+                  <Pagination
             count={invoicesData?.getInvoicesByShop.totalPage || 1}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
+                    page={page}
+                    onChange={handlePageChange}
+                    color="primary"
             size="large"
             className="shadow-sm"
-          />
+                  />
         </Box>
 
         {/* Action Menu */}
-        <Menu
-          anchorEl={actionMenuAnchorEl}
-          open={Boolean(actionMenuAnchorEl)}
-          onClose={handleMenuClose}
-        >
+      <Menu
+        anchorEl={actionMenuAnchorEl}
+        open={Boolean(actionMenuAnchorEl)}
+        onClose={handleMenuClose}
+      >
           <MenuItem onClick={() => handleViewDetail(menuInvoiceId!)}>
             <RemoveRedEyeIcon className="mr-2" /> Xem chi tiết
-          </MenuItem>
+        </MenuItem>
           {selectedTab !== 'delivered' && 
            selectedTab !== 'canceled' && 
            selectedTab in tabConfig &&
            tabConfig[selectedTab as keyof typeof tabConfig]?.nextAction && (
             <MenuItem
               onClick={() =>
-                handleActionClick(
+            handleActionClick(
                   menuInvoiceId!,
-                  tabConfig[selectedTab as keyof typeof tabConfig].nextAction!.status
-                )
+              tabConfig[selectedTab as keyof typeof tabConfig].nextAction!.status
+            )
               }
             >
               {tabConfig[selectedTab as keyof typeof tabConfig].nextAction?.icon}
@@ -883,30 +883,30 @@ const OrderManagementPage = () => {
               }
             >
               <CancelIcon className="mr-2" /> Hủy đơn
-            </MenuItem>
-          )}
-        </Menu>
+          </MenuItem>
+        )}
+      </Menu>
 
         {/* Confirm Dialog */}
         <Dialog open={confirmDialogOpen} onClose={handleCancel}>
-          <DialogTitle>Xác nhận thay đổi trạng thái</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
+        <DialogTitle>Xác nhận thay đổi trạng thái</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
               Bạn có chắc chắn muốn thay đổi trạng thái đơn hàng này?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
             <Button onClick={handleCancel}>Hủy</Button>
             <Button
               onClick={handleConfirm}
               color="primary"
               disabled={updatingStatus}
             >
-              {updatingStatus ? 'Đang xử lý...' : 'Xác nhận'}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Container>
+            {updatingStatus ? 'Đang xử lý...' : 'Xác nhận'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
     </LocalizationProvider>
   );
 };
