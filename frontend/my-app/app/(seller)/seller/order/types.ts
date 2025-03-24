@@ -1,9 +1,9 @@
 export enum OrderStatus {
-  WAITING_FOR_DELIVERY = 'waiting_for_delivery',
-  PROCESSED = 'processed',
-  DELIVERY = 'delivery',
-  DELIVERED = 'delivered',
-  CANCELED = 'canceled'
+  WAITING_FOR_DELIVERY = 'WAITING_FOR_DELIVERY',
+  PROCESSED = 'PROCESSED',
+  DELIVERY = 'DELIVERY',
+  DELIVERED = 'DELIVERED',
+  CANCELED = 'CANCELED'
 }
 
 export interface InvoiceProduct {

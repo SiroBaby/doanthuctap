@@ -56,11 +56,7 @@ export class DashboardStatsService {
       const revenueData = await this.prisma.$queryRaw<RevenueData[]>`
         SELECT SUM(i.total_amount) as totalRevenue
         FROM Invoice i
-        JOIN Cart c ON i.cart_id = c.cart_id
-        JOIN Cart_Product cp ON c.cart_id = cp.cart_id
-        JOIN Product_variation pv ON cp.product_variation_id = pv.product_variation_id
-        JOIN Product p ON pv.product_id = p.product_id
-        WHERE p.shop_id = ${shopId}
+        WHERE i.shop_id = ${shopId}
       `;
       const totalRevenue = parseFloat(revenueData[0]?.totalRevenue || '0');
 
@@ -68,11 +64,7 @@ export class DashboardStatsService {
       const orderCountData = await this.prisma.$queryRaw<OrderCountData[]>`
         SELECT COUNT(DISTINCT i.invoice_id) as orderCount
         FROM Invoice i
-        JOIN Cart c ON i.cart_id = c.cart_id
-        JOIN Cart_Product cp ON c.cart_id = cp.cart_id
-        JOIN Product_variation pv ON cp.product_variation_id = pv.product_variation_id
-        JOIN Product p ON pv.product_id = p.product_id
-        WHERE p.shop_id = ${shopId}
+        WHERE i.shop_id = ${shopId}
       `;
       const orderCount = parseInt(orderCountData[0]?.orderCount || '0');
 
@@ -98,11 +90,7 @@ export class DashboardStatsService {
         DATE_FORMAT(i.create_at, '%m/%Y') as month,
         SUM(i.total_amount) as revenue
       FROM Invoice i
-      JOIN Cart c ON i.cart_id = c.cart_id
-      JOIN Cart_Product cp ON c.cart_id = cp.cart_id
-      JOIN Product_variation pv ON cp.product_variation_id = pv.product_variation_id
-      JOIN Product p ON pv.product_id = p.product_id
-      WHERE p.shop_id = ${shopId}
+      WHERE i.shop_id = ${shopId}
       AND i.create_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH)
       GROUP BY DATE_FORMAT(i.create_at, '%m/%Y')
       ORDER BY DATE_FORMAT(i.create_at, '%m/%Y') ASC
@@ -117,12 +105,10 @@ export class DashboardStatsService {
 
       // 6. Số lượng sản phẩm theo trạng thái
       const productStatusData = await this.prisma.$queryRaw<ProductStatusData[]>`
-        SELECT 
-          status,
-          COUNT(*) as count
-        FROM Product
+        SELECT order_status as status, COUNT(invoice_id) as count
+        FROM Invoice
         WHERE shop_id = ${shopId}
-        GROUP BY status
+        GROUP BY order_status
       `;
       
       const productStatusCount: ProductStatus[] = Array.isArray(productStatusData)

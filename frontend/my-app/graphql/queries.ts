@@ -513,6 +513,25 @@ export const GET_INVOICES_BY_SHOP = gql`
           email
           phone
         }
+        shipping_address {
+          address
+          phone
+        }
+        invoice_products {
+          invoice_product_id
+          product_name
+          variation_name
+          price
+          quantity
+          discount_percent
+          product_variation_id
+          product_variation {
+            product_images {
+              image_url
+              is_thumbnail
+            }
+          }
+        }
       }
       totalCount
       totalPage
@@ -615,58 +634,19 @@ export const GET_OUT_OF_STOCK_PRODUCTS = gql`
 `;
 
 export const GET_DASHBOARD_STATS = gql`
-  query GetDashboardStats($shop_id: String!) {
-    getDashboardStats(shop_id: $shop_id) {
+  query GetSellerDashboardStats($shopId: String!) {
+    getSellerDashboardStats(shopId: $shopId) {
       totalRevenue
-      totalOrders
-      totalProducts
-      ordersByStatus {
-        waiting_for_delivery
-        processed
-        delivery
-        delivered
-        canceled
-      }
-      revenueByMonth {
+      orderCount
+      productCount
+      averageRating
+      monthlyRevenue {
         month
         revenue
       }
-      topSellingProducts {
-        product_id
-        product_name
-        total_quantity
-        total_revenue
-        product {
-          product_id
-          product_name
-          product_images {
-            image_url
-            is_thumbnail
-          }
-        }
-      }
-      recentOrders {
-        invoice_id
-        order_status
-        total_amount
-        create_at
-        user {
-          user_name
-        }
-      }
-      lowStockProducts {
-        product_id
-        product_name
+      productStatusCount {
         status
-        product_images {
-          image_url
-          is_thumbnail
-        }
-        product_variations {
-          product_variation_id
-          variation_name
-          stock_quantity
-        }
+        count
       }
     }
   }

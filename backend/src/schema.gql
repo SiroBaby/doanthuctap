@@ -267,6 +267,23 @@ type ProductStatus {
   count: Int!
 }
 
+type SimpleShop {
+  shop_id: String!
+  shop_name: String!
+  id_user: String!
+  link: String
+  status: String!
+  location_id: String
+  create_at: DateTime
+  update_at: DateTime
+  delete_at: DateTime
+}
+
+type ShippingAddress {
+  address: String
+  phone: String
+}
+
 type Invoice {
   invoice_id: String!
   payment_method: String
@@ -278,7 +295,9 @@ type Invoice {
   cart_id: String!
   shop_id: String!
   user: User
-  shop: Shop
+  shop: SimpleShop
+  shipping_address: ShippingAddress
+  invoice_products: [InvoiceProduct!]!
   create_at: DateTime
   update_at: DateTime
 }
@@ -293,11 +312,6 @@ type ProductVariationOrder {
   shop_name: String!
   image_url: String
   quantity: Float!
-}
-
-type ShippingAddress {
-  address: String
-  phone: String
 }
 
 type InvoiceDetail {
@@ -318,8 +332,16 @@ type InvoiceDetail {
 }
 
 type ProductVariationDetail {
-  product: ProductDetail
-  product_images: [ProductImage!]
+  product_variation_name: String!
+  base_price: Float!
+  percent_discount: Float!
+  status: String!
+  product_images: [SimpleProductImage!]!
+}
+
+type SimpleProductImage {
+  image_url: String!
+  is_thumbnail: Boolean
 }
 
 type InvoiceProduct {
@@ -331,7 +353,7 @@ type InvoiceProduct {
   discount_percent: Float!
   discount_amount: Float
   product_variation_id: Int!
-  product_variation: ProductVariationDetail
+  product_variation: ProductVariationDetail!
 }
 
 type InvoicePagination {
@@ -499,6 +521,12 @@ input GetInvoicesByShopInput {
   order_status: String
   page: Int! = 1
   limit: Int! = 10
+  search: String
+  start_date: DateTime
+  end_date: DateTime
+  payment_method: String
+  min_amount: Float
+  max_amount: Float
 }
 
 input GetOutOfStockProductsInput {

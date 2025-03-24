@@ -1,4 +1,4 @@
-import { Field, InputType, Int } from '@nestjs/graphql';
+import { Field, InputType, Int, Float } from '@nestjs/graphql';
 
 @InputType()
 export class GetInvoicesByShopInput {
@@ -13,4 +13,22 @@ export class GetInvoicesByShopInput {
 
   @Field(() => Int, { defaultValue: 10 })
   limit: number;
+
+  @Field({ nullable: true })
+  search?: string;
+
+  @Field(() => Date, { nullable: true })
+  start_date?: Date;
+
+  @Field(() => Date, { nullable: true })
+  end_date?: Date;
+
+  @Field({ nullable: true })
+  payment_method?: string;
+
+  @Field(() => Float, { nullable: true })
+  min_amount?: number;
+
+  @Field(() => Float, { nullable: true })
+  max_amount?: number;
 } 

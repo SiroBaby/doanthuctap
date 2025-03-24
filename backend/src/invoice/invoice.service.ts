@@ -4,9 +4,10 @@ import { UpdateInvoiceStatusInput } from './dto/update-invoice-status.input';
 import { GetInvoicesByShopInput } from './dto/get-invoices-by-shop.input';
 import { GetOutOfStockProductsInput } from './dto/get-out-of-stock-products.input';
 import { GetAllInvoicesInput } from './dto/get-all-invoices.input';
-import { Invoice, InvoicePagination, OrderStatus } from './entities/invoice.entity';
+import { Invoice, InvoicePagination, OrderStatus, InvoiceProduct, ProductVariationDetail, SimpleProductImage, SimpleShop } from './entities/invoice.entity';
 import { CreateInvoiceInput } from './dto/create-invoice.input';
 import { v4 as uuidv4 } from 'uuid';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class InvoiceService {
@@ -147,72 +148,161 @@ export class InvoiceService {
   }
 
   async getInvoicesByShop(getInvoicesInput: GetInvoicesByShopInput): Promise<InvoicePagination> {
-    try {
-      const { shop_id, order_status, page, limit } = getInvoicesInput;
-      const skip = (page - 1) * limit;
-      
-      // Tìm tất cả đơn hàng có sản phẩm của shop
-      const whereClause: any = {};
-      
-      if (order_status) {
-        whereClause.order_status = order_status;
-      }
-      
-      // Đếm tổng số đơn hàng thỏa điều kiện
-      let countQuery = `
-        SELECT COUNT(DISTINCT i.invoice_id) as count
-        FROM Invoice i
-        JOIN Cart c ON i.cart_id = c.cart_id
-        JOIN Cart_Product cp ON c.cart_id = cp.cart_id
-        JOIN Product_variation pv ON cp.product_variation_id = pv.product_variation_id
-        JOIN Product p ON pv.product_id = p.product_id
-        WHERE p.shop_id = ?
-      `;
-      
-      const queryParams = [shop_id];
-      
-      if (order_status) {
-        countQuery += ` AND i.order_status = ?`;
-        queryParams.push(order_status);
-      }
-      
-      const totalCountQuery = await this.prisma.$queryRawUnsafe(countQuery, ...queryParams);
-      
-      const countResult = totalCountQuery as unknown as { count: number }[];
-      const totalCount = Number(countResult[0]?.count || 0);
-      const totalPage = Math.ceil(totalCount / limit);
-      
-      // Lấy dữ liệu các đơn hàng
-      let dataQuery = `
-        SELECT DISTINCT i.*
-        FROM Invoice i
-        JOIN Cart c ON i.cart_id = c.cart_id
-        JOIN Cart_Product cp ON c.cart_id = cp.cart_id
-        JOIN Product_variation pv ON cp.product_variation_id = pv.product_variation_id
-        JOIN Product p ON pv.product_id = p.product_id
-        WHERE p.shop_id = ?
-      `;
-      
-      const dataParams = [shop_id];
-      
-      if (order_status) {
-        dataQuery += ` AND i.order_status = ?`;
-        dataParams.push(order_status);
-      }
-      
-      dataQuery += ` ORDER BY i.create_at DESC LIMIT ? OFFSET ?`;
-      dataParams.push(String(limit), String(skip));
-      
-      const invoices = await this.prisma.$queryRawUnsafe(dataQuery, ...dataParams);
-      
-      return {
-        data: invoices as any[],
-        totalCount,
-        totalPage
+    const {
+      shop_id,
+      order_status,
+      page = 1,
+      limit = 10,
+      search,
+      start_date,
+      end_date,
+      payment_method,
+      min_amount,
+      max_amount,
+    } = getInvoicesInput;
+
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.InvoiceWhereInput = {
+      shop_id,
+      order_status,
+      payment_method,
+      ...(search && {
+        OR: [
+          { invoice_id: { contains: search } },
+          { user: { user_name: { contains: search } } },
+          { user: { email: { contains: search } } },
+        ],
+      }),
+      ...(start_date && end_date && {
+        create_at: {
+          gte: new Date(start_date),
+          lte: new Date(end_date),
+        },
+      }),
+      ...(min_amount && {
+        total_amount: {
+          gte: min_amount,
+        },
+      }),
+      ...(max_amount && {
+        total_amount: {
+          lte: max_amount,
+        },
+      }),
+    };
+
+    const totalCount = await this.prisma.invoice.count({ where });
+    const totalPage = Math.ceil(totalCount / limit);
+
+    const invoices = await this.prisma.invoice.findMany({
+      where,
+      skip,
+      take: limit,
+      include: {
+        user: true,
+        shop: true,
+        invoice_products: {
+          include: {
+            product_variation: {
+              include: {
+                product: {
+                  include: {
+                    product_images: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        create_at: 'desc',
+      },
+    });
+
+    // Get shipping addresses for all invoices
+    const shippingAddressIds = invoices
+      .map(invoice => invoice.shipping_address_id)
+      .filter((id): id is number => id !== null);
+
+    const shippingAddresses = shippingAddressIds.length > 0
+      ? await this.prisma.address.findMany({
+          where: {
+            address_id: {
+              in: shippingAddressIds
+            }
+          }
+        })
+      : [];
+
+    const shippingAddressMap = new Map(
+      shippingAddresses.map(addr => [addr.address_id, addr])
+    );
+
+    const transformedInvoices = invoices.map((invoice): Invoice => {
+      const shippingAddress = invoice.shipping_address_id
+        ? shippingAddressMap.get(invoice.shipping_address_id)
+        : null;
+
+      const shop: SimpleShop = {
+        shop_id: invoice.shop.shop_id,
+        shop_name: invoice.shop.shop_name || '',
+        id_user: invoice.shop.id_user,
+        link: invoice.shop.link || undefined,
+        status: invoice.shop.status,
+        location_id: invoice.shop.location_id || undefined,
+        create_at: invoice.shop.create_at || undefined,
+        update_at: invoice.shop.update_at || undefined,
+        delete_at: invoice.shop.delete_at || undefined,
       };
-    } catch (error) {
-      throw new Error(`Failed to get invoices by shop: ${error.message}`);
-    }
+
+      return {
+        invoice_id: invoice.invoice_id,
+        payment_method: invoice.payment_method || undefined,
+        payment_status: invoice.payment_status || undefined,
+        order_status: invoice.order_status,
+        total_amount: Number(invoice.total_amount),
+        shipping_fee: Number(invoice.shipping_fee),
+        id_user: invoice.id_user,
+        shop_id: invoice.shop_id,
+        cart_id: '', // Required by GraphQL schema but not in DB
+        user: invoice.user,
+        shop,
+        shipping_address: shippingAddress ? {
+          address: shippingAddress.address,
+          phone: shippingAddress.phone
+        } : undefined,
+        invoice_products: invoice.invoice_products.map(ip => ({
+          invoice_product_id: ip.invoice_product_id,
+          product_name: ip.product_name,
+          variation_name: ip.variation_name,
+          price: Number(ip.price),
+          quantity: ip.quantity,
+          discount_percent: Number(ip.discount_percent),
+          discount_amount: ip.discount_amount ? Number(ip.discount_amount) : undefined,
+          product_variation_id: ip.product_variation_id,
+          product_variation: {
+            product_variation_name: ip.product_variation.product_variation_name,
+            base_price: Number(ip.product_variation.base_price),
+            percent_discount: Number(ip.product_variation.percent_discount),
+            status: ip.product_variation.status,
+            product_images: ip.product_variation.product.product_images.map(img => ({
+              image_url: img.image_url,
+              is_thumbnail: img.is_thumbnail || false
+            }))
+          }
+        })),
+        create_at: invoice.create_at || undefined,
+        update_at: invoice.update_at || undefined
+      };
+    });
+
+    return {
+      data: transformedInvoices,
+      totalCount,
+      totalPage,
+    };
   }
 
   async getOutOfStockProducts(input: GetOutOfStockProductsInput) {

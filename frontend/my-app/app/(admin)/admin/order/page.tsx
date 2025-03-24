@@ -361,8 +361,7 @@ const OrderPage = () => {
                                             count={totalPages}
                                             page={page}
                                             onChange={handleChangePage}
-                                            size="large"
-                                            color='error'
+                                            color="primary"
                                         />
                                     </div>
                                 )}

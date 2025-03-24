@@ -18,6 +18,45 @@ registerEnumType(OrderStatus, {
 });
 
 @ObjectType()
+export class SimpleShop {
+  @Field()
+  shop_id: string;
+
+  @Field()
+  shop_name: string;
+
+  @Field()
+  id_user: string;
+
+  @Field({ nullable: true })
+  link?: string;
+
+  @Field()
+  status: string;
+
+  @Field({ nullable: true })
+  location_id?: string;
+
+  @Field(() => Date, { nullable: true })
+  create_at?: Date;
+
+  @Field(() => Date, { nullable: true })
+  update_at?: Date;
+
+  @Field(() => Date, { nullable: true })
+  delete_at?: Date;
+}
+
+@ObjectType()
+export class ShippingAddress {
+  @Field(() => String, { nullable: true })
+  address?: string;
+  
+  @Field(() => String, { nullable: true })
+  phone?: string;
+}
+
+@ObjectType()
 export class Invoice {
   @Field()
   invoice_id: string;
@@ -49,8 +88,14 @@ export class Invoice {
   @Field(() => User, { nullable: true })
   user?: User;
 
-  @Field(() => Shop, { nullable: true })
-  shop?: Shop;
+  @Field(() => SimpleShop, { nullable: true })
+  shop?: SimpleShop;
+
+  @Field(() => ShippingAddress, { nullable: true })
+  shipping_address?: ShippingAddress;
+
+  @Field(() => [InvoiceProduct])
+  invoice_products: InvoiceProduct[];
 
   @Field(() => Date, { nullable: true })
   create_at?: Date;
@@ -87,15 +132,6 @@ export class ProductVariationOrder {
 
   @Field(() => Number)
   quantity: number;
-}
-
-@ObjectType()
-export class ShippingAddress {
-  @Field(() => String, { nullable: true })
-  address?: string;
-  
-  @Field(() => String, { nullable: true })
-  phone?: string;
 }
 
 @ObjectType()
@@ -145,41 +181,59 @@ export class InvoiceDetail {
 
 @ObjectType()
 export class ProductVariationDetail {
-  @Field(() => ProductDetail, { nullable: true })
-  product?: ProductDetail;
-  
-  @Field(() => [ProductImage], { nullable: true })
-  product_images?: ProductImage[];
+  @Field()
+  product_variation_name: string;
+
+  @Field(() => Float)
+  base_price: number;
+
+  @Field(() => Float)
+  percent_discount: number;
+
+  @Field()
+  status: string;
+
+  @Field(() => [SimpleProductImage])
+  product_images: SimpleProductImage[];
+}
+
+@ObjectType()
+export class SimpleProductImage {
+  @Field()
+  image_url: string;
+
+  @Field({ nullable: true })
+  is_thumbnail?: boolean;
 }
 
 @ObjectType()
 export class InvoiceProduct {
   @Field(() => Int)
   invoice_product_id: number;
-  
-  @Field(() => String)
+
+  @Field()
   product_name: string;
-  
-  @Field(() => String)
+
+  @Field()
   variation_name: string;
-  
+
   @Field(() => Float)
   price: number;
-  
+
   @Field(() => Int)
   quantity: number;
-  
+
   @Field(() => Float)
   discount_percent: number;
-  
+
   @Field(() => Float, { nullable: true })
-  discount_amount: number;
-  
+  discount_amount?: number;
+
   @Field(() => Int)
   product_variation_id: number;
-  
-  @Field(() => ProductVariationDetail, { nullable: true })
-  product_variation?: ProductVariationDetail;
+
+  @Field(() => ProductVariationDetail)
+  product_variation: ProductVariationDetail;
 }
 
 @ObjectType()

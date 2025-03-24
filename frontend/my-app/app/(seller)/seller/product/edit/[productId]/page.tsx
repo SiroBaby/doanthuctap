@@ -668,9 +668,9 @@ const EditProductPage = () => {
                             {...field}
                             labelId="category-select-label"
                             label="Danh mục"
-                            value={field.value || ''}
+                            value={field.value?.toString() || ''}
                             onChange={(e) => {
-                              const selectedCategoryId = e.target.value as number;
+                              const selectedCategoryId = Number(e.target.value);
                               console.log('Category ID được chọn:', selectedCategoryId);
                               
                               field.onChange(selectedCategoryId);

@@ -264,7 +264,12 @@ const DashboardPage = () => {
                       return `Tháng ${parseInt(month)}`;
                     }}
                   />
-                  <YAxis stroke="#6B7280" />
+                  <YAxis 
+                    stroke="#6B7280" 
+                    width={100}
+                    dx={-10}
+                    tickFormatter={(value) => new Intl.NumberFormat('vi-VN').format(value)}
+                  />
                   <Tooltip 
                     formatter={(value) => formatCurrency(value as number)}
                     labelFormatter={(label) => {

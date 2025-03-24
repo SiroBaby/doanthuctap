@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useQuery, useMutation } from '@apollo/client';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { GET_SHOP_ID_BY_USER_ID, GET_INVOICES_BY_SHOP } from '@/graphql/queries';
+import { GET_SHOP_ID_BY_USER_ID, GET_INVOICES_BY_SHOP, GET_DASHBOARD_STATS } from '@/graphql/queries';
 import { UPDATE_INVOICE_STATUS } from '@/graphql/mutations';
-import { OrderStatus, InvoiceProduct } from './types';
+import { OrderStatus, Invoice, InvoiceProduct } from './types';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { vi } from 'date-fns/locale';
 
 import {
   Box,
@@ -34,45 +37,57 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Tooltip,
+  Grid,
+  TextField,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  Stack,
+  Card,
+  CardContent,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import {
-  AddAlert as AddAlertIcon,
   CheckCircle as CheckCircleIcon,
   LocalShipping as LocalShippingIcon,
   Cancel as CancelIcon,
-  Inventory as InventoryIcon,
   MoreVert as MoreVertIcon,
   RemoveRedEye as RemoveRedEyeIcon,
+  Search as SearchIcon,
+  FilterList as FilterListIcon,
+  GetApp as GetAppIcon,
+  Pending as PendingIcon,
+  Done as DoneIcon,
 } from '@mui/icons-material';
 
-interface ShopIdResponse {
+interface InvoicesResponse {
+  getInvoicesByShop: {
+    data: Invoice[];
+    totalCount: number;
+    totalPage: number;
+  };
+}
+
+interface GetShopIdResponse {
   getShopIdByUserId: {
     shop_id: string;
   };
 }
 
-interface InvoicesResponse {
-  getInvoicesByShop: {
-    data: Array<{
-      invoice_id: string;
-      payment_method: string;
-      payment_status: string;
-      order_status: string;
-      total_amount: number;
-      shipping_fee: number;
-      id_user: string;
-      create_at: string;
-      update_at: string;
-      invoice_products: Array<InvoiceProduct>;
-      user: {
-        user_name: string;
-        email: string;
-        phone: string;
-      };
-    }>;
-    totalCount: number;
-    totalPage: number;
+interface StatusCount {
+  status: string;
+  count: number;
+}
+
+interface OrderCounts {
+  [key: string]: number;
+}
+
+// Add interfaces for the dashboard stats response
+interface DashboardStatsResponse {
+  getSellerDashboardStats: {
+    productStatusCount: StatusCount[];
   };
 }
 
@@ -93,6 +108,19 @@ const OrderManagementPage = () => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [menuInvoiceId, setMenuInvoiceId] = useState<string | null>(null);
+  
+  // New states for filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState('all');
+  const [minAmount, setMinAmount] = useState('');
+  const [maxAmount, setMaxAmount] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [debouncedMinAmount, setDebouncedMinAmount] = useState(minAmount);
+  const [debouncedMaxAmount, setDebouncedMaxAmount] = useState(maxAmount);
+
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
 
   const LIMIT = 10;
 
@@ -101,6 +129,7 @@ const OrderManagementPage = () => {
     waiting_for_delivery: {
       title: 'Chờ lấy hàng',
       status: OrderStatus.WAITING_FOR_DELIVERY,
+      icon: <PendingIcon />,
       nextAction: {
         label: 'Chuẩn bị hàng',
         status: OrderStatus.PROCESSED,
@@ -110,6 +139,7 @@ const OrderManagementPage = () => {
     processed: {
       title: 'Đã xử lý',
       status: OrderStatus.PROCESSED,
+      icon: <CheckCircleIcon />,
       nextAction: {
         label: 'Vận chuyển',
         status: OrderStatus.DELIVERY,
@@ -119,6 +149,7 @@ const OrderManagementPage = () => {
     delivery: {
       title: 'Đang vận chuyển',
       status: OrderStatus.DELIVERY,
+      icon: <LocalShippingIcon />,
       nextAction: {
         label: 'Đã giao',
         status: OrderStatus.DELIVERED,
@@ -128,19 +159,24 @@ const OrderManagementPage = () => {
     delivered: {
       title: 'Đã giao',
       status: OrderStatus.DELIVERED,
+      icon: <DoneIcon />,
       nextAction: null,
     },
     canceled: {
       title: 'Đã hủy',
       status: OrderStatus.CANCELED,
-      nextAction: null,
-    },
-    out_of_stock: {
-      title: 'Hết hàng',
-      status: 'out_of_stock',
+      icon: <CancelIcon />,
       nextAction: null,
     },
   };
+
+  const [orderCounts, setOrderCounts] = useState<OrderCounts>({
+    waiting_for_delivery: 0,
+    processed: 0,
+    delivery: 0,
+    delivered: 0,
+    canceled: 0
+  });
 
   // Update URL when tab or page changes
   useEffect(() => {
@@ -151,7 +187,7 @@ const OrderManagementPage = () => {
   }, [selectedTab, page, pathname, router, searchParams]);
 
   // Fetch shop ID
-  const { loading: shopIdLoading } = useQuery<ShopIdResponse>(GET_SHOP_ID_BY_USER_ID, {
+  const { loading: shopIdLoading } = useQuery<GetShopIdResponse>(GET_SHOP_ID_BY_USER_ID, {
     variables: { id: userId },
     skip: !userId,
     onCompleted: (data) => {
@@ -161,7 +197,32 @@ const OrderManagementPage = () => {
     },
   });
 
-  // Fetch invoices
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500); // Wait for 500ms after user stops typing
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Debounce for min amount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedMinAmount(minAmount);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [minAmount]);
+
+  // Debounce for max amount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedMaxAmount(maxAmount);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [maxAmount]);
+
+  // Declare refetchInvoices before using it
   const { loading: invoicesLoading, error: invoicesError, data: invoicesData, refetch: refetchInvoices } = 
     useQuery<InvoicesResponse>(GET_INVOICES_BY_SHOP, {
     variables: {
@@ -170,25 +231,79 @@ const OrderManagementPage = () => {
         order_status: selectedTab !== 'out_of_stock' ? tabConfig[selectedTab as keyof typeof tabConfig].status : undefined,
         page,
         limit: LIMIT,
+        search: debouncedSearchTerm,
+        start_date: startDate?.toISOString(),
+        end_date: endDate?.toISOString(),
+        payment_method: paymentMethod === 'all' ? undefined : paymentMethod,
+        min_amount: debouncedMinAmount ? parseFloat(debouncedMinAmount) : undefined,
+        max_amount: debouncedMaxAmount ? parseFloat(debouncedMaxAmount) : undefined,
       },
     },
     skip: !shopId || selectedTab === 'out_of_stock',
   });
 
-  // Update invoice status mutation
+  // Move useEffects after query declarations
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (minAmount !== debouncedMinAmount || maxAmount !== debouncedMaxAmount) {
+        setPage(1);
+        refetchInvoices();
+      }
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [minAmount, maxAmount, debouncedMinAmount, debouncedMaxAmount, refetchInvoices, setPage]);
+
+  // Fix the dashboard stats query type
+  const { refetch: refetchDashboardStats } = useQuery<DashboardStatsResponse>(GET_DASHBOARD_STATS, {
+    variables: { shopId },
+    skip: !shopId,
+    onCompleted: (data) => {
+      if (data?.getSellerDashboardStats?.productStatusCount) {
+        const statusCounts = data.getSellerDashboardStats.productStatusCount.reduce<OrderCounts>(
+          (acc: OrderCounts, curr: StatusCount) => {
+            acc[curr.status.toLowerCase()] = curr.count;
+            return acc;
+          },
+          {} as OrderCounts
+        );
+        setOrderCounts(statusCounts);
+      }
+    }
+  });
+
+  // Also update dashboard stats when invoice status changes
   const [updateInvoiceStatus, { loading: updatingStatus }] = useMutation(UPDATE_INVOICE_STATUS, {
-    onCompleted: () => {
-      refetchInvoices();
+    onCompleted: async () => {
+      await Promise.all([
+        refetchInvoices(),
+        refetchDashboardStats()
+      ]);
       setConfirmDialogOpen(false);
       setSelectedInvoice(null);
       setNextStatus(null);
     },
+    onError: (error) => {
+      console.error('Error updating invoice status:', error);
+      // You might want to show an error message to the user here
+    }
   });
+
+  // Update the stats when invoice status changes
+  useEffect(() => {
+    if (shopId) {
+      refetchDashboardStats();
+    }
+  }, [shopId, refetchDashboardStats, selectedTab]);
 
   // Handle tab change
   const handleTabChange = (_event: React.SyntheticEvent, newValue: string) => {
     setSelectedTab(newValue);
     setPage(1);
+    // Add refetch to update data when switching tabs
+    setTimeout(() => {
+      refetchInvoices();
+    }, 0);
   };
 
   // Handle page change
@@ -241,6 +356,91 @@ const OrderManagementPage = () => {
     setNextStatus(null);
   };
 
+  // Handle search input change
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  // Handle filter change with debounce
+  const handleFilterChange = useCallback(() => {
+    setPage(1);
+    refetchInvoices();
+  }, [refetchInvoices]);
+
+  // Add reset filters function
+  const handleResetFilters = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setPaymentMethod('all');
+    setMinAmount('');
+    setMaxAmount('');
+    setSearchTerm('');
+    setPage(1);
+    refetchInvoices();
+  };
+
+  const handleExport = async () => {
+    if (!invoicesData?.getInvoicesByShop.data.length) {
+      return;
+    }
+
+    const csvData = [
+      // Header
+      ['Mã đơn hàng', 'Khách hàng', 'Số điện thoại', 'Tổng tiền', 'Số lượng', 'Ngày đặt', 'Trạng thái', 'Phương thức thanh toán'],
+      // Data rows
+      ...invoicesData.getInvoicesByShop.data.map(invoice => [
+        invoice.invoice_id,
+        invoice.user?.user_name || '',
+        invoice.user?.phone || '',
+        invoice.total_amount,
+        countTotalProducts(invoice),
+        new Date(invoice.create_at).toLocaleString('vi-VN'),
+        getStatusLabel(invoice.order_status),
+        getPaymentMethodLabel(invoice.payment_method || '')
+      ])
+    ];
+
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `orders_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Add helper functions for export
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case OrderStatus.WAITING_FOR_DELIVERY:
+        return 'Chờ lấy hàng';
+      case OrderStatus.PROCESSED:
+        return 'Đã xử lý';
+      case OrderStatus.DELIVERY:
+        return 'Đang vận chuyển';
+      case OrderStatus.DELIVERED:
+        return 'Đã giao';
+      case OrderStatus.CANCELED:
+        return 'Đã hủy';
+      default:
+        return status;
+    }
+  };
+
+  const getPaymentMethodLabel = (method: string) => {
+    switch (method) {
+      case 'cod':
+        return 'COD';
+      case 'bank_transfer':
+        return 'Chuyển khoản';
+      default:
+        return method;
+    }
+  };
+
   // Get status chip
   const getStatusChip = (status: string) => {
     switch (status) {
@@ -269,250 +469,445 @@ const OrderManagementPage = () => {
 
   // Format date
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
+    return new Date(dateString).toLocaleDateString('vi-VN', {
       year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
     });
   };
 
-  // Count total products in an invoice
+  // Count total products
   const countTotalProducts = (invoice: { invoice_products?: Array<InvoiceProduct> }) => {
-    if (!invoice?.invoice_products) return 0;
-    return invoice.invoice_products.reduce((total: number, product: InvoiceProduct) => total + product.quantity, 0);
+    return invoice.invoice_products?.reduce((sum, product) => sum + product.quantity, 0) || 0;
   };
 
-  const loading = shopIdLoading || invoicesLoading;
-  const error = invoicesError;
-  const invoices = invoicesData?.getInvoicesByShop.data || [];
-  const totalPages = invoicesData?.getInvoicesByShop.totalPage || 0;
-
-  if (!userId) {
+  if (shopIdLoading || invoicesLoading) {
     return (
-      <Container className="p-6">
-        <Alert severity="warning">
-          Vui lòng đăng nhập để quản lý đơn hàng
-        </Alert>
-      </Container>
+      <Box className="p-4">
+        <Skeleton variant="rectangular" height={200} className="mb-4" />
+        <Skeleton variant="rectangular" height={400} />
+      </Box>
     );
   }
 
-  if (selectedTab === 'out_of_stock') {
-    router.push('/seller/order/out-of-stock');
-    return null;
+  if (invoicesError) {
+    return (
+      <Alert severity="error" className="m-4">
+        Có lỗi xảy ra khi tải dữ liệu
+      </Alert>
+    );
   }
 
   return (
-    <Container className="py-6">
-      <Box className="mb-6">
-        <Typography variant="h4" component="h1" className="mb-2 font-bold">
-          Quản lý đơn hàng
-        </Typography>
-        <Typography color="textSecondary">
-          Theo dõi và quản lý các đơn hàng của cửa hàng
-        </Typography>
-      </Box>
+    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={vi}>
+      <Container maxWidth="lg" className="py-8 dark:bg-dark-primary min-h-screen">
+        {/* Order Statistics */}
+        <Grid container spacing={3} className="mb-6 justify-center">
+          {Object.entries(tabConfig).map(([key, config]) => (
+            <Grid item xs={12} sm={6} md={4} lg={2.4} key={key}>
+              <Card 
+                className={`
+                  transition-all duration-300 hover:shadow-lg hover:-translate-y-1
+                  h-[160px] flex flex-col justify-between
+                  ${selectedTab === key ? 'border-2 border-blue-500 shadow-md' : 'border border-gray-200'}
+                  dark:bg-dark-sidebar dark:border-gray-700 dark:shadow-dark
+                `}
+              >
+                <CardContent className="flex flex-col h-full justify-between p-4">
+                  <Typography variant="h6" className="font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center">
+                    <span className={`mr-2 ${selectedTab === key ? 'text-blue-500' : 'text-gray-500'} dark:text-gray-400`}>
+                      {config.icon}
+                    </span>
+                    {config.title}
+                  </Typography>
+                  <Typography 
+                    variant="h4" 
+                    className={`mt-2 ${selectedTab === key ? 'text-blue-600' : 'text-gray-600'} dark:text-blue-400 font-bold text-center`}
+                  >
+                    {orderCounts[key] || 0}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
 
-      <Paper>
-        <Tabs
-          value={selectedTab}
-          onChange={handleTabChange}
-          variant="scrollable"
-          scrollButtons="auto"
-          className="border-b border-gray-200"
-        >
-          <Tab
-            value="waiting_for_delivery"
-            label={
-              <Box className="flex items-center">
-                <AddAlertIcon className="mr-1" fontSize="small" />
-                Chờ lấy hàng
-              </Box>
-            }
-          />
-          <Tab
-            value="processed"
-            label={
-              <Box className="flex items-center">
-                <CheckCircleIcon className="mr-1" fontSize="small" />
-                Đã xử lý
-              </Box>
-            }
-          />
-          <Tab
-            value="delivery"
-            label={
-              <Box className="flex items-center">
-                <LocalShippingIcon className="mr-1" fontSize="small" />
-                Vận chuyển
-              </Box>
-            }
-          />
-          <Tab
-            value="delivered"
-            label={
-              <Box className="flex items-center">
-                <CheckCircleIcon className="mr-1" fontSize="small" />
-                Đã giao
-              </Box>
-            }
-          />
-          <Tab
-            value="canceled"
-            label={
-              <Box className="flex items-center">
-                <CancelIcon className="mr-1" fontSize="small" />
-                Đã hủy
-              </Box>
-            }
-          />
-          <Tab
-            value="out_of_stock"
-            label={
-              <Box className="flex items-center">
-                <InventoryIcon className="mr-1" fontSize="small" />
-                Hết hàng
-              </Box>
-            }
-          />
-        </Tabs>
+        {/* Search and Filters */}
+        <Paper className="mb-6 p-6 shadow-md hover:shadow-lg transition-shadow duration-300 max-w-6xl mx-auto dark:bg-dark-sidebar dark:shadow-dark">
+          <Grid container spacing={3} className="mb-6">
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Tìm kiếm đơn hàng"
+                value={searchTerm}
+                onChange={handleSearch}
+                className="shadow-sm"
+                InputProps={{
+                  className: "dark:text-gray-200",
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon className="text-blue-400 dark:text-gray-400" />
+                    </InputAdornment>
+                  ),
+                }}
+                InputLabelProps={{
+                  className: "dark:text-gray-400"
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '&:hover fieldset': {
+                      borderColor: 'rgb(59 130 246)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'rgb(59 130 246)',
+                    },
+                    '& fieldset': {
+                      borderColor: 'rgba(156, 163, 175, 0.3)',
+                    }
+                  }
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6} className="flex justify-end">
+              <Stack direction="row" spacing={2}>
+                <Button
+                  variant={showFilters ? "contained" : "outlined"}
+                  startIcon={<FilterListIcon />}
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`
+                    transition-all duration-300 
+                    ${showFilters ? 'bg-blue-500 hover:bg-blue-600' : 'border-blue-500 text-blue-500 hover:bg-blue-50'}
+                  `}
+                >
+                  Bộ lọc
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<GetAppIcon />}
+                  onClick={handleExport}
+                  disabled={!invoicesData?.getInvoicesByShop.data.length}
+                  className="transition-all duration-300 border-green-500 text-green-500 hover:bg-green-50 disabled:opacity-50"
+                >
+                  Xuất {invoicesData?.getInvoicesByShop.data.length || 0} đơn hàng
+                </Button>
+              </Stack>
+            </Grid>
+          </Grid>
 
-        <Box className="p-4">
-          <Typography variant="h6" className="mb-4">
-            {tabConfig[selectedTab as keyof typeof tabConfig].title}
-          </Typography>
-
-          {loading ? (
-            <Box>
-              {[...Array(3)].map((_, index) => (
-                <Box key={index} className="mb-4">
-                  <Skeleton variant="rectangular" height={60} />
-                </Box>
-              ))}
-            </Box>
-          ) : error ? (
-            <Alert severity="error">
-              Đã xảy ra lỗi khi tải dữ liệu: {error.message}
-            </Alert>
-          ) : invoices.length === 0 ? (
-            <Box className="py-10 text-center">
-              <Typography variant="h6" color="textSecondary">
-                Không có đơn hàng nào
-              </Typography>
-              <Typography color="textSecondary">
-                Hiện không có đơn hàng nào trong trạng thái này
-              </Typography>
-            </Box>
-          ) : (
-            <>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Mã đơn hàng</TableCell>
-                      <TableCell>Ngày đặt</TableCell>
-                      <TableCell>Người đặt</TableCell>
-                      <TableCell>Số sản phẩm</TableCell>
-                      <TableCell>Tổng tiền</TableCell>
-                      <TableCell>Trạng thái</TableCell>
-                      <TableCell>Thao tác</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {invoices.map((invoice) => (
-                      <TableRow key={invoice.invoice_id}>
-                        <TableCell>{invoice.invoice_id}</TableCell>
-                        <TableCell>{formatDate(invoice.create_at)}</TableCell>
-                        <TableCell>{invoice.user.user_name}</TableCell>
-                        <TableCell>{countTotalProducts(invoice)}</TableCell>
-                        <TableCell>{formatCurrency(invoice.total_amount)}</TableCell>
-                        <TableCell>{getStatusChip(invoice.order_status)}</TableCell>
-                        <TableCell>
-                          <Box className="flex">
-                            <Tooltip title="Tùy chọn">
-                              <IconButton
-                                size="small"
-                                onClick={(e) => handleMenuOpen(e, invoice.invoice_id)}
-                              >
-                                <MoreVertIcon />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-
-              {totalPages > 1 && (
-                <Box className="flex justify-center mt-4">
-                  <Pagination
-                    count={totalPages}
-                    page={page}
-                    onChange={handlePageChange}
-                    color="primary"
-                  />
-                </Box>
-              )}
-            </>
+          {showFilters && (
+            <Grid container spacing={3} className="mt-2">
+              <Grid item xs={12} md={3}>
+                <DatePicker
+                  label="Từ ngày"
+                  value={startDate}
+                  onChange={(date) => {
+                    setStartDate(date);
+                    handleFilterChange();
+                  }}
+                  slotProps={{ 
+                    textField: { 
+                      fullWidth: true,
+                      size: "small",
+                      className: "bg-white shadow-sm hover:shadow transition-shadow duration-300",
+                      sx: {
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: 'rgb(59 130 246)',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'rgb(59 130 246)',
+                          }
+                        }
+                      }
+                    } 
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <DatePicker
+                  label="Đến ngày"
+                  value={endDate}
+                  onChange={(date) => {
+                    setEndDate(date);
+                    handleFilterChange();
+                  }}
+                  slotProps={{ 
+                    textField: { 
+                      fullWidth: true,
+                      size: "small",
+                      className: "bg-white shadow-sm hover:shadow transition-shadow duration-300",
+                      sx: {
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: 'rgb(59 130 246)',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'rgb(59 130 246)',
+                          }
+                        }
+                      }
+                    } 
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={2}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Thanh toán</InputLabel>
+                  <Select
+                    value={paymentMethod}
+                    onChange={(e) => {
+                      setPaymentMethod(e.target.value);
+                      handleFilterChange();
+                    }}
+                    label="Thanh toán"
+                    className="bg-white shadow-sm hover:shadow transition-shadow duration-300"
+                    sx={{
+                      '&:hover': {
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(59 130 246)',
+                        }
+                      },
+                      '&.Mui-focused': {
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(59 130 246)',
+                        }
+                      }
+                    }}
+                  >
+                    <MenuItem value="all">Tất cả</MenuItem>
+                    <MenuItem value="cod">COD</MenuItem>
+                    <MenuItem value="bank_transfer">Chuyển khoản</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={2}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Giá từ"
+                  type="number"
+                  value={minAmount}
+                  onChange={(e) => {
+                    setMinAmount(e.target.value);
+                  }}
+                  className="bg-white shadow-sm hover:shadow transition-shadow duration-300"
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">₫</InputAdornment>,
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: 'rgb(59 130 246)',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: 'rgb(59 130 246)',
+                      }
+                    }
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={2}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Giá đến"
+                  type="number"
+                  value={maxAmount}
+                  onChange={(e) => {
+                    setMaxAmount(e.target.value);
+                  }}
+                  className="bg-white shadow-sm hover:shadow transition-shadow duration-300"
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">₫</InputAdornment>,
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: 'rgb(59 130 246)',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: 'rgb(59 130 246)',
+                      }
+                    }
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} className="flex justify-end mt-4">
+                <Stack direction="row" spacing={2}>
+                  <Button
+                    variant="outlined"
+                    onClick={handleResetFilters}
+                    className="border-gray-300 text-gray-600 hover:bg-gray-50"
+                  >
+                    Đặt lại bộ lọc
+                  </Button>
+                </Stack>
+              </Grid>
+            </Grid>
           )}
+        </Paper>
+
+        {/* Order Tabs */}
+        <Paper className="mb-6 shadow-md hover:shadow-lg transition-shadow duration-300 max-w-6xl mx-auto dark:bg-dark-sidebar dark:text-dark-text">
+          <Tabs
+            value={selectedTab}
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            className="border-b border-gray-200 dark:border-gray-700"
+            TabIndicatorProps={{
+              style: {
+                backgroundColor: 'rgb(59 130 246)',
+              }
+            }}
+            sx={{
+              '& .MuiTab-root': {
+                minHeight: '64px',
+                '&.Mui-selected': {
+                  color: 'rgb(59 130 246)',
+                },
+                '&.MuiTab-root': {
+                  color: 'inherit',
+                }
+              }
+            }}
+          >
+            {Object.entries(tabConfig).map(([key, config]) => (
+              <Tab
+                key={key}
+                value={key}
+                label={config.title}
+                icon={config.icon}
+                iconPosition="start"
+                className={`
+                  transition-all duration-300
+                  ${selectedTab === key ? 'text-blue-500' : 'text-gray-600'}
+                  hover:bg-gray-50
+                `}
+              />
+            ))}
+          </Tabs>
+        </Paper>
+
+        {/* Orders Table */}
+        <TableContainer component={Paper} className="shadow-md max-w-6xl mx-auto dark:bg-dark-sidebar">
+          <Table>
+            <TableHead>
+              <TableRow className="bg-gray-50 dark:bg-dark-sidebar">
+                <TableCell className="font-semibold dark:text-dark-text">Mã đơn hàng</TableCell>
+                <TableCell className="font-semibold dark:text-dark-text">Khách hàng</TableCell>
+                <TableCell className="font-semibold dark:text-dark-text">Tổng tiền</TableCell>
+                <TableCell className="font-semibold dark:text-dark-text">Số lượng</TableCell>
+                <TableCell className="font-semibold dark:text-dark-text">Ngày đặt</TableCell>
+                <TableCell className="font-semibold dark:text-dark-text">Trạng thái</TableCell>
+                <TableCell align="right" className="font-semibold dark:text-dark-text">Thao tác</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {invoicesData?.getInvoicesByShop.data.map((invoice) => (
+                <TableRow 
+                  key={invoice.invoice_id}
+                  className="hover:bg-gray-50 dark:hover:bg-dark-hover transition-colors duration-150"
+                >
+                  <TableCell className="font-medium dark:text-dark-text">{invoice.invoice_id}</TableCell>
+                  <TableCell>
+                    <Typography variant="body2" className="font-medium dark:text-dark-text">{invoice.user?.user_name}</Typography>
+                    <Typography variant="caption" className="text-gray-500 dark:text-dark-text">
+                      {invoice.user?.phone}
+                    </Typography>
+                  </TableCell>
+                  <TableCell className="text-blue-600 dark:text-blue-400 font-medium">{formatCurrency(invoice.total_amount)}</TableCell>
+                  <TableCell className="dark:text-dark-text">{countTotalProducts(invoice)}</TableCell>
+                  <TableCell className="dark:text-dark-text">{formatDate(invoice.create_at)}</TableCell>
+                  <TableCell>{getStatusChip(invoice.order_status)}</TableCell>
+                  <TableCell align="right">
+                    <IconButton
+                      size="small"
+                      onClick={(e) => handleMenuOpen(e, invoice.invoice_id)}
+                      className="hover:bg-gray-100 dark:hover:bg-dark-hover dark:text-dark-text"
+                    >
+                      <MoreVertIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Pagination */}
+        <Box className="flex justify-center mt-6">
+          <Pagination
+            count={invoicesData?.getInvoicesByShop.totalPage || 1}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            size="large"
+            className="shadow-sm"
+          />
         </Box>
-      </Paper>
 
-      {/* Action menu */}
-      <Menu
-        anchorEl={actionMenuAnchorEl}
-        open={Boolean(actionMenuAnchorEl)}
-        onClose={handleMenuClose}
-      >
-        <MenuItem onClick={() => menuInvoiceId && handleViewDetail(menuInvoiceId)}>
-          <RemoveRedEyeIcon fontSize="small" className="mr-2" />
-          Xem chi tiết
-        </MenuItem>
-        
-        {tabConfig[selectedTab as keyof typeof tabConfig].nextAction && (
-          <MenuItem onClick={() => 
-            menuInvoiceId && 
-            handleActionClick(
-              menuInvoiceId, 
-              tabConfig[selectedTab as keyof typeof tabConfig].nextAction!.status
-            )
-          }>
-            {tabConfig[selectedTab as keyof typeof tabConfig].nextAction!.icon}
-            <span className="ml-2">{tabConfig[selectedTab as keyof typeof tabConfig].nextAction!.label}</span>
+        {/* Action Menu */}
+        <Menu
+          anchorEl={actionMenuAnchorEl}
+          open={Boolean(actionMenuAnchorEl)}
+          onClose={handleMenuClose}
+        >
+          <MenuItem onClick={() => handleViewDetail(menuInvoiceId!)}>
+            <RemoveRedEyeIcon className="mr-2" /> Xem chi tiết
           </MenuItem>
-        )}
-      </Menu>
+          {selectedTab !== 'delivered' && 
+           selectedTab !== 'canceled' && 
+           selectedTab in tabConfig &&
+           tabConfig[selectedTab as keyof typeof tabConfig]?.nextAction && (
+            <MenuItem
+              onClick={() =>
+                handleActionClick(
+                  menuInvoiceId!,
+                  tabConfig[selectedTab as keyof typeof tabConfig].nextAction!.status
+                )
+              }
+            >
+              {tabConfig[selectedTab as keyof typeof tabConfig].nextAction?.icon}
+              <span className="ml-2">
+                {tabConfig[selectedTab as keyof typeof tabConfig].nextAction?.label}
+              </span>
+            </MenuItem>
+          )}
+          {selectedTab === 'waiting_for_delivery' && (
+            <MenuItem
+              onClick={() =>
+                handleActionClick(menuInvoiceId!, OrderStatus.CANCELED)
+              }
+            >
+              <CancelIcon className="mr-2" /> Hủy đơn
+            </MenuItem>
+          )}
+        </Menu>
 
-      {/* Confirmation dialog */}
-      <Dialog
-        open={confirmDialogOpen}
-        onClose={handleCancel}
-      >
-        <DialogTitle>Xác nhận thay đổi trạng thái</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Bạn có chắc chắn muốn thay đổi trạng thái đơn hàng này thành{' '}
-            {nextStatus === OrderStatus.PROCESSED && 'Đã xử lý'}
-            {nextStatus === OrderStatus.DELIVERY && 'Đang vận chuyển'}
-            {nextStatus === OrderStatus.DELIVERED && 'Đã giao hàng'}
-            {nextStatus === OrderStatus.CANCELED && 'Đã hủy'} không?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancel} color="inherit">
-            Hủy
-          </Button>
-          <Button onClick={handleConfirm} color="primary" variant="contained" disabled={updatingStatus}>
-            {updatingStatus ? 'Đang xử lý...' : 'Xác nhận'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+        {/* Confirm Dialog */}
+        <Dialog open={confirmDialogOpen} onClose={handleCancel}>
+          <DialogTitle>Xác nhận thay đổi trạng thái</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Bạn có chắc chắn muốn thay đổi trạng thái đơn hàng này?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCancel}>Hủy</Button>
+            <Button
+              onClick={handleConfirm}
+              color="primary"
+              disabled={updatingStatus}
+            >
+              {updatingStatus ? 'Đang xử lý...' : 'Xác nhận'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
+    </LocalizationProvider>
   );
 };
 
