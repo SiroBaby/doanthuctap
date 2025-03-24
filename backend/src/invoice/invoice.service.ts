@@ -342,6 +342,14 @@ export class InvoiceService {
           quantity: ip.quantity
         };
       });
+
+      // Format invoice products to include discount_amount
+      const formattedInvoiceProducts = invoiceProducts.map(ip => ({
+        ...ip,
+        price: parseFloat(ip.price.toString()),
+        discount_percent: parseFloat(ip.discount_percent.toString()),
+        discount_amount: ip.discount_amount ? parseFloat(ip.discount_amount.toString()) : 0
+      }));
       
       return {
         invoice_id: invoice.invoice_id,
@@ -361,7 +369,7 @@ export class InvoiceService {
           phone: shippingAddress?.phone || invoice.user.phone || ''
         },
         products,
-        invoice_products: invoiceProducts
+        invoice_products: formattedInvoiceProducts
       };
     } catch (error) {
       throw new Error(`Failed to get invoice detail: ${error.message}`);

@@ -172,6 +172,9 @@ export class InvoiceProduct {
   @Field(() => Float)
   discount_percent: number;
   
+  @Field(() => Float, { nullable: true })
+  discount_amount: number;
+  
   @Field(() => Int)
   product_variation_id: number;
   

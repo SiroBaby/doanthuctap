@@ -40,6 +40,7 @@ interface InvoiceProduct {
   price: number;
   quantity: number;
   discount_percent: number;
+  discount_amount: number;
   product_variation_id: number;
   product_variation?: {
     product_images?: {
@@ -183,11 +184,6 @@ const InvoiceDetailPage = () => {
     skip: !invoiceId,
   });
   
-  // Calculate total price with discount
-  const calculatePrice = (price: number, discountPercent: number) => {
-    return price * (1 - discountPercent / 100);
-  };
-  
   // Get product thumbnail
   const getProductThumbnail = (product: InvoiceProduct) => {
     // Tìm sản phẩm tương ứng trong mảng products
@@ -288,9 +284,6 @@ const InvoiceDetailPage = () => {
                     <Typography className="!text-gray-600 dark:!text-gray-300 mb-1">
                       <strong>Email:</strong> {invoice.user.email}
                     </Typography>
-                    <Typography className="!text-gray-600 dark:!text-gray-300 mb-1">
-                      <strong>Số điện thoại:</strong> {invoice.user.phone || 'Không có'}
-                    </Typography>
                   </Paper>
                 </Grid>
                 
@@ -353,12 +346,16 @@ const InvoiceDetailPage = () => {
                       <TableCell className="!font-bold !text-gray-700 dark:!text-gray-200" align="center">Số lượng</TableCell>
                       <TableCell className="!font-bold !text-gray-700 dark:!text-gray-200" align="right">Đơn giá</TableCell>
                       <TableCell className="!font-bold !text-gray-700 dark:!text-gray-200" align="right">Giảm giá</TableCell>
-                      <TableCell className="!font-bold !text-gray-700 dark:!text-gray-200" align="right">Thành tiền</TableCell>
+                      <TableCell className="!font-bold !text-gray-700 dark:!text-gray-200" align="right">Tổng tiền hàng</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {invoice.invoice_products.map((product) => {
-                      const discountedPrice = calculatePrice(product.price, product.discount_percent);
+                      const basePrice = invoice.products.find(
+                        p => p.product_name === product.product_name && p.product_variation_name === product.variation_name
+                      )?.base_price || product.price;
+                      const discountedPrice = basePrice * (1 - product.discount_percent / 100);
+                      const totalProductPrice = discountedPrice * product.quantity;
                       return (
                         <TableRow key={product.invoice_product_id}>
                           <TableCell>
@@ -383,17 +380,26 @@ const InvoiceDetailPage = () => {
                             {product.quantity}
                           </TableCell>
                           <TableCell className="!text-gray-600 dark:!text-gray-300" align="right">
-                            {formatCurrency(product.price)}
+                            {formatCurrency(basePrice * product.quantity)}
                           </TableCell>
                           <TableCell className="!text-gray-600 dark:!text-gray-300" align="right">
                             {product.discount_percent}%
                           </TableCell>
                           <TableCell className="!text-gray-600 dark:!text-gray-300" align="right">
-                            {formatCurrency(discountedPrice * product.quantity)}
+                            {formatCurrency(totalProductPrice)}
                           </TableCell>
                         </TableRow>
                       );
                     })}
+                    <TableRow>
+                      <TableCell colSpan={4} />
+                      <TableCell className="!font-bold !text-gray-700 dark:!text-gray-200" align="right">
+                        Voucher:
+                      </TableCell>
+                      <TableCell className="!text-gray-600 dark:!text-gray-300" align="right">
+                        -{formatCurrency(invoice.invoice_products.reduce((sum, product) => sum + (product.discount_amount || 0), 0))}
+                      </TableCell>
+                    </TableRow>
                     <TableRow>
                       <TableCell colSpan={4} />
                       <TableCell className="!font-bold !text-gray-700 dark:!text-gray-200" align="right">
@@ -406,10 +412,10 @@ const InvoiceDetailPage = () => {
                     <TableRow>
                       <TableCell colSpan={4} />
                       <TableCell className="!font-bold !text-gray-700 dark:!text-gray-200" align="right">
-                        Tổng cộng:
+                        Thành tiền:
                       </TableCell>
                       <TableCell className="!font-bold !text-xl !text-primary dark:!text-primary" align="right">
-                        {formatCurrency(invoice.total_amount)}
+                        {formatCurrency(invoice.total_amount + invoice.shipping_fee)}
                       </TableCell>
                     </TableRow>
                   </TableBody>

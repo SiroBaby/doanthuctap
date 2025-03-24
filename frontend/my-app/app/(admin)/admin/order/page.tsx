@@ -328,7 +328,7 @@ const OrderPage = () => {
                                                         {invoice.shop.shop_name}
                                                     </TableCell>
                                                     <TableCell className="!text-gray-600 dark:!text-gray-300 !text-xl">
-                                                        {formatCurrency(invoice.total_amount)}
+                                                        {formatCurrency(invoice.total_amount + invoice.shipping_fee)}
                                                     </TableCell>
                                                     <TableCell className="!text-gray-600 dark:!text-gray-300 !text-xl">
                                                         <StatusChip status={invoice.order_status} />

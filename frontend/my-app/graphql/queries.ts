@@ -557,6 +557,7 @@ export const GET_INVOICE_DETAIL = gql`
         price
         quantity
         discount_percent
+        discount_amount
         product_variation_id
         product_variation {
           product_images {

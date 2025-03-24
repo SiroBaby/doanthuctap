@@ -329,6 +329,7 @@ type InvoiceProduct {
   price: Float!
   quantity: Int!
   discount_percent: Float!
+  discount_amount: Float
   product_variation_id: Int!
   product_variation: ProductVariationDetail
 }
