@@ -397,7 +397,7 @@ const InvoiceDetailPage = () => {
                         Voucher:
                       </TableCell>
                       <TableCell className="!text-gray-600 dark:!text-gray-300" align="right">
-                        -{formatCurrency(invoice.invoice_products.reduce((sum, product) => sum + (product.discount_amount || 0), 0))}
+                        -{formatCurrency(invoice.invoice_products.reduce((sum, product) => sum + ((product.discount_amount || 0) * product.quantity), 0))}
                       </TableCell>
                     </TableRow>
                     <TableRow>
