@@ -130,12 +130,20 @@ export class InvoiceService {
     try {
       const { invoice_id, order_status } = updateInvoiceStatusInput;
       
+      // Automatically set payment_status to 'paid' when order_status is DELIVERY
+      const updateData: any = { 
+        order_status: order_status.toString(),
+        update_at: new Date()
+      };
+
+      // If status is DELIVERY, set payment_status to paid
+      if (order_status === OrderStatus.DELIVERED) {
+        updateData.payment_status = 'paid';
+      }
+      
       const updatedInvoice = await this.prisma.invoice.update({
         where: { invoice_id },
-        data: { 
-          order_status: order_status.toString(),
-          update_at: new Date()
-        } as any,
+        data: updateData,
         include: {
           user: true,
         }
