@@ -522,4 +522,181 @@ export class InvoiceService {
       throw new Error(`Failed to get all invoices: ${error.message}`);
     }
   }
+
+  async getAdminDashboardStats() {
+    const [
+      totalRevenue,
+      totalOrders,
+      totalProducts,
+      totalShops,
+      totalUsers,
+      orderStats,
+      revenueByMonth,
+      topSellingProducts,
+      topShops,
+      recentOrders,
+    ] = await Promise.all([
+      // Tổng doanh thu
+      this.prisma.invoice.aggregate({
+        _sum: {
+          total_amount: true,
+        },
+        where: {
+          order_status: 'DELIVERED',
+        },
+      }).then((result) => result._sum.total_amount || 0),
+
+      // Tổng đơn hàng
+      this.prisma.invoice.count(),
+
+      // Tổng sản phẩm
+      this.prisma.product.count(),
+
+      // Tổng cửa hàng
+      this.prisma.shop.count(),
+
+      // Tổng người dùng
+      this.prisma.user.count(),
+
+      // Thống kê đơn hàng theo trạng thái
+      this.prisma.invoice.groupBy({
+        by: ['order_status'],
+        _count: true,
+      }).then((results) => {
+        const stats = {
+          waiting_for_delivery: 0,
+          processed: 0,
+          delivery: 0,
+          delivered: 0,
+          canceled: 0,
+        };
+        results.forEach((result) => {
+          stats[result.order_status.toLowerCase()] = result._count;
+        });
+        return stats;
+      }),
+
+      // Doanh thu theo tháng
+      this.prisma.$queryRaw`
+        SELECT 
+          DATE_FORMAT(create_at, '%Y-%m') as month,
+          SUM(total_amount) as revenue
+        FROM Invoice
+        WHERE order_status = 'DELIVERED'
+        GROUP BY DATE_FORMAT(create_at, '%Y-%m')
+        ORDER BY month DESC
+        LIMIT 12
+      `,
+
+      // Top sản phẩm bán chạy
+      this.prisma.invoice_Product.groupBy({
+        by: ['product_variation_id'],
+        _sum: {
+          quantity: true,
+          price: true,
+        },
+        orderBy: {
+          _sum: {
+            quantity: 'desc',
+          },
+        },
+        take: 5,
+        where: {
+          invoice: {
+            order_status: 'DELIVERED',
+          },
+        },
+      }).then(async (results) => {
+        const productDetails = await Promise.all(
+          results.map(async (result) => {
+            const productVariation = await this.prisma.product_variation.findUnique({
+              where: { product_variation_id: result.product_variation_id },
+              include: {
+                product: {
+                  include: {
+                    product_images: true,
+                    shop: true,
+                  },
+                },
+              },
+            });
+
+            if (!productVariation || !result._sum.quantity || !result._sum.price) {
+              return null;
+            }
+
+            return {
+              product_id: productVariation.product.product_id,
+              product_name: productVariation.product.product_name,
+              total_quantity: result._sum.quantity,
+              total_revenue: Number(result._sum.price) * result._sum.quantity,
+              product: productVariation.product,
+            };
+          })
+        );
+
+        return productDetails.filter((product): product is NonNullable<typeof product> => product !== null);
+      }),
+
+      // Top cửa hàng
+      this.prisma.shop.findMany({
+        take: 5,
+        include: {
+          _count: {
+            select: {
+              products: true,
+              invoices: true,
+            },
+          },
+          invoices: {
+            where: {
+              order_status: 'DELIVERED',
+            },
+            select: {
+              total_amount: true,
+            },
+          },
+        },
+        orderBy: {
+          invoices: {
+            _count: 'desc',
+          },
+        },
+      }).then((shops) =>
+        shops.map((shop) => ({
+          shop_id: shop.shop_id,
+          shop_name: shop.shop_name,
+          total_revenue: shop.invoices.reduce((sum, invoice) => sum + Number(invoice.total_amount), 0),
+          total_orders: shop._count.invoices,
+          total_products: shop._count.products,
+          shop,
+        }))
+      ),
+
+      // Đơn hàng gần đây
+      this.prisma.invoice.findMany({
+        take: 5,
+        orderBy: {
+          create_at: 'desc',
+        },
+        include: {
+          user: true,
+          shop: true,
+        },
+      }),
+    ]);
+
+    return {
+      totalRevenue,
+      totalOrders,
+      totalProducts,
+      totalShops,
+      totalUsers,
+      orderStats,
+      revenueByMonth,
+      topSellingProducts,
+      topShops,
+      recentOrders,
+    };
+  }
 } 

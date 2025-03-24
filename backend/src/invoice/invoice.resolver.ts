@@ -6,6 +6,7 @@ import { GetInvoicesByShopInput } from './dto/get-invoices-by-shop.input';
 import { GetOutOfStockProductsInput } from './dto/get-out-of-stock-products.input';
 import { GetAllInvoicesInput } from './dto/get-all-invoices.input';
 import { CreateInvoiceInput } from './dto/create-invoice.input';
+import { AdminDashboardStats } from './entities/admin-dashboard-stats.entity';
 
 @Resolver(() => Invoice)
 export class InvoiceResolver {
@@ -39,5 +40,10 @@ export class InvoiceResolver {
   @Query(() => InvoicePagination, { name: 'getAllInvoices' })
   getAllInvoices(@Args('getAllInvoicesInput') getAllInvoicesInput: GetAllInvoicesInput) {
     return this.invoiceService.getAllInvoices(getAllInvoicesInput);
+  }
+
+  @Query(() => AdminDashboardStats)
+  async getAdminDashboardStats() {
+    return this.invoiceService.getAdminDashboardStats();
   }
 } 

@@ -15,6 +15,7 @@ import {
 } from '@/graphql/mutations';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import axios from 'axios';
+import Image from 'next/image';
 
 import {
   Container,
@@ -809,10 +810,13 @@ const EditProductPage = () => {
                           <Grid item xs={6} sm={4} md={3} key={`upload-${index}`}>
                             <Card>
                               <Box className="relative">
-                                <img
+                                <Image
                                   src={URL.createObjectURL(file)}
                                   alt={`Upload preview ${index + 1}`}
+                                  width={400}
+                                  height={160}
                                   className="w-full h-40 object-cover"
+                                  unoptimized
                                 />
                               </Box>
                               <CardContent className="p-2">
@@ -861,10 +865,13 @@ const EditProductPage = () => {
                       <Grid item xs={6} sm={4} md={3} key={field.id}>
                         <Card>
                           <Box className="relative">
-                            <img
+                            <Image
                               src={imageField.image_url}
                               alt={`Product image ${index + 1}`}
+                              width={400}
+                              height={160}
                               className="w-full h-40 object-cover"
+                              unoptimized
                             />
                             {selectedThumbnail === index && (
                               <Chip

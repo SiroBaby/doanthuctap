@@ -783,4 +783,58 @@ export const GET_ALL_INVOICES = gql`
   }
 `;
 
+// Query cho admin dashboard
+export const GET_ADMIN_DASHBOARD_STATS = gql`
+  query GetAdminDashboardStats {
+    getAdminDashboardStats {
+      totalRevenue
+      totalOrders
+      totalProducts
+      totalShops
+      totalUsers
+      orderStats {
+        waiting_for_delivery
+        processed
+        delivery
+        delivered
+        canceled
+      }
+      revenueByMonth {
+        month
+        revenue
+      }
+      topSellingProducts {
+        product_id
+        product_name
+        total_quantity
+        total_revenue
+        product {
+          product_images {
+            image_url
+            is_thumbnail
+          }
+          shop {
+            shop_name
+          }
+        }
+      }
+      topShops {
+        shop_id
+        shop_name
+        total_revenue
+        total_orders
+        total_products
+      }
+      recentOrders {
+        invoice_id
+        order_status
+        total_amount
+        user {
+          user_name
+        }
+      }
+    }
+  }
+`;
+
 

@@ -340,6 +340,57 @@ type InvoicePagination {
   totalPage: Float!
 }
 
+type OrderStats {
+  waiting_for_delivery: Int!
+  processed: Int!
+  delivery: Int!
+  delivered: Int!
+  canceled: Int!
+}
+
+type RevenueByMonth {
+  month: String!
+  revenue: Float!
+}
+
+type TopSellingProduct {
+  product_id: Int!
+  product_name: String!
+  total_quantity: Int!
+  total_revenue: Float!
+  product: Product!
+}
+
+type TopShop {
+  shop_id: String!
+  shop_name: String!
+  total_revenue: Float!
+  total_orders: Int!
+  total_products: Int!
+  shop: Shop!
+}
+
+type RecentOrder {
+  invoice_id: String!
+  order_status: String!
+  total_amount: Float!
+  user: User!
+  shop: Shop!
+}
+
+type AdminDashboardStats {
+  totalRevenue: Float!
+  totalOrders: Int!
+  totalProducts: Int!
+  totalShops: Int!
+  totalUsers: Int!
+  orderStats: OrderStats!
+  revenueByMonth: [RevenueByMonth!]!
+  topSellingProducts: [TopSellingProduct!]!
+  topShops: [TopShop!]!
+  recentOrders: [RecentOrder!]!
+}
+
 type CartProduct {
   cart_product_id: Int!
   cart_id: String!
@@ -428,6 +479,7 @@ type Query {
   getInvoiceDetail(invoice_id: String!): InvoiceDetail!
   getOutOfStockProducts(getOutOfStockProductsInput: GetOutOfStockProductsInput!): InvoicePagination!
   getAllInvoices(getAllInvoicesInput: GetAllInvoicesInput!): InvoicePagination!
+  getAdminDashboardStats: AdminDashboardStats!
   getcart(id: String!): Cart!
   getCartProducts(cart_id: String!): [CartProduct!]!
   cartProduct(id: Int!): CartProduct!
