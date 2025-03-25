@@ -28,7 +28,6 @@ const VoucherPage = () => {
             <div className="col-span-1"></div>
             <div className="col-span-10">
               <div className="rounded-lg shadow-sm p-4">
-                <h2 className="text-xl font-semibold mb-4">Voucher khả dụng</h2>
                 <div className="grid grid-cols-1 gap-4 mb-8">
                   {sampleVouchers.map((_, index) => (
                     <div key={index} className="mb-4">

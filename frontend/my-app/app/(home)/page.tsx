@@ -9,6 +9,7 @@ import Vouchers from "../components/layout/Vouchers";
 import Footer from "../components/layout/Footer";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@apollo/client";
 import { GET_PRODUCTS_FOR_HOMEPAGE } from "@/graphql/queries";
 import "../globals.css";
@@ -35,6 +36,7 @@ interface ProductsResponse {
 }
 
 const HomePage: React.FC = () => {
+  const router = useRouter();
   const { loading, error, data } = useQuery<ProductsResponse>(
     GET_PRODUCTS_FOR_HOMEPAGE,
     {
@@ -50,7 +52,7 @@ const HomePage: React.FC = () => {
   );
 
   const products = data?.products?.data || [];
-  const sampleLiveStream = Array(12).fill(null);
+  const sampleLiveStream = Array(4).fill(null);
 
   // Loading state with skeleton
   if (loading) {
@@ -117,7 +119,11 @@ const HomePage: React.FC = () => {
 
           {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn á*/}
           <div className="flex justify-center mb-2">
-            <button className="rounded-full" aria-label="button">
+            <button
+              className="rounded-full"
+              aria-label="button"
+              onClick={() => router.push("/customer/category/voucher")}
+            >
               <Image
                 src="/icon/button-bar.png"
                 width={40}
@@ -224,7 +230,7 @@ const HomePage: React.FC = () => {
           {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn á */}
           <div className="flex justify-center mb-2">
             <Link
-              href="/customer/category/products"
+              href="/customer/category/product"
               className="rounded-full"
               aria-label="button"
             >
