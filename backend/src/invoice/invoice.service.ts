@@ -8,6 +8,7 @@ import { Invoice, InvoicePagination, OrderStatus, InvoiceProduct, ProductVariati
 import { CreateInvoiceInput } from './dto/create-invoice.input';
 import { v4 as uuidv4 } from 'uuid';
 import { Prisma } from '@prisma/client';
+import { GetInvoicesByUserIdInput } from './dto/get-invoices-by-user-id.input';
 
 @Injectable()
 export class InvoiceService {
@@ -173,7 +174,7 @@ export class InvoiceService {
 
     const where: Prisma.InvoiceWhereInput = {
       shop_id,
-      order_status,
+      order_status: order_status as OrderStatus,
       payment_method,
       ...(search && {
         OR: [
@@ -269,7 +270,7 @@ export class InvoiceService {
         invoice_id: invoice.invoice_id,
         payment_method: invoice.payment_method || undefined,
         payment_status: invoice.payment_status || undefined,
-        order_status: invoice.order_status,
+        order_status: invoice.order_status as OrderStatus,
         total_amount: Number(invoice.total_amount),
         shipping_fee: Number(invoice.shipping_fee),
         id_user: invoice.id_user,
@@ -282,7 +283,7 @@ export class InvoiceService {
           phone: shippingAddress.phone
         } : undefined,
         invoice_products: invoice.invoice_products.map(ip => ({
-          invoice_product_id: ip.invoice_product_id,
+          invoice_product_id: String(ip.invoice_product_id),
           product_name: ip.product_name,
           variation_name: ip.variation_name,
           price: Number(ip.price),
@@ -809,5 +810,141 @@ export class InvoiceService {
       topShops,
       recentOrders,
     };
+  }
+
+  async getInvoicesByUserId(getInvoicesByUserIdInput: GetInvoicesByUserIdInput): Promise<InvoicePagination> {
+    try {
+      const { userId, page, limit, status } = getInvoicesByUserIdInput;
+      const skip = (page - 1) * limit;
+
+      // Build where conditions
+      const whereConditions: Prisma.InvoiceWhereInput = {
+        id_user: userId
+      };
+
+      if (status) {
+        whereConditions.order_status = status;
+      }
+
+      // Get total count
+      const totalCount = await this.prisma.invoice.count({
+        where: whereConditions,
+      });
+
+      const totalPage = Math.ceil(totalCount / limit);
+
+      // Get invoices with pagination
+      const invoices = await this.prisma.invoice.findMany({
+        where: whereConditions,
+        skip,
+        take: limit,
+        orderBy: {
+          create_at: 'desc',
+        },
+        include: {
+          user: {
+            select: {
+              id_user: true,
+              user_name: true,
+              email: true,
+              phone: true,
+              password: true,
+              role: true
+            },
+          },
+          invoice_products: {
+            include: {
+              product_variation: {
+                include: {
+                  product: {
+                    include: {
+                      product_images: {
+                        select: {
+                          image_url: true,
+                          is_thumbnail: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Get shipping addresses for all invoices
+      const shippingAddressIds = invoices
+        .map(invoice => invoice.shipping_address_id)
+        .filter((id): id is number => id !== null);
+
+      const shippingAddresses = shippingAddressIds.length > 0
+        ? await this.prisma.address.findMany({
+            where: {
+              address_id: {
+                in: shippingAddressIds
+              }
+            }
+          })
+        : [];
+
+      const shippingAddressMap = new Map(
+        shippingAddresses.map(addr => [addr.address_id, addr])
+      );
+
+      // Transform data to match GraphQL schema
+      const transformedInvoices = invoices.map((invoice): Invoice => {
+        const shippingAddress = invoice.shipping_address_id
+          ? shippingAddressMap.get(invoice.shipping_address_id)
+          : null;
+
+        return {
+          invoice_id: invoice.invoice_id,
+          payment_method: invoice.payment_method || undefined,
+          payment_status: invoice.payment_status || undefined,
+          order_status: invoice.order_status as OrderStatus,
+          total_amount: Number(invoice.total_amount),
+          shipping_fee: Number(invoice.shipping_fee),
+          id_user: invoice.id_user,
+          cart_id: '', // Required by GraphQL schema
+          shop_id: invoice.shop_id,
+          user: invoice.user,
+          shipping_address: shippingAddress ? {
+            address: shippingAddress.address,
+            phone: shippingAddress.phone
+          } : undefined,
+          invoice_products: invoice.invoice_products.map(ip => ({
+            invoice_product_id: String(ip.invoice_product_id),
+            product_name: ip.product_name,
+            variation_name: ip.variation_name,
+            price: Number(ip.price),
+            quantity: ip.quantity,
+            discount_percent: Number(ip.discount_percent),
+            discount_amount: ip.discount_amount ? Number(ip.discount_amount) : undefined,
+            product_variation_id: ip.product_variation_id,
+            product_variation: {
+              product_variation_name: ip.product_variation.product_variation_name,
+              base_price: Number(ip.product_variation.base_price),
+              percent_discount: Number(ip.product_variation.percent_discount),
+              status: ip.product_variation.status,
+              product_images: ip.product_variation.product.product_images.map(img => ({
+                image_url: img.image_url,
+                is_thumbnail: img.is_thumbnail || false
+              }))
+            }
+          })),
+          create_at: invoice.create_at || undefined,
+          update_at: invoice.update_at || undefined
+        };
+      });
+
+      return {
+        data: transformedInvoices,
+        totalCount,
+        totalPage,
+      };
+    } catch (error) {
+      throw new Error(`Failed to get invoices by user ID: ${error.message}`);
+    }
   }
 } 

@@ -818,4 +818,46 @@ export const GET_ADMIN_DASHBOARD_STATS = gql`
   }
 `;
 
+// Query để lấy danh sách đơn hàng theo user ID
+export const GET_INVOICES_BY_USER_ID = gql`
+  query GetInvoicesByUserId($getInvoicesByUserIdInput: GetInvoicesByUserIdInput!) {
+    getInvoicesByUserId(getInvoicesByUserIdInput: $getInvoicesByUserIdInput) {
+      data {
+        invoice_id
+        payment_method
+        payment_status
+        order_status
+        total_amount
+        shipping_fee
+        create_at
+        user {
+          user_name
+          email
+          phone
+        }
+        shipping_address {
+          address
+          phone
+        }
+        invoice_products {
+          invoice_product_id
+          product_name
+          variation_name
+          price
+          quantity
+          discount_percent
+          product_variation {
+            product_images {
+              image_url
+              is_thumbnail
+            }
+          }
+        }
+      }
+      totalCount
+      totalPage
+    }
+  }
+`;
+
 

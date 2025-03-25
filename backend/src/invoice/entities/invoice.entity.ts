@@ -9,7 +9,7 @@ export enum OrderStatus {
   PROCESSED = 'PROCESSED',
   DELIVERY = 'DELIVERY',
   DELIVERED = 'DELIVERED',
-  CANCELED = 'CANCELED',
+  CANCELED = 'CANCELED'
 }
 
 registerEnumType(OrderStatus, {
@@ -49,11 +49,11 @@ export class SimpleShop {
 
 @ObjectType()
 export class ShippingAddress {
-  @Field(() => String, { nullable: true })
-  address?: string;
-  
-  @Field(() => String, { nullable: true })
-  phone?: string;
+  @Field()
+  address: string;
+
+  @Field()
+  phone: string;
 }
 
 @ObjectType()
@@ -66,9 +66,9 @@ export class Invoice {
 
   @Field({ nullable: true })
   payment_status?: string;
-  
-  @Field()
-  order_status: string;
+
+  @Field(() => OrderStatus)
+  order_status: OrderStatus;
 
   @Field(() => Float)
   total_amount: number;
@@ -85,8 +85,8 @@ export class Invoice {
   @Field()
   shop_id: string;
 
-  @Field(() => User, { nullable: true })
-  user?: User;
+  @Field(() => User)
+  user: User;
 
   @Field(() => SimpleShop, { nullable: true })
   shop?: SimpleShop;
@@ -207,9 +207,27 @@ export class SimpleProductImage {
 }
 
 @ObjectType()
+export class ProductVariation {
+  @Field()
+  product_variation_name: string;
+
+  @Field(() => Float)
+  base_price: number;
+
+  @Field(() => Float)
+  percent_discount: number;
+
+  @Field()
+  status: string;
+
+  @Field(() => [ProductImage])
+  product_images: ProductImage[];
+}
+
+@ObjectType()
 export class InvoiceProduct {
-  @Field(() => Int)
-  invoice_product_id: number;
+  @Field()
+  invoice_product_id: string;
 
   @Field()
   product_name: string;
@@ -241,9 +259,9 @@ export class InvoicePagination {
   @Field(() => [Invoice])
   data: Invoice[];
 
-  @Field(() => Number)
+  @Field(() => Int)
   totalCount: number;
 
-  @Field(() => Number)
+  @Field(() => Int)
   totalPage: number;
 } 

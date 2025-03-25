@@ -28,7 +28,7 @@ const UserLeftSideBar = ({
     } else if (pathname.includes("/customer/user/purchase")) {
       setSelectedItem("order");
     }
-  }, [pathname]);
+  }, [pathname, userId]);
 
   const handleItemClick = (item: string, path: string) => {
     setSelectedItem(item);

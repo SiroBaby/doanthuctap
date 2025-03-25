@@ -7,10 +7,16 @@ import { GetOutOfStockProductsInput } from './dto/get-out-of-stock-products.inpu
 import { GetAllInvoicesInput } from './dto/get-all-invoices.input';
 import { CreateInvoiceInput } from './dto/create-invoice.input';
 import { AdminDashboardStats } from './entities/admin-dashboard-stats.entity';
+import { GetInvoicesByUserIdInput } from './dto/get-invoices-by-user-id.input';
 
 @Resolver(() => Invoice)
 export class InvoiceResolver {
   constructor(private readonly invoiceService: InvoiceService) {}
+
+  @Query(() => InvoicePagination, { name: 'getInvoicesByUserId' })
+  getInvoicesByUserId(@Args('getInvoicesByUserIdInput') getInvoicesByUserIdInput: GetInvoicesByUserIdInput) {
+    return this.invoiceService.getInvoicesByUserId(getInvoicesByUserIdInput);
+  }
 
   @Mutation(() => Invoice)
   createInvoice(@Args('createInvoiceInput') createInvoiceInput: CreateInvoiceInput) {

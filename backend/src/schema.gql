@@ -281,26 +281,35 @@ type SimpleShop {
 }
 
 type ShippingAddress {
-  address: String
-  phone: String
+  address: String!
+  phone: String!
 }
 
 type Invoice {
   invoice_id: String!
   payment_method: String
   payment_status: String
-  order_status: String!
+  order_status: OrderStatus!
   total_amount: Float!
   shipping_fee: Float!
   id_user: String!
   cart_id: String!
   shop_id: String!
-  user: User
+  user: User!
   shop: SimpleShop
   shipping_address: ShippingAddress
   invoice_products: [InvoiceProduct!]!
   create_at: DateTime
   update_at: DateTime
+}
+
+"""Status of the order"""
+enum OrderStatus {
+  WAITING_FOR_DELIVERY
+  PROCESSED
+  DELIVERY
+  DELIVERED
+  CANCELED
 }
 
 type ProductVariationOrder {
@@ -346,7 +355,7 @@ type SimpleProductImage {
 }
 
 type InvoiceProduct {
-  invoice_product_id: Int!
+  invoice_product_id: String!
   product_name: String!
   variation_name: String!
   price: Float!
@@ -359,8 +368,8 @@ type InvoiceProduct {
 
 type InvoicePagination {
   data: [Invoice!]!
-  totalCount: Float!
-  totalPage: Float!
+  totalCount: Int!
+  totalPage: Int!
 }
 
 type OrderStats {
@@ -498,6 +507,7 @@ type Query {
   dashboardStats: [DashboardStat!]!
   dashboardStat(id: Int!): DashboardStat!
   getSellerDashboardStats(shopId: String!): SellerDashboardStats!
+  getInvoicesByUserId(getInvoicesByUserIdInput: GetInvoicesByUserIdInput!): InvoicePagination!
   getInvoicesByShop(getInvoicesByShopInput: GetInvoicesByShopInput!): InvoicePagination!
   getInvoiceDetail(invoice_id: String!): InvoiceDetail!
   getOutOfStockProducts(getOutOfStockProductsInput: GetOutOfStockProductsInput!): InvoicePagination!
@@ -515,6 +525,13 @@ input PaginationInput {
   page: Int = 1
   limit: Int = 10
   search: String
+}
+
+input GetInvoicesByUserIdInput {
+  userId: String!
+  page: Int! = 1
+  limit: Int! = 10
+  status: OrderStatus
 }
 
 input GetInvoicesByShopInput {

@@ -1,97 +1,283 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import OrderDetail from "@/app/components/purchase/OrderDetail";
+import { useQuery } from '@apollo/client';
+import { GET_INVOICE_DETAIL } from '@/graphql/queries';
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Grid,
+  Chip,
+  Divider,
+  Button,
+} from '@mui/material';
+import Image from 'next/image';
+import toast from 'react-hot-toast';
 
-// Demo data
-const sampleOrder = {
-  id: "ABC123456789",
-  shopName: "Shop ABC",
-  status: "delivering",
-  statusHistory: [
-    { status: "pending", timestamp: "2025-03-15T08:00:00Z" },
-    { status: "shipping", timestamp: "2025-03-15T10:30:00Z" },
-    { status: "delivering", timestamp: "2025-03-16T09:15:00Z" },
-  ],
-  items: [
-    {
-      id: "item1",
-      name: "Áo thun cotton nam nữ form rộng",
-      price: 150000,
-      quantity: 2,
-      image: "/placeholder/product1.jpg",
-      variation: "Trắng, XL",
-    },
-    {
-      id: "item2",
-      name: "Quần jean nam baggy",
-      price: 350000,
-      quantity: 1,
-      image: "/placeholder/product2.jpg",
-      variation: "Xanh đậm, 32",
-    },
-  ],
-  totalAmount: 650000,
-  shippingFee: 30000,
-  discount: 50000,
-  paymentMethod: "Thanh toán khi nhận hàng (COD)",
-  createdAt: "2025-03-15T08:00:00Z",
-  shippingAddress: {
-    recipient: "Nguyễn Văn A",
-    phone: "0987654321",
-    address: "123 Đường ABC, Phường XYZ, Quận 1, TP. Hồ Chí Minh",
-  },
+interface InvoiceProduct {
+  invoice_product_id: string;
+  product_name: string;
+  variation_name: string;
+  price: number;
+  quantity: number;
+  discount_percent: number;
+  product_variation: {
+    product_images: {
+      image_url: string;
+      is_thumbnail: boolean;
+    }[];
+  };
+}
+
+interface Invoice {
+  invoice_id: string;
+  payment_method: string;
+  payment_status: string;
+  order_status: string;
+  total_amount: number;
+  shipping_fee: number;
+  create_at: string;
+  user: {
+    user_name: string;
+    email: string;
+    phone: string;
+  };
+  shipping_address: {
+    address: string;
+    phone: string;
+  };
+  invoice_products: InvoiceProduct[];
+}
+
+interface InvoiceDetailResponse {
+  getInvoiceDetail: Invoice;
+}
+
+const ORDER_STATUS_MAP: { [key: string]: string } = {
+  'WAITING_FOR_DELIVERY': 'Chờ xác nhận',
+  'PROCESSED': 'Đã xác nhận',
+  'DELIVERY': 'Đang giao hàng',
+  'DELIVERED': 'Đã giao hàng',
+  'CANCELED': 'Đã hủy'
+};
+
+const ORDER_STATUS_COLOR: { [key: string]: 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' } = {
+  'WAITING_FOR_DELIVERY': 'warning',
+  'PROCESSED': 'info',
+  'DELIVERY': 'primary',
+  'DELIVERED': 'success',
+  'CANCELED': 'error'
 };
 
 const OrderDetailPage = () => {
   const params = useParams();
-  const [order, setOrder] = useState(sampleOrder);
-  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+  const orderId = params.orderId as string;
 
-  // gọi API để lấy chi tiết đơn hàng
-  useEffect(() => {
-    const fetchOrderDetail = async () => {
-      try {
-        // Tạm sử dụng dữ liệu mẫu
+  const { loading, error, data } = useQuery<InvoiceDetailResponse>(GET_INVOICE_DETAIL, {
+    variables: { invoice_id: orderId },
+  });
 
-        // Simulate API call
-        setTimeout(() => {
-          // Simulate order data from API
-          const orderId = Array.isArray(params.id)
-            ? params.id[0]
-            : String(params.id);
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(price);
+  };
 
-          // dùng dữ liệu api ở đây
-          const mockOrder = {
-            ...sampleOrder,
-            id: orderId || sampleOrder.id,
-          };
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
-          setOrder(mockOrder);
-          setIsLoading(false);
-        }, 1000);
-      } catch (error) {
-        console.error("Error fetching order details:", error);
-        setIsLoading(false);
-      }
-    };
+  const getThumbnailImage = (product: InvoiceProduct) => {
+    const thumbnail = product.product_variation.product_images.find(img => img.is_thumbnail);
+    return thumbnail ? thumbnail.image_url : product.product_variation.product_images[0]?.image_url;
+  };
 
-    fetchOrderDetail();
-  }, [params.id]);
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
+  if (loading) return <div>Đang tải...</div>;
+  if (error) {
+    toast.error('Có lỗi xảy ra khi tải thông tin đơn hàng');
+    return <div>Có lỗi xảy ra</div>;
   }
+  if (!data) return <div>Không tìm thấy đơn hàng</div>;
+
+  const order = data.getInvoiceDetail;
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">Chi tiết đơn hàng</h1>
-      <OrderDetail order={order} />
-    </div>
+    <Box className="container mx-auto px-4 py-8">
+      <Box className="flex justify-between items-center mb-6">
+        <Typography variant="h4" component="h1">
+          Chi tiết đơn hàng #{order.invoice_id}
+        </Typography>
+        <Chip
+          label={ORDER_STATUS_MAP[order.order_status]}
+          color={ORDER_STATUS_COLOR[order.order_status]}
+          size="medium"
+        />
+      </Box>
+
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={8}>
+          <Card className="mb-4">
+            <CardContent>
+              <Typography variant="h6" className="mb-4">
+                Sản phẩm đã mua
+              </Typography>
+              {order.invoice_products.map((product) => (
+                <Box key={product.invoice_product_id} className="flex gap-4 mb-4 border-b pb-4">
+                  <Box className="relative w-24 h-24">
+                    <Image
+                      src={getThumbnailImage(product)}
+                      alt={product.product_name}
+                      fill
+                      className="object-cover rounded"
+                    />
+                  </Box>
+                  <Box className="flex-grow">
+                    <Typography variant="subtitle1">
+                      {product.product_name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Phân loại: {product.variation_name}
+                    </Typography>
+                    <Typography variant="body2">
+                      x{product.quantity}
+                    </Typography>
+                    <Typography variant="body2" color="primary">
+                      {formatPrice(product.price * (1 - product.discount_percent / 100))}
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <Card className="mb-4">
+            <CardContent>
+              <Typography variant="h6" className="mb-4">
+                Thông tin đơn hàng
+              </Typography>
+              <Box className="space-y-2">
+                <Box className="flex justify-between">
+                  <Typography variant="body2" color="text.secondary">
+                    Mã đơn hàng:
+                  </Typography>
+                  <Typography variant="body2">
+                    {order.invoice_id}
+                  </Typography>
+                </Box>
+                <Box className="flex justify-between">
+                  <Typography variant="body2" color="text.secondary">
+                    Ngày đặt hàng:
+                  </Typography>
+                  <Typography variant="body2">
+                    {formatDate(order.create_at)}
+                  </Typography>
+                </Box>
+                <Box className="flex justify-between">
+                  <Typography variant="body2" color="text.secondary">
+                    Phương thức thanh toán:
+                  </Typography>
+                  <Typography variant="body2">
+                    {order.payment_method}
+                  </Typography>
+                </Box>
+                <Box className="flex justify-between">
+                  <Typography variant="body2" color="text.secondary">
+                    Trạng thái thanh toán:
+                  </Typography>
+                  <Typography variant="body2">
+                    {order.payment_status}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Divider className="my-4" />
+
+              <Typography variant="h6" className="mb-4">
+                Thông tin giao hàng
+              </Typography>
+              <Box className="space-y-2">
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Người nhận:
+                  </Typography>
+                  <Typography variant="body2">
+                    {order.user.user_name}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Số điện thoại:
+                  </Typography>
+                  <Typography variant="body2">
+                    {order.shipping_address.phone}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Địa chỉ:
+                  </Typography>
+                  <Typography variant="body2">
+                    {order.shipping_address.address}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Divider className="my-4" />
+
+              <Box className="space-y-2">
+                <Box className="flex justify-between">
+                  <Typography variant="body2" color="text.secondary">
+                    Tổng tiền hàng:
+                  </Typography>
+                  <Typography variant="body2">
+                    {formatPrice(order.total_amount - order.shipping_fee)}
+                  </Typography>
+                </Box>
+                <Box className="flex justify-between">
+                  <Typography variant="body2" color="text.secondary">
+                    Phí vận chuyển:
+                  </Typography>
+                  <Typography variant="body2">
+                    {formatPrice(order.shipping_fee)}
+                  </Typography>
+                </Box>
+                <Box className="flex justify-between">
+                  <Typography variant="subtitle1">
+                    Tổng thanh toán:
+                  </Typography>
+                  <Typography variant="subtitle1" color="primary">
+                    {formatPrice(order.total_amount)}
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={() => router.back()}
+          >
+            Quay lại
+          </Button>
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 
