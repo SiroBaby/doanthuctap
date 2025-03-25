@@ -6,6 +6,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { SvgIcon } from "@mui/material";
+import { useAuth } from "@clerk/nextjs";
 
 const UserLeftSideBar = ({
   onItemClick,
@@ -18,9 +19,9 @@ const UserLeftSideBar = ({
 }) => {
   const [selectedItem, setSelectedItem] = useState("");
   const pathname = usePathname();
-
+  const { userId } = useAuth();
   useEffect(() => {
-    if (pathname.includes("/customer/user/profile")) {
+    if (pathname.includes(`/customer/user/profile/${userId}`)) {
       setSelectedItem("profile");
     } else if (pathname.includes("/customer/user/address")) {
       setSelectedItem("address");
@@ -55,7 +56,7 @@ const UserLeftSideBar = ({
                 ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
                 : "border-transparent"
             }`}
-            onClick={() => handleItemClick("profile", "/customer/user/profile")}
+            onClick={() => handleItemClick("profile", `/customer/user/profile/${userId}`)}
           >
             <SvgIcon
               component={PersonIcon}
@@ -70,7 +71,7 @@ const UserLeftSideBar = ({
                 ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
                 : "border-transparent"
             }`}
-            onClick={() => handleItemClick("address", "/customer/user/address")}
+            onClick={() => handleItemClick("address", `/customer/user/address/${userId}`)}
           >
             <SvgIcon
               component={HomeIcon}
@@ -85,7 +86,7 @@ const UserLeftSideBar = ({
                 ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
                 : "border-transparent"
             }`}
-            onClick={() => handleItemClick("order", "/customer/user/purchase")} // Corrected line
+            onClick={() => handleItemClick("order", `/customer/user/purchase/${userId}`)} // Corrected line
           >
             <SvgIcon
               component={ShoppingBagIcon}
