@@ -125,16 +125,6 @@ const ProductCategory = () => {
               />
               <p className="text-center text-black">Linh kiện điện tử</p>
             </div>
-
-            <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4">
-              <Image
-                src="/icon/point.png"
-                width={40}
-                height={40}
-                alt="Xem thêm"
-              />
-              <p className="text-center text-black">Xem thêm</p>
-            </div>
           </div>
         </section>
       </div>
