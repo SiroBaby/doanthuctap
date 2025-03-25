@@ -77,7 +77,7 @@ const AnotherTopBar = () => {
           <div className="flex items-center space-x-4">
             {user && (
               <div className="flex items-center gap-3">
-                <span className="text-white font-bold shadow-text">
+                <span className="text-white font-bold shadow-text cursor-pointer" onClick={() => router.push(`/customer/user/profile/${userId}`)}>
                   Hi, {userName}
                 </span>
               </div>

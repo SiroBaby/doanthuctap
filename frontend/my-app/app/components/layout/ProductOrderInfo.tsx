@@ -89,11 +89,11 @@ const ProductOrderInfo: React.FC<ProductOrderInfoProps> = ({
   };
 
   const formatPrice = (price: number): string => {
-    return price.toLocaleString("vi-VN");
+    return price?.toLocaleString("vi-VN");
   };
 
   const discountedPrice =
-    selectedVariation.basePrice - ( selectedVariation.basePrice * selectedVariation.percentDiscount);
+    selectedVariation?.basePrice - ( selectedVariation?.basePrice * selectedVariation?.percentDiscount);
 
   const handleAddToCart = () => {
     // Kiểm tra số lượng còn trong kho
@@ -206,13 +206,13 @@ const ProductOrderInfo: React.FC<ProductOrderInfoProps> = ({
         {formatPrice(discountedPrice)} ₫
       </div>
       <div className="text-sm text-gray-500">
-        Giá gốc: <span className="line-through italic">{formatPrice(selectedVariation.basePrice)} ₫</span>
-        {selectedVariation.percentDiscount > 0 && (
-          <> - Giảm: <span className="text-white bg-red-500 rounded-xl px-2">{selectedVariation.percentDiscount * 100}%</span></>
+        Giá gốc: <span className="line-through italic">{formatPrice(selectedVariation?.basePrice)} ₫</span>
+        {selectedVariation?.percentDiscount > 0 && (
+          <> - Giảm: <span className="text-white bg-red-500 rounded-xl px-2">{selectedVariation?.percentDiscount * 100}%</span></>
         )}
       </div>
       <div className="text-sm text-gray-500">
-        Kho: <span className="">{selectedVariation.stock_quantity} sản phẩm</span>
+        Kho: <span className="">{selectedVariation?.stock_quantity} sản phẩm</span>
       </div>
 
       <div className="mt-6">
@@ -222,7 +222,7 @@ const ProductOrderInfo: React.FC<ProductOrderInfoProps> = ({
             <button
               key={variation.name}
               className={`py-2 px-4 text-center border rounded ${
-                selectedVariation.name === variation.name
+                selectedVariation?.name === variation.name
                   ? "border-blue-500 bg-blue-50"
                   : "border-gray-300"
               }`}

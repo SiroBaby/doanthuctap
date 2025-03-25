@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState } from "react";
@@ -32,8 +33,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const variation = product.product_variations[0] || {};
   const originalPrice = variation.base_price;
   const discountPercent = variation.percent_discount || 0;
-  const discountPrice = originalPrice - originalPrice * (discountPercent / 100);
-  const isDiscounted = discountPercent > 0;
 
   // Get image URL (thumbnail or first image) with fallback
   const thumbnailImage = product.product_images?.find(
@@ -46,42 +45,46 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     fallbackImageUrl;
 
   return (
-    <Link href={`/customer/product/${product.product_id}`}>
+    <Link href={`/customer/details/product/${product.product_id}`}>
       <div
-        className="bg-white rounded-lg shadow-md overflow-hidden max-w-xs transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105"
+        className="bg-white rounded-lg shadow-md overflow-hidden h-[350px] transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105"
         onMouseLeave={() => {
           setIsButtonPressed(false);
         }}
       >
-        <div className="relative h-25">
+        <div className="relative h-[200px] bg-white">
           <Image
             src={imageUrl}
-            width={200}
-            height={200}
+            fill
             alt={product.product_name || "Product image"}
-            className="w-full h-full object-cover"
+            className="object-contain"
           />
         </div>
 
-        <div className="relative p-3 h-24">
-          <p className="text-gray-800 font-medium">{product.product_name}</p>
-          {isDiscounted ? (
-            <>
-              <p className="text-gray-500 line-through font-bold mt-1">
-                {originalPrice.toLocaleString()} VNĐ
+        <div className="relative p-3 h-[150px]">
+          <p className="text-gray-800 font-medium line-clamp-2">{product.product_name}</p>
+          {discountPercent > 0 ? (
+            <div className="flex flex-col mt-2">
+              <div className="flex items-center gap-2">
+              <p className="text-gray-500 line-through text-sm">
+                {originalPrice?.toLocaleString()} VNĐ
               </p>
-              <p className="text-blue-500 font-bold mt-1">
-                {discountPrice.toLocaleString()} VNĐ
+              <p className="text-white rounded-full bg-red-500 px-2 py-1">
+                {discountPercent * 100}%
               </p>
-            </>
+              </div>
+              <p className="text-blue-500 font-bold">
+                {((originalPrice || 0) - (originalPrice || 0) * discountPercent).toLocaleString()} VNĐ
+              </p>
+            </div>
           ) : (
-            <p className="text-blue-500 font-bold mt-1">
-              {originalPrice.toLocaleString()} VNĐ
+            <p className="text-blue-500 font-bold mt-2">
+              {originalPrice?.toLocaleString()} VNĐ
             </p>
           )}
 
-          <button
-            className={`absolute bottom-7 right-5 bg-button-shopping rounded-full p-3
+          {/* <button
+            className={`absolute bottom-3 right-3 bg-button-shopping rounded-full p-3
                       transition-all duration-200 ease-in-out
                       ${
                         isButtonPressed
@@ -100,7 +103,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               alt="shopping"
               className="transition-transform duration-200"
             />
-          </button>
+          </button> */}
         </div>
       </div>
     </Link>
