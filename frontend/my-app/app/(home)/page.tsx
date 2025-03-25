@@ -1,29 +1,90 @@
+"use client";
+
 import AnotherTopBar from "../components/layout/AnotherTopBar";
 import ProductCard from "../components/layout/ProductCard";
 import Banner from "../components/layout/Banner";
 import ProductCategory from "../components/layout/ProductCategory";
 import LiveStream from "../components/layout/LiveStream";
 import Vouchers from "../components/layout/Vouchers";
-//import Video from "../components/layout/Video";
 import Footer from "../components/layout/Footer";
+import Link from "next/link";
 import Image from "next/image";
+import { useQuery } from "@apollo/client";
+import { GET_PRODUCTS_FOR_HOMEPAGE } from "@/graphql/queries";
 import "../globals.css";
 
-const HomePage: React.FC = () => {
-  //mẫu test
-  // Tạo mảng 16 sản phẩm mẫu (4 hàng x 4 sản phẩm)
-  const sampleProducts = Array(16).fill(null); //hàm array có 16 vị trí chưa có giá trị Array(16) fill(null) điền null vào 16 vị trí đó
-  const sampleLiveStream = Array(12).fill(null);
-  //const sampleVideo = Array(12).fill(null); // dùng chung với live stream cũng được
+interface Product {
+  product_id: number;
+  product_name: string;
+  product_images: Array<{
+    image_url: string;
+    is_thumbnail: boolean;
+  }>;
+  product_variations: Array<{
+    base_price: number;
+    percent_discount: number;
+  }>;
+}
 
+interface ProductsResponse {
+  products: {
+    data: Product[];
+    totalCount: number;
+    totalPage: number;
+  };
+}
+
+const HomePage: React.FC = () => {
+  const { loading, error, data } = useQuery<ProductsResponse>(
+    GET_PRODUCTS_FOR_HOMEPAGE,
+    {
+      variables: {
+        page: 1,
+        limit: 16,
+        search: "",
+      },
+      onError: (error) => {
+        console.error("Error fetching products:", error);
+      },
+    }
+  );
+
+  const products = data?.products?.data || [];
+  const sampleLiveStream = Array(12).fill(null);
+
+  // Loading state with skeleton
+  if (loading) {
+    return (
+      <div className="w-full">
+        <AnotherTopBar />
+        <Banner />
+        <div className="grid grid-cols-12 pt-3 pb-3">
+          <div className="col-span-1"></div>
+          <div className="col-span-10 bg-white rounded-lg shadow-sm p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {Array(8)
+                .fill(null)
+                .map((_, index) => (
+                  <div key={index} className="animate-pulse">
+                    <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                ))}
+            </div>
+          </div>
+          <div className="col-span-1"></div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Render products or error state
   return (
     <div className="w-full">
-      <div>
-        <AnotherTopBar />
-      </div>
-      <div>
-        <Banner />
-      </div>
+      <AnotherTopBar />
+      <Banner />
       <div className="grid grid-cols-12 pt-3 pb-3">
         <div className="col-span-1"></div>
         <div className="col-span-10 bg-white rounded-lg shadow-sm p-4">
@@ -83,7 +144,8 @@ const HomePage: React.FC = () => {
               </span>
             </div>
           </div>
-          {/* Grid sản phẩm: 4 hàng, mỗi hàng 4 sản phẩm */}
+
+          {/* Grid livestream */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
             {sampleLiveStream.map((_, index) => (
               <LiveStream key={index} />
@@ -104,43 +166,7 @@ const HomePage: React.FC = () => {
 
           <div className="border-t border-black my-4"></div>
 
-          {/* VIDEO 
-          <div className="flex items-center mb-4">
-            <div className="bg-green-300 px-2 py-1 rounded flex items-center">
-              <Image
-                src="/icon/video.png"
-                width={32}
-                height={32}
-                alt="Voucher"
-                className="mr-2"
-              />
-              <span className="text-lg md:text-xl lg:text-2xl text-white font-semibold">
-                VIDEO
-              </span>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-            {sampleVideo.map((_, index) => (
-              <Video key={index} />
-            ))}
-          </div>
-          */}
-
-          {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn á
-            <button className="rounded-full" aria-label="button">
-              <Image
-                src="/icon/button-bar.png"
-                width={40}
-                height={40}
-                alt="button"
-              />
-            </button>
-          </div>
-
-          <div className="border-t border-black my-4"></div>
-          */}
-          <div className="flex justify-center mb-2"></div>
-
+          {/* SẢN PHẨM MỚI NHẤT */}
           <div className="flex items-center mb-4">
             <div className="bg-green-300 px-3 py-1 rounded flex items-center">
               <Image
@@ -151,39 +177,70 @@ const HomePage: React.FC = () => {
                 className="mr-2"
               />
               <span className="text-lg md:text-xl lg:text-2xl text-white font-semibold">
-                DÀNH CHO BẠN
+                SẢN PHẨM MỚI NHẤT
               </span>
             </div>
           </div>
 
-          {/* Grid sản phẩm: 4 hàng, mỗi hàng 4 sản phẩm */}
+          {/* Grid sản phẩm */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-            {/* sampleProducts.map() lặp qua từng phần tử trong mảng 16 phần tử */}
-            {/* (_, index) - Tham số đầu tiên là giá trị phần tử (không sử dụng nên đặt là _), tham số thứ hai là chỉ số index (0-15) */}
-            {/* key={index} - Mỗi component cần một thuộc tính key duy nhất để React quản lý hiệu quả việc render lại */}
-            {sampleProducts.map((_, index) => (
-              <ProductCard key={index} />
-            ))}
+            {error ? (
+              <div className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-4 text-center py-4">
+                <div className="text-red-500 mb-4">
+                  <svg
+                    className="w-16 h-16 mx-auto"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                  Không thể tải sản phẩm
+                </h2>
+                <p className="text-gray-600 mb-4">
+                  {error.message || "Đã xảy ra lỗi khi tải dữ liệu sản phẩm"}
+                </p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Thử lại
+                </button>
+              </div>
+            ) : (
+              products.map((product) => (
+                <ProductCard key={product.product_id} product={product} />
+              ))
+            )}
           </div>
 
-          {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn á*/}
+          {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn á */}
           <div className="flex justify-center mb-2">
-            <button className="rounded-full" aria-label="button">
+            <Link
+              href="/customer/category/products"
+              className="rounded-full"
+              aria-label="button"
+            >
               <Image
                 src="/icon/button-bar.png"
                 width={40}
                 height={40}
                 alt="button"
               />
-            </button>
+            </Link>
           </div>
         </div>
         <div className="col-span-1"></div>
       </div>
 
-      <div>
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 };

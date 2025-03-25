@@ -5,6 +5,9 @@ import Image from "next/image";
 
 const ProductCard = () => {
   const [isButtonPressed, setIsButtonPressed] = useState(false);
+  const originalPrice = 100000; // Giá gốc
+  const discountPrice = 80000; // Giá đã giảm
+  const isDiscounted = true; // Thay đổi giá trị này để kiểm tra
 
   return (
     <div
@@ -25,7 +28,20 @@ const ProductCard = () => {
 
       <div className="relative p-3 h-24">
         <p className="text-gray-800 font-medium">Áo phông trắng</p>
-        <p className="text-blue-500 font-bold mt-1">100.000</p>
+        {isDiscounted ? (
+          <>
+            <p className="text-gray-500 line-through font-bold mt-1">
+              {originalPrice.toLocaleString()} VNĐ
+            </p>
+            <p className="text-blue-500 font-bold mt-1">
+              {discountPrice.toLocaleString()} VNĐ
+            </p>
+          </>
+        ) : (
+          <p className="text-blue-500 font-bold mt-1">
+            {originalPrice.toLocaleString()} VNĐ
+          </p>
+        )}
 
         <button
           className={`absolute bottom-7 right-5 bg-button-shopping rounded-full p-3
