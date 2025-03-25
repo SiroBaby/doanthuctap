@@ -788,7 +788,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                 <div className="mt-4">
                   <button
                     type="button"
-                    onClick={() => router.push('/customer/user/address')}
+                    onClick={() => router.push(`/customer/user/address/${userid}`)}
                     className="text-custom-red hover:underline"
                   >
                     Quản lý địa chỉ
@@ -806,7 +806,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                 <p className="text-gray-600 mb-4">Vui lòng thêm địa chỉ mới trong trang quản lý địa chỉ</p>
                 <button
                   type="button"
-                  onClick={() => router.push('/customer/user/address')}
+                  onClick={() => router.push(`/customer/user/address/${userid}`)}
                   className="px-6 py-2 mb-4 bg-custom-red text-white rounded-md hover:bg-red-700 transition-colors"
                 >
                   Thêm địa chỉ mới

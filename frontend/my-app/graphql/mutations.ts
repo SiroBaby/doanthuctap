@@ -375,3 +375,42 @@ mutation RemoveExpiredVouchers($userId: String!) {
     }
 }
 `;
+
+// Address mutations
+export const CREATE_ADDRESS = gql`
+  mutation CreateAddress($createAddressInput: CreateAddressInput!) {
+    createAddress(createAddressInput: $createAddressInput) {
+      address_id
+      address_name
+      full_name
+      phone
+      address
+      is_default
+      id_user
+      create_at
+    }
+  }
+`;
+
+export const UPDATE_ADDRESS_DEFAULT = gql`
+  mutation UpdateAddress($updateAddressInput: UpdateAddressInput!) {
+    updateAddress(updateAddressInput: $updateAddressInput) {
+      address_id
+      address_name
+      full_name
+      phone
+      address
+      is_default
+      update_at
+    }
+  }
+`;
+
+export const REMOVE_ADDRESS = gql`
+  mutation RemoveAddress($id: Int!) {
+    removeAddress(id: $id) {
+      address_id
+      delete_at
+    }
+  }
+`;

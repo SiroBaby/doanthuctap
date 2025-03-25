@@ -6,6 +6,9 @@ export class Address {
   address_id: number;
 
   @Field(() => String, {nullable: false})
+  address_name: string;
+
+  @Field(() => String, {nullable: false})
   full_name: string;
 
   @Field(() => String, {nullable: false})

@@ -67,15 +67,15 @@ interface Invoice {
     phone: string;
   };
   invoice_products: Array<{
-    product_name: string;
+  product_name: string;
     quantity: number;
     price: number;
     variation_name: string;
     product_variation: {
-      product_images: Array<{
-        image_url: string;
-        is_thumbnail: boolean;
-      }>;
+  product_images: Array<{
+    image_url: string;
+    is_thumbnail: boolean;
+  }>;
     };
   }>;
 }
@@ -252,7 +252,7 @@ const DashboardPage = () => {
                     <Typography variant="h4" className="font-bold dark:!text-gray-200">
                       {stat.value}
                     </Typography>
-                  </div>
+            </div>
                   {stat.icon}
                 </Box>
               </CardContent>
@@ -266,18 +266,18 @@ const DashboardPage = () => {
         <Grid item xs={12} lg={8}>
           <Paper className="p-4 dark:!bg-dark-sidebar">
             <Typography variant="h6" className="mb-4 font-semibold dark:!text-gray-200">
-              Doanh thu theo tháng
+            Doanh thu theo tháng
             </Typography>
             <Box className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats.monthlyRevenue}>
                   <CartesianGrid strokeDasharray="3 3" className="dark:opacity-20" />
-                  <XAxis 
-                    dataKey="month" 
+                <XAxis 
+                  dataKey="month" 
                     className="dark:text-gray-400"
                     tickMargin={10}
-                  />
-                  <YAxis 
+                />
+                <YAxis 
                     tickFormatter={(value) => {
                       if (value >= 1000000) {
                         return `${(value / 1000000).toFixed(1)}M`;
@@ -295,14 +295,14 @@ const DashboardPage = () => {
                     itemStyle={{ color: '#fff' }}
                     labelStyle={{ color: '#fff' }}
                   />
-                  <Bar 
-                    dataKey="revenue" 
+                <Bar 
+                  dataKey="revenue" 
                     fill="#3b82f6" 
-                    radius={[4, 4, 0, 0]} 
+                  radius={[4, 4, 0, 0]}
                     maxBarSize={50}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+                />
+              </BarChart>
+            </ResponsiveContainer>
             </Box>
           </Paper>
         </Grid>
@@ -314,29 +314,29 @@ const DashboardPage = () => {
               Tỉ lệ đơn hàng thành công
             </Typography>
             <Box className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
                     data={filteredStatusCount}
                     dataKey="count"
                     nameKey="name"
-                    cx="50%"
-                    cy="50%"
+                  cx="50%"
+                  cy="50%"
                     outerRadius={120}
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
                     {filteredStatusCount.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
+                  ))}
+                </Pie>
                   <Tooltip
                     formatter={(value: number) => [`${value} đơn`, '']}
                     contentStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', border: 'none', borderRadius: '4px' }}
                     itemStyle={{ color: '#fff' }}
                     labelStyle={{ color: '#fff' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+                />
+              </PieChart>
+            </ResponsiveContainer>
             </Box>
           </Paper>
         </Grid>
@@ -347,7 +347,7 @@ const DashboardPage = () => {
           <Grid item xs={12} lg={6}>
             <Paper className="p-4 dark:!bg-dark-sidebar h-full">
               <Typography variant="h6" className="mb-4 font-semibold dark:!text-gray-200">
-                Đơn hàng gần đây
+            Đơn hàng gần đây
               </Typography>
               <TableContainer>
                 <Table>
@@ -368,7 +368,7 @@ const DashboardPage = () => {
                           className="hover:bg-gray-50 dark:hover:!bg-dark-hover transition-colors duration-150"
                         >
                           <TableCell className="dark:!text-gray-300">
-                            {order.invoice_id}
+                    {order.invoice_id}
                           </TableCell>
                           <TableCell className="dark:!text-gray-300">
                             <div>{order.user.user_name}</div>
@@ -378,7 +378,7 @@ const DashboardPage = () => {
                             {formatDate(order.create_at)}
                           </TableCell>
                           <TableCell align="right" className="dark:!text-gray-300">
-                            {formatCurrency(order.total_amount)}
+                    {formatCurrency(order.total_amount)}
                           </TableCell>
                           <TableCell align="center">
                             {getStatusChip(order.order_status)}
@@ -404,7 +404,7 @@ const DashboardPage = () => {
           <Grid item xs={12} lg={6}>
             <Paper className="p-4 dark:!bg-dark-sidebar h-full">
               <Typography variant="h6" className="mb-4 font-semibold dark:!text-gray-200">
-                Sản phẩm bán chạy
+              Sản phẩm bán chạy
               </Typography>
               <TableContainer>
                 <Table>

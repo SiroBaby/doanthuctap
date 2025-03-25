@@ -34,6 +34,7 @@ type Location {
 
 type Address {
   address_id: Int!
+  address_name: String!
   full_name: String!
   phone: String!
   address: String!
@@ -626,7 +627,7 @@ input CreateAddressInput {
 
 input UpdateAddressInput {
   full_name: String!
-  address_name: String
+  address_name: String!
   phone: String!
   address: String!
   id_user: String

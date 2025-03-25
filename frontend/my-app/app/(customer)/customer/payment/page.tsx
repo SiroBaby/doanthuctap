@@ -239,7 +239,7 @@ const Page = () => {
   }
 
   if (cartItems.length === 0) {
-    router.push("/customer/shoppingcart");
+    router.push(`/customer/shoppingcart/${userId}`);
     return (
       <div className="container mx-auto px-4 py-12 text-center">
         <p className="text-lg">Không có sản phẩm để thanh toán...</p>

@@ -74,6 +74,7 @@ export const GET_ADDRESS_BY_USER_ID = gql`
     addressByUserId(id: $id) {
       address {
           address_id
+          address_name
           full_name
           phone
           address

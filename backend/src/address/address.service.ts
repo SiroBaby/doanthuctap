@@ -65,8 +65,11 @@ export class AddressService {
   }
 
   remove(id: number) {
-    return this.prisma.address.delete({
+    return this.prisma.address.update({
       where: { address_id: id },
+      data: {
+        delete_at: new Date()
+      }
     });
   }
 }
