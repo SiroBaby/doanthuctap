@@ -28,9 +28,12 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/graphql": "^13.0.2",
     "@nestjs/platform-express": "^11.0.11",
+    "@nestjs/platform-socket.io": "^11.0.12",
+    "@nestjs/websockets": "^11.0.12",
     "@prisma/client": "^6.2.1",
     "@types/cookie-parser": "^1.4.8",
     "@types/moment-timezone": "^0.5.30",
+    "@types/socket.io-client": "^3.0.0",
     "class-validator": "^0.14.1",
     "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.7",
@@ -39,6 +42,8 @@
     "moment-timezone": "^0.5.47",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "svix": "^1.45.1"
   },
   "devDependencies": {

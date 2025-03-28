@@ -414,3 +414,36 @@ export const REMOVE_ADDRESS = gql`
     }
   }
 `;
+
+export const CREATE_CHAT = gql`
+  mutation CreateChat($createChatInput: CreateChatDto!) {
+    createChat(createChatInput: $createChatInput) {
+      chat_id
+      id_user
+      shop_id
+      last_message_at
+      create_at
+      update_at
+    }
+  }
+`;
+
+export const SEND_MESSAGE = gql`
+  mutation SendMessage($sendMessageInput: SendMessageDto!) {
+    sendMessage(sendMessageInput: $sendMessageInput) {
+      message_id
+      chat_id
+      sender_type
+      sender_id
+      message
+      sent_at
+      is_read
+    }
+  }
+`;
+
+export const MARK_MESSAGES_AS_READ = gql`
+  mutation MarkMessagesAsRead($chatId: String!) {
+    markMessagesAsRead(chatId: $chatId)
+  }
+`;

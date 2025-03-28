@@ -9,7 +9,6 @@ import { UPDATE_INVOICE_STATUS } from '@/graphql/mutations';
 import { OrderStatus, Invoice, InvoiceProduct } from './types';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { vi } from 'date-fns/locale';
 
 import {
   Box,
@@ -501,7 +500,7 @@ const OrderManagementPage = () => {
   }
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={vi}>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container maxWidth="lg" className="py-8 dark:bg-dark-primary min-h-screen">
         {/* Order Statistics */}
         <Grid container spacing={3} className="mb-6 justify-center">

@@ -9,6 +9,7 @@ import ProductOrderInfo from "@/app/components/layout/ProductOrderInfo";
 import ProductsSeller from "@/app/components/layout/ProductsSeller";
 import ProductDetail from "@/app/components/layout/ProductDetails";
 import ProductDescription from "@/app/components/layout/ProductDescription";
+// import ChatButton from "@/app/components/chat/ChatButton";
 
 interface ProductDetailData {
   product: {
@@ -23,6 +24,9 @@ interface ProductDetailData {
       shop_id: string;
       shop_name: string;
       link: string;
+      user?: {
+        avatar?: string;
+      };
     };
     product_detail: {
       description: string;
@@ -219,11 +223,17 @@ export default function ProductDetailPage() {
 
       {/* Shop information */}
       <div className="mt-4 pb-4">
-        <ProductsSeller
-          sellerName={product.shop.shop_name}
-          sellerAvatar={"/logo/avt-capy.png"}
-          sellerShopUrl={`/shop/${product.shop.shop_id}`}
-        />
+        <div className="flex flex-col md:flex-row justify-between items-center bg-white p-3 rounded">
+          <ProductsSeller
+            sellerName={product.shop.shop_name}
+            sellerAvatar={product.shop.user?.avatar || "/logo/avt-capy.png"}
+            sellerShopUrl={`/customer/shop/${product.shop.shop_id}`}
+            shopId={product.shop.shop_id}
+          />
+          {/* <div className="mt-3 md:mt-0">
+            <ChatButton shopId={product.shop.shop_id} />
+          </div> */}
+        </div>
       </div>
 
       <div className="bg-white p-3">

@@ -146,6 +146,7 @@ type Shop {
   shop_id: String!
   id_user: String!
   shop_name: String!
+  logo: String
   link: String
   status: Shop_status!
   location_id: String!
@@ -472,6 +473,33 @@ type RemoveExpiredVouchersResponse {
   message: String!
 }
 
+type Chat_Message {
+  message_id: ID!
+  chat_id: String!
+  sender_type: SenderType!
+  sender_id: String!
+  message: String!
+  sent_at: DateTime!
+  is_read: Boolean!
+}
+
+enum SenderType {
+  USER
+  SHOP
+}
+
+type Chat {
+  chat_id: ID!
+  id_user: String!
+  shop_id: String!
+  last_message_at: DateTime
+  create_at: DateTime!
+  update_at: DateTime!
+  user: User
+  shop: Shop
+  messages: [Chat_Message!]
+}
+
 type Query {
   users(pagination: PaginationInput!): UserPagination!
   user(id: String!): User!
@@ -519,6 +547,9 @@ type Query {
   getUserVouchersByUserId(userId: String!): [VoucherStorage!]!
   getUserVouchersForCheckout(userId: String!, shopId: String!): [VoucherStorage!]!
   voucherStorage(id: Int!): VoucherStorage!
+  getUserChats: [Chat!]!
+  getShopChats(shopId: String!): [Chat!]!
+  getChatById(chatId: String!): Chat!
 }
 
 input PaginationInput {
@@ -611,6 +642,9 @@ type Mutation {
   updateVoucherStorage(updateVoucherStorageInput: UpdateVoucherStorageInput!): VoucherStorage!
   removeVoucherStorage(id: Int!): VoucherStorage!
   removeExpiredVouchers(userId: String!): RemoveExpiredVouchersResponse!
+  createChat(createChatInput: CreateChatDto!): Chat!
+  sendMessage(sendMessageInput: SendMessageDto!): Chat_Message!
+  markMessagesAsRead(chatId: String!): Boolean!
 }
 
 input UpdateUserInput {
@@ -871,4 +905,15 @@ input UpdateVoucherStorageInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!
+}
+
+input CreateChatDto {
+  id_user: String!
+  shop_id: String!
+}
+
+input SendMessageDto {
+  chat_id: String!
+  sender_id: String!
+  message: String!
 }

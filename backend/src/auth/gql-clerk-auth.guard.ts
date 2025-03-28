@@ -37,13 +37,18 @@ export class GqlClerkAuthGuard implements CanActivate {
             
             const tokenVerification = await clerkClient.verifyToken(sessionToken);
             
+            // Lấy user ID từ token
+            const userId = tokenVerification.sub;
+            
+            // Set user ID in request object so it can be accessed in resolvers
+            if (!req.user) {
+                req.user = { id: userId };
+            }
+            
             // Nếu không có yêu cầu về role, chỉ cần xác thực thành công là đủ
             if (!requiredRoles || requiredRoles.length === 0) {
                 return true;
             }
-            
-            // Lấy user ID từ token
-            const userId = tokenVerification.sub;
             
             // Truy vấn database để lấy role của user
             const user = await this.prisma.user.findUnique({

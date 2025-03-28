@@ -23,6 +23,9 @@ export class Shop {
   shop_name: string;
 
   @Field(() => String, { nullable: true })
+  logo: string;
+
+  @Field(() => String, { nullable: true })
   link: string;
 
   @Field(() => Shop_status)

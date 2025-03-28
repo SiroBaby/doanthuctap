@@ -860,4 +860,93 @@ export const GET_INVOICES_BY_USER_ID = gql`
   }
 `;
 
+export const GET_USER_CHATS = gql`
+  query GetUserChats {
+    getUserChats {
+      chat_id
+      id_user
+      shop_id
+      last_message_at
+      create_at
+      update_at
+      shop {
+        shop_id
+        shop_name
+        logo
+      }
+      user {
+        id_user
+        user_name
+        avatar
+      }
+      messages {
+        message_id
+        message
+        sender_type
+        sender_id
+        sent_at
+        is_read
+      }
+    }
+  }
+`;
+
+export const GET_SHOP_CHATS = gql`
+  query GetShopChats($shopId: String!) {
+    getShopChats(shopId: $shopId) {
+      chat_id
+      id_user
+      shop_id
+      last_message_at
+      create_at
+      update_at
+      user {
+        id_user
+        user_name
+        avatar
+      }
+      messages {
+        message_id
+        message
+        sender_type
+        sender_id
+        sent_at
+        is_read
+      }
+    }
+  }
+`;
+
+export const GET_CHAT_BY_ID = gql`
+  query GetChatById($chatId: String!) {
+    getChatById(chatId: $chatId) {
+      chat_id
+      id_user
+      shop_id
+      last_message_at
+      create_at
+      update_at
+      user {
+        id_user
+        user_name
+        avatar
+      }
+      shop {
+        shop_id
+        shop_name
+        logo
+      }
+      messages {
+        message_id
+        chat_id
+        sender_type
+        sender_id
+        message
+        sent_at
+        is_read
+      }
+    }
+  }
+`;
+
 
