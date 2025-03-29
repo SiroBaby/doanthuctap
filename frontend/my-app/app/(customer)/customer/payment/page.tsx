@@ -188,7 +188,19 @@ const Page = () => {
       });
       
       // Wait for all invoices to be created
-      await Promise.all(invoicePromises);
+      const invoiceResults = await Promise.all(invoicePromises);
+      
+      // Lưu mã hóa đơn đầu tiên vào sessionStorage cho thanh toán VNPAY
+      if (invoiceResults.length > 0 && invoiceResults[0].data?.createInvoice?.invoice_id) {
+        // Lưu latestInvoiceId vào sessionStorage
+        const latestOrderData = {
+          invoiceId: invoiceResults[0].data.createInvoice.invoice_id
+        };
+        sessionStorage.setItem('latestOrderData', JSON.stringify(latestOrderData));
+        console.log("Đã lưu mã hóa đơn:", latestOrderData.invoiceId);
+      } else {
+        console.error("Không tìm thấy mã hóa đơn trong kết quả tạo đơn hàng:", invoiceResults);
+      }
       
       // Xóa dữ liệu session sau khi đặt hàng thành công
       sessionStorage.removeItem('checkoutData');
@@ -198,6 +210,12 @@ const Page = () => {
         // Remove each cart item individually
         for (const item of cartItems) {
           try {
+            // Kiểm tra xem ID có chứa "buy-now" không
+            if (item.id.includes("buy-now")) {
+              console.log(`Sản phẩm mua ngay ${item.id} không cần xóa khỏi giỏ hàng`);
+              continue; // Bỏ qua xóa sản phẩm mua ngay
+            }
+            
             await removeCartProduct({
               variables: { 
                 cartproductid: parseInt(item.id, 10),
@@ -219,8 +237,8 @@ const Page = () => {
       toast.dismiss(loadingToast);
       toast.success("Đặt hàng thành công!");
 
-      // Sau khi tạo đơn hàng thành công, chuyển hướng đến trang đơn hàng của người dùng
-      router.push("/customer/user/purchase");
+
+      // router.push("/customer/user/purchase");
 
       return true;
     } catch (error) {

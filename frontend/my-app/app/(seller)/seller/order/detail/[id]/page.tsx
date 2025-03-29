@@ -234,10 +234,12 @@ const InvoiceDetailPage = () => {
   
   const invoice = data.getInvoiceDetail;
   const products = invoice.invoice_products || [];
-  const subtotal = products.reduce((sum, product) => {
+  
+  // Tính tổng tiền sản phẩm (đã bao gồm giảm giá)
+  const total = products.reduce((sum, product) => {
     const price = product.price || 0;
-    const discountPercent = product.discount_percent || 0;
-    return sum + calculatePrice(price, discountPercent) * (product.quantity || 1);
+    const quantity = product.quantity || 1;
+    return sum + (price * quantity);
   }, 0);
   
   return (
@@ -370,7 +372,8 @@ const InvoiceDetailPage = () => {
                   {products.map((product, index) => {
                     const price = product.price || 0;
                     const discountPercent = product.discount_percent || 0;
-                    const discountedPrice = calculatePrice(price, discountPercent);
+                    // Chỉ tính discountedPrice nếu cần hiển thị
+                    const productTotal = calculatePrice(price, discountPercent) * product.quantity;
                     const imageUrl = product.product_variation?.product_images?.find(img => img.is_thumbnail)?.image_url
                       || product.product_variation?.product_images?.[0]?.image_url;
                     
@@ -406,20 +409,15 @@ const InvoiceDetailPage = () => {
                         <TableCell align="center">
                           <Box>
                             <Typography variant="body2" className="font-medium !text-inherit dark:!text-dark-text">
-                              {formatCurrency(discountedPrice)}
+                              {formatCurrency(price)}
                             </Typography>
-                            {discountPercent > 0 && (
-                              <Typography variant="body2" className="!text-inherit dark:!text-dark-text line-through opacity-75">
-                                {formatCurrency(price)}
-                              </Typography>
-                            )}
                           </Box>
                         </TableCell>
                         <TableCell align="center" className="!text-inherit dark:!text-dark-text">
                           {product.quantity}
                         </TableCell>
                         <TableCell align="right" className="!text-inherit dark:!text-dark-text">
-                          {formatCurrency(discountedPrice * product.quantity)}
+                          {formatCurrency(total)}
                         </TableCell>
                       </TableRow>
                     );
@@ -438,7 +436,7 @@ const InvoiceDetailPage = () => {
             
             <Box className="mb-2 flex justify-between">
               <Typography variant="body1" className="dark:!text-gray-300">Tạm tính</Typography>
-              <Typography variant="body1" className="dark:!text-gray-200">{formatCurrency(subtotal)}</Typography>
+              <Typography variant="body1" className="dark:!text-gray-200">{formatCurrency(total)}</Typography>
             </Box>
             
             <Box className="mb-2 flex justify-between">
@@ -451,7 +449,7 @@ const InvoiceDetailPage = () => {
             <Box className="mb-2 flex justify-between">
               <Typography variant="h6" className="dark:!text-gray-300">Tổng cộng</Typography>
               <Typography variant="h6" className="font-bold dark:!text-gray-200">
-                {formatCurrency(invoice.total_amount)}
+                {formatCurrency(invoice.total_amount + invoice.shipping_fee)}
               </Typography>
             </Box>
           </Paper>

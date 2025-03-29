@@ -25,6 +25,7 @@ import { CartModule } from './cart/cart.module';
 import { CartProductModule } from './cart-product/cart-product.module';
 import { VoucherStorageModule } from './voucher-storage/voucher-storage.module';
 import { ChatModule } from './chat/chat.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { ChatModule } from './chat/chat.module';
     CartProductModule,
     VoucherStorageModule,
     ChatModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

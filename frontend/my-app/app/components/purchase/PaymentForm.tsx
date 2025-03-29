@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback} from "react";
 import { useRouter } from "next/navigation";
 import { GET_ADDRESS_BY_USER_ID, GET_USER_VOUCHERS_FOR_CHECKOUT } from "@/graphql/queries";
 import { useQuery, useMutation } from "@apollo/client";
 import { REMOVE_EXPIRED_VOUCHERS } from "@/graphql/mutations";
 import { toast } from "react-hot-toast";
+import { useAuth } from "@clerk/nextjs";
 
 // Define interfaces for the discount calculation
 interface DiscountedProduct {
@@ -44,7 +45,7 @@ export interface OrderData {
     note?: string;
   };
   addressId?: string;
-  paymentMethod: "cod" | "banking";
+  paymentMethod: "cod" | "banking" | "vnpay";
   voucherStorageId?: string;
   discountedProducts?: DiscountedProduct[];
 }
@@ -111,6 +112,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   onVoucherSelect,
 }) => {
   const router = useRouter();
+  const { isLoaded, userId } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAddressLoading, setIsAddressLoading] = useState(true);
   const [formData, setFormData] = useState<OrderData>({
@@ -143,15 +145,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 
   const checkoutData = sessionStorage.getItem("checkoutData");
   const checkoutDataJson = JSON.parse(checkoutData || "{}");
-  const userid = checkoutDataJson.userId;
   const shopId = checkoutDataJson.shopId;
 
   const { data: addressData } = useQuery(GET_ADDRESS_BY_USER_ID, {
-    variables: { id: userid },
+    variables: { id: userId },
   });
 
   const { data: voucherData, refetch: refetchVouchers } = useQuery(GET_USER_VOUCHERS_FOR_CHECKOUT, {
-    variables: { userId: userid, shopId: shopId },
+    variables: { userId: userId, shopId: shopId },
   });
 
   // Function to remove expired vouchers
@@ -280,7 +281,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       .replace("₫", "đ");
   };
 
-  const handlePaymentMethodChange = (method: "cod" | "banking") => {
+  const handlePaymentMethodChange = (method: "cod" | "banking" | "vnpay") => {
     setFormData((prev) => ({
       ...prev,
       paymentMethod: method,
@@ -509,11 +510,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 
   // Function to remove expired vouchers
   const handleRemoveExpiredVouchers = () => {
-    if (!userid) return;
+    if (!userId) return;
     
     removeExpiredVouchers({
       variables: {
-        userId: userid
+        userId: userId
       }
     })
     .then((response: { data?: RemoveExpiredVouchersResponse }) => {
@@ -718,18 +719,115 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       
       console.log("Dữ liệu đơn hàng:", updatedFormData);
       
-      const success = await onPlaceOrder(updatedFormData);
-      if (success) {
-        toast.success("Đặt hàng thành công!");
-        router.push("/customer/user/purchase");
+      // Handle different payment methods
+      if (updatedFormData.paymentMethod === 'vnpay') {
+        // Store the order data in sessionStorage for later use
+        sessionStorage.setItem('pendingOrder', JSON.stringify(updatedFormData));
+        
+        // Create order to get invoice ID
+        const success = await onPlaceOrder(updatedFormData);
+        
+        if (success) {
+          // Redirect to VNPay payment gateway
+          // Lấy invoiceId mới nhất từ sessionStorage sau khi tạo đơn hàng thành công
+          const latestOrderData = JSON.parse(sessionStorage.getItem("latestOrderData") || "{}");
+          if (latestOrderData.invoiceId) {
+            // Lưu invoiceId vào sessionStorage để sử dụng trong handleVNPayPayment
+            const checkoutData = JSON.parse(sessionStorage.getItem("checkoutData") || "{}");
+            checkoutData.latestInvoiceId = latestOrderData.invoiceId;
+            sessionStorage.setItem("checkoutData", JSON.stringify(checkoutData));
+            
+            handleVNPayPayment();
+          } else {
+            toast.error("Không tìm thấy mã hóa đơn sau khi tạo đơn hàng");
+          }
+        } else {
+          toast.error("Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại sau.");
+        }
       } else {
-        toast.error("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.");
+        // Normal flow for COD and other payment methods
+        const success = await onPlaceOrder(updatedFormData);
+        if (success) {
+          toast.success("Đặt hàng thành công!");
+          router.push("/customer/user/purchase");
+        } else {
+          toast.error("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.");
+        }
       }
     } catch (error) {
       console.error("Lỗi khi đặt hàng:", error);
       toast.error("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+  
+  // Handle VNPay payment
+  const handleVNPayPayment = async () => {
+    try {
+      // Get the latest invoice ID for this user from sessionStorage
+      // In a real implementation, you would get this from the response of createInvoice
+      const checkoutData = JSON.parse(sessionStorage.getItem("checkoutData") || "{}");
+      const latestInvoiceId = checkoutData.latestInvoiceId;
+      
+      if (!latestInvoiceId) {
+        throw new Error("Không tìm thấy mã hóa đơn");
+      }
+      
+      // Lưu thông tin người dùng vào sessionStorage để sử dụng khi redirect sau khi thanh toán
+      if (isLoaded && userId) {
+        const paymentData = JSON.parse(sessionStorage.getItem("paymentData") || "{}");
+        paymentData.userId = userId;
+        paymentData.invoiceId = latestInvoiceId;
+        sessionStorage.setItem("paymentData", JSON.stringify(paymentData));
+      }
+      
+      // Calculate the final amount after discounts
+      const finalAmount = calculateFinalAmount();
+      
+      // Thử API test trước để xem Next.js API route có hoạt động không
+      try {
+        const testResponse = await fetch('/api/test');
+        console.log("Test API response:", await testResponse.json());
+      } catch (testError) {
+        console.error("Test API error:", testError);
+      }
+      
+      // Phương án dự phòng: Gọi trực tiếp đến backend thay vì qua API route của Next.js
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3301';
+      console.log("Đang kết nối tới backend URL:", backendUrl);
+      
+      // Create VNPay payment URL - kết nối trực tiếp đến backend
+      const response = await fetch(`${backendUrl}/payment/create-vnpay-url`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          invoiceId: latestInvoiceId,
+          amount: finalAmount,
+          orderInfo: `Thanh toan don hang: ${latestInvoiceId}`,
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("VNPAY API Error Response:", errorText);
+        throw new Error("Không thể kết nối với cổng thanh toán");
+      }
+      
+      const data = await response.json();
+      console.log("VNPAY API Response:", data);
+      
+      if (data.success && data.paymentUrl) {
+        // Redirect to VNPay payment gateway
+        window.location.href = data.paymentUrl;
+      } else {
+        throw new Error(data.message || "Không thể tạo liên kết thanh toán");
+      }
+    } catch (error) {
+      console.error("Lỗi khi xử lý thanh toán VNPay:", error);
+      toast.error(`Lỗi thanh toán: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
 
@@ -788,7 +886,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                 <div className="mt-4">
                   <button
                     type="button"
-                    onClick={() => router.push(`/customer/user/address/${userid}`)}
+                    onClick={() => router.push(`/customer/user/address/${userId}`)}
                     className="text-custom-red hover:underline"
                   >
                     Quản lý địa chỉ
@@ -806,7 +904,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                 <p className="text-gray-600 mb-4">Vui lòng thêm địa chỉ mới trong trang quản lý địa chỉ</p>
                 <button
                   type="button"
-                  onClick={() => router.push(`/customer/user/address/${userid}`)}
+                  onClick={() => router.push(`/customer/user/address/${userId}`)}
                   className="px-6 py-2 mb-4 bg-custom-red text-white rounded-md hover:bg-red-700 transition-colors"
                 >
                   Thêm địa chỉ mới
@@ -960,9 +1058,25 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               className="h-5 w-5 text-custom-red focus:ring-custom-red"
             />
             <div className="ml-3">
-              <div className="font-medium">Chuyển khoản ...</div>
+              <div className="font-medium">Chuyển khoản ngân hàng</div>
               <div className="text-sm text-gray-500">
                 Thông tin tài khoản sẽ được gửi sau khi đặt hàng
+              </div>
+            </div>
+          </label>
+          
+          <label key="payment-vnpay" className="flex items-center p-3 border rounded cursor-pointer hover:bg-gray-50">
+            <input
+              type="radio"
+              name="payment"
+              checked={formData.paymentMethod === "vnpay"}
+              onChange={() => handlePaymentMethodChange("vnpay")}
+              className="h-5 w-5 text-custom-red focus:ring-custom-red"
+            />
+            <div className="ml-3">
+              <div className="font-medium">Thanh toán qua VNPAY</div>
+              <div className="text-sm text-gray-500">
+                Thanh toán trực tuyến qua VNPAY (ATM/QR/Visa/Master)
               </div>
             </div>
           </label>
