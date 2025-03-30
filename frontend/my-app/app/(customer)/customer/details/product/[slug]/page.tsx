@@ -9,6 +9,7 @@ import ProductOrderInfo from "@/app/components/layout/ProductOrderInfo";
 import ProductsSeller from "@/app/components/layout/ProductsSeller";
 import ProductDetail from "@/app/components/layout/ProductDetails";
 import ProductDescription from "@/app/components/layout/ProductDescription";
+import ProductReview from "@/app/components/layout/ProductReview";
 // import ChatButton from "@/app/components/chat/ChatButton";
 
 interface ProductDetailData {
@@ -245,6 +246,10 @@ export default function ProductDetailPage() {
           productDescription={product.product_detail?.description}
           productImage={product.product_images.map((img) => img.image_url)}
         />
+      </div>
+
+      <div className="bg-white p-3 mt-4">
+        <ProductReview productId={id} />
       </div>
     </div>
   );

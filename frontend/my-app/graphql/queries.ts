@@ -949,4 +949,51 @@ export const GET_CHAT_BY_ID = gql`
   }
 `;
 
+// Lấy reviews của sản phẩm
+export const GET_PRODUCT_REVIEWS = gql`
+  query GetProductReviews($productId: Int!) {
+    getProductReviews(productId: $productId) {
+      data {
+        review_id
+        rating
+        comment
+        product_id
+        id_user
+        user {
+          user_name
+          avatar
+        }
+        create_at
+      }
+      totalCount
+      totalPage
+    }
+  }
+`;
+
+// Kiểm tra nếu người dùng đã mua sản phẩm từ shop và được phép đánh giá
+export const CHECK_USER_CAN_REVIEW = gql`
+  query CheckUserCanReview($userId: String!, $productId: Int!) {
+    checkUserCanReview(userId: $userId, productId: $productId) {
+      canReview
+      hasPurchased
+      hasReviewed
+      shopId
+    }
+  }
+`;
+
+// Lấy review của người dùng đối với sản phẩm cụ thể
+export const GET_USER_REVIEW_FOR_PRODUCT = gql`
+  query GetUserReviewForProduct($userId: String!, $productId: Int!) {
+    getUserReviewForProduct(userId: $userId, productId: $productId) {
+      review_id
+      rating
+      comment
+      create_at
+      update_at
+    }
+  }
+`;
+
 

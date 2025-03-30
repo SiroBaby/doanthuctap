@@ -447,3 +447,45 @@ export const MARK_MESSAGES_AS_READ = gql`
     markMessagesAsRead(chatId: $chatId)
   }
 `;
+
+// Thêm mutation tạo Review
+export const CREATE_REVIEW = gql`
+  mutation CreateReview($productId: Int!, $userId: String!, $rating: Float!, $comment: String) {
+    createReview(
+      createReviewInput: {
+        product_id: $productId,
+        id_user: $userId,
+        rating: $rating, 
+        comment: $comment,
+        is_review: true
+      }
+    ) {
+      review_id
+      rating
+      comment
+      product_id
+      id_user
+      create_at
+    }
+  }
+`;
+
+// Thêm mutation cập nhật Review
+export const UPDATE_REVIEW = gql`
+  mutation UpdateReview($reviewId: Int!, $rating: Float!, $comment: String) {
+    updateReview(
+      updateReviewInput: {
+        review_id: $reviewId,
+        rating: $rating,
+        comment: $comment
+      }
+    ) {
+      review_id
+      rating
+      comment
+      product_id
+      id_user
+      update_at
+    }
+  }
+`;

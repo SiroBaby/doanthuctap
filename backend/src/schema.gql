@@ -500,6 +500,32 @@ type Chat {
   messages: [Chat_Message!]
 }
 
+type Review {
+  review_id: Int!
+  rating: Float!
+  comment: String
+  is_review: Boolean
+  product_id: Int!
+  id_user: String!
+  create_at: DateTime
+  update_at: DateTime
+  product: Product
+  user: User
+}
+
+type ReviewPagination {
+  data: [Review!]!
+  totalCount: Int!
+  totalPage: Int!
+}
+
+type ReviewCheckResult {
+  canReview: Boolean!
+  hasPurchased: Boolean!
+  hasReviewed: Boolean!
+  shopId: String
+}
+
 type Query {
   users(pagination: PaginationInput!): UserPagination!
   user(id: String!): User!
@@ -550,6 +576,9 @@ type Query {
   getUserChats: [Chat!]!
   getShopChats(shopId: String!): [Chat!]!
   getChatById(chatId: String!): Chat!
+  getProductReviews(productId: Int!, pagination: ReviewPaginationInput): ReviewPagination!
+  getUserReviewForProduct(userId: String!, productId: Int!): Review
+  checkUserCanReview(userId: String!, productId: Int!): ReviewCheckResult!
 }
 
 input PaginationInput {
@@ -589,6 +618,11 @@ input GetAllInvoicesInput {
   page: Int! = 1
   limit: Int! = 10
   search: String
+}
+
+input ReviewPaginationInput {
+  page: Int! = 1
+  limit: Int! = 10
 }
 
 type Mutation {
@@ -645,6 +679,8 @@ type Mutation {
   createChat(createChatInput: CreateChatDto!): Chat!
   sendMessage(sendMessageInput: SendMessageDto!): Chat_Message!
   markMessagesAsRead(chatId: String!): Boolean!
+  createReview(createReviewInput: CreateReviewInput!): Review!
+  updateReview(updateReviewInput: UpdateReviewInput!): Review!
 }
 
 input UpdateUserInput {
@@ -916,4 +952,18 @@ input SendMessageDto {
   chat_id: String!
   sender_id: String!
   message: String!
+}
+
+input CreateReviewInput {
+  product_id: Int!
+  id_user: String!
+  rating: Float!
+  comment: String
+  is_review: Boolean
+}
+
+input UpdateReviewInput {
+  review_id: Int!
+  rating: Float
+  comment: String
 }
