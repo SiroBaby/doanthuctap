@@ -8,7 +8,10 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useSocket } from "@/contexts/SocketContext";
 import { useChat } from "@/contexts/ChatContext";
-import { gql, useMutation } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
+import { GET_LATEST_PRODUCTS_BY_SHOP_ID } from "@/graphql/queries";
+import ProductCard from "./ProductCard";
+import { CircularProgress } from "@mui/material";
 
 interface ProductsSellerProps {
   sellerName: string;
@@ -30,6 +33,31 @@ interface CreateChatVariables {
   };
 }
 
+interface ProductImage {
+  image_url: string;
+  is_thumbnail: boolean;
+}
+
+interface ProductVariation {
+  base_price: number;
+  percent_discount: number;
+}
+
+interface Product {
+  product_id: number;
+  product_name: string;
+  brand: string;
+  status: string;
+  product_images: ProductImage[];
+  product_variations: ProductVariation[];
+}
+
+interface LatestProductsData {
+  getProductsByShopId: {
+    data: Product[];
+  };
+}
+
 const ProductsSeller: React.FC<ProductsSellerProps> = ({
   sellerName,
   sellerAvatar,
@@ -38,10 +66,19 @@ const ProductsSeller: React.FC<ProductsSellerProps> = ({
 }) => {
   const { isSignedIn, user } = useUser();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"reviews" | "products">("reviews");
+  const [activeTab, setActiveTab] = useState<"products">("products");
   const { isConnected } = useSocket();
   const { handleChatCreated, setIsOpen } = useChat();
   const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch 5 latest products from the shop
+  const { data: latestProductsData, loading: productsLoading } = useQuery<LatestProductsData>(
+    GET_LATEST_PRODUCTS_BY_SHOP_ID,
+    {
+      variables: { id: shopId, limit: 5 },
+      skip: !shopId,
+    }
+  );
 
   const CREATE_CHAT = gql`
     mutation CreateChat($createChatInput: CreateChatDto!) {
@@ -111,8 +148,37 @@ const ProductsSeller: React.FC<ProductsSellerProps> = ({
     }
   };
 
-  const handleTabClick = (tab: "reviews" | "products") => {
+  const handleTabClick = (tab: "products") => {
     setActiveTab(tab);
+  };
+
+  // Render product grid for the shop
+  const renderProducts = () => {
+    if (productsLoading) {
+      return (
+        <div className="flex justify-center items-center h-40">
+          <CircularProgress size={40} />
+        </div>
+      );
+    }
+
+    const products = latestProductsData?.getProductsByShopId?.data || [];
+
+    if (products.length === 0) {
+      return (
+        <div className="text-gray-500 text-sm text-center py-5">
+          Cửa hàng này chưa có sản phẩm nào.
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mt-4">
+        {products.map((product) => (
+          <ProductCard key={product.product_id} product={product} />
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -155,16 +221,6 @@ const ProductsSeller: React.FC<ProductsSellerProps> = ({
         <div className="flex gap-6">
           <button
             className={`pb-2 ${
-              activeTab === "reviews"
-                ? "border-b-2 border-blue-500 text-blue-500 font-medium"
-                : "text-gray-500"
-            }`}
-            onClick={() => handleTabClick("reviews")}
-          >
-            Đánh giá
-          </button>
-          <button
-            className={`pb-2 ${
               activeTab === "products"
                 ? "border-b-2 border-blue-500 text-blue-500 font-medium"
                 : "text-gray-500"
@@ -178,17 +234,7 @@ const ProductsSeller: React.FC<ProductsSellerProps> = ({
 
       {/* Tab content */}
       <div className="mt-4">
-        {activeTab === "reviews" ? (
-          <div className="text-gray-500 text-sm">
-            {/* Nội dung đánh giá sẽ được hiển thị ở đây */}
-            <p>Chưa có đánh giá nào.</p>
-          </div>
-        ) : (
-          <div className="text-gray-500 text-sm">
-            {/* Sản phẩm của người bán sẽ được hiển thị ở đây */}
-            <p>Danh sách sản phẩm của người bán sẽ hiển thị ở đây.</p>
-          </div>
-        )}
+        {renderProducts()}
       </div>
     </div>
   );

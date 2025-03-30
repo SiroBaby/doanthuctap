@@ -62,7 +62,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
 
         <div className="relative p-3 h-[150px]">
-          <p className="text-gray-800 font-medium line-clamp-2 truncate">
+          <p className="text-gray-800 font-medium truncate">
             {product.product_name}
           </p>
           {discountPercent > 0 ? (

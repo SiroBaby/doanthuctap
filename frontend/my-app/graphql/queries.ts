@@ -996,4 +996,25 @@ export const GET_USER_REVIEW_FOR_PRODUCT = gql`
   }
 `;
 
+export const GET_LATEST_PRODUCTS_BY_SHOP_ID = gql`
+  query GetLatestProductsByShopId($id: String!, $limit: Int!) {
+    getProductsByShopId(id: $id, pagination: { page: 1, limit: $limit, search: "" }) {
+      data {
+        product_id
+        product_name
+        brand
+        status
+        product_images {
+          image_url
+          is_thumbnail
+        }
+        product_variations {
+          base_price
+          percent_discount
+        }
+      }
+    }
+  }
+`;
+
 
