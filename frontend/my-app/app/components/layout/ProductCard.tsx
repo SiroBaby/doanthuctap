@@ -52,7 +52,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           setIsButtonPressed(false);
         }}
       >
-        <div className="relative h-[200px] bg-white">
+        <div className="relative h-[240px] bg-white">
           <Image
             src={imageUrl}
             fill
@@ -62,19 +62,25 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
 
         <div className="relative p-3 h-[150px]">
-          <p className="text-gray-800 font-medium line-clamp-2">{product.product_name}</p>
+          <p className="text-gray-800 font-medium line-clamp-2">
+            {product.product_name}
+          </p>
           {discountPercent > 0 ? (
             <div className="flex flex-col mt-2">
               <div className="flex items-center gap-2">
-              <p className="text-gray-500 line-through text-sm">
-                {originalPrice?.toLocaleString()} VNĐ
-              </p>
-              <p className="text-white rounded-full bg-red-500 px-2 py-1">
-                {discountPercent * 100}%
-              </p>
+                <p className="text-gray-500 line-through text-sm">
+                  {originalPrice?.toLocaleString()} VNĐ
+                </p>
+                <p className="text-white rounded-full bg-red-500 px-2 py-1">
+                  {discountPercent * 100}%
+                </p>
               </div>
               <p className="text-blue-500 font-bold">
-                {((originalPrice || 0) - (originalPrice || 0) * discountPercent).toLocaleString()} VNĐ
+                {(
+                  (originalPrice || 0) -
+                  (originalPrice || 0) * discountPercent
+                ).toLocaleString()}{" "}
+                VNĐ
               </p>
             </div>
           ) : (

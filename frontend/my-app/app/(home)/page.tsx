@@ -4,7 +4,7 @@ import AnotherTopBar from "../components/layout/AnotherTopBar";
 import ProductCard from "../components/layout/ProductCard";
 import Banner from "../components/layout/Banner";
 import ProductCategory from "../components/layout/ProductCategory";
-import LiveStream from "../components/layout/LiveStream";
+//import LiveStream from "../components/layout/LiveStream";
 import Vouchers from "../components/layout/Vouchers";
 import Footer from "../components/layout/Footer";
 import Link from "next/link";
@@ -52,7 +52,7 @@ const HomePage: React.FC = () => {
   );
 
   const products = data?.products?.data || [];
-  const sampleLiveStream = Array(4).fill(null);
+  //const sampleLiveStream = Array(4).fill(null);
 
   // Loading state with skeleton
   if (loading) {
@@ -135,7 +135,7 @@ const HomePage: React.FC = () => {
 
           <div className="border-t border-black my-4"></div>
 
-          {/* LIVESTREAMS */}
+          {/* LIVESTREAMS 
           <div className="flex items-center mb-4">
             <div className="bg-green-300 px-2 py-1 rounded flex items-center">
               <Image
@@ -151,14 +151,14 @@ const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Grid livestream */}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
             {sampleLiveStream.map((_, index) => (
               <LiveStream key={index} />
             ))}
           </div>
 
-          {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn á*/}
+
           <div className="flex justify-center mb-2">
             <button className="rounded-full" aria-label="button">
               <Image
@@ -170,15 +170,49 @@ const HomePage: React.FC = () => {
             </button>
           </div>
 
-          <div className="border-t border-black my-4"></div>
+          <div className="border-t border-black my-4"></div>*/}
 
-          {/* SẢN PHẨM MỚI NHẤT */}
+          {/* DÀNH CHO BẠN */}
           <div className="flex items-center mb-4">
             <div className="bg-green-300 px-3 py-1 rounded flex items-center">
               <Image
                 src="/icon/shopping-bag.png"
                 width={24}
                 height={24}
+                alt="Cart"
+                className="mr-2"
+              />
+              <span className="text-lg md:text-xl lg:text-2xl text-white font-semibold">
+                DÀNH CHO BẠN
+              </span>
+            </div>
+          </div>
+
+          {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn á */}
+          <div className="flex justify-center mb-2">
+            <Link
+              href="/customer/category/product"
+              className="rounded-full"
+              aria-label="button"
+            >
+              <Image
+                src="/icon/button-bar.png"
+                width={40}
+                height={40}
+                alt="button"
+              />
+            </Link>
+          </div>
+
+          <div className="border-t border-black my-4"></div>
+
+          {/* SẢN PHẨM MỚI NHẤT */}
+          <div className="flex items-center mb-4">
+            <div className="bg-green-300 px-3 py-1 rounded flex items-center">
+              <Image
+                src="/icon/check-mark.png"
+                width={30}
+                height={30}
                 alt="Cart"
                 className="mr-2"
               />
@@ -242,7 +276,42 @@ const HomePage: React.FC = () => {
               />
             </Link>
           </div>
+
+          <div className="border-t border-black my-4"></div>
+
+          {/* SẢN PHẨM Bán chạy */}
+          <div className="flex items-center mb-4">
+            <div className="bg-green-300 px-3 py-1 rounded flex items-center">
+              <Image
+                src="/icon/star1.png"
+                width={24}
+                height={24}
+                alt="Cart"
+                className="mr-2"
+              />
+              <span className="text-lg md:text-xl lg:text-2xl text-white font-semibold">
+                SẢN PHẨM BÁN CHẠY
+              </span>
+            </div>
+          </div>
+
+          {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn á */}
+          <div className="flex justify-center mb-2">
+            <Link
+              href="/customer/category/product"
+              className="rounded-full"
+              aria-label="button"
+            >
+              <Image
+                src="/icon/button-bar.png"
+                width={40}
+                height={40}
+                alt="button"
+              />
+            </Link>
+          </div>
         </div>
+
         <div className="col-span-1"></div>
       </div>
 
