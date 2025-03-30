@@ -176,6 +176,14 @@ export const GET_PRODUCTS_BY_SHOP_ID = gql`
                 product_name
                 brand
                 status
+                product_images {
+                    image_url
+                    is_thumbnail
+                }
+                product_variations {
+                    base_price
+                    percent_discount
+                }
             }
         }
     }
