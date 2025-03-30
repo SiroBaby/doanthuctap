@@ -9,7 +9,17 @@ export class ShopService {
   constructor(private prisma: PrismaService) {}
 
   create(createShopInput: CreateShopInput) {
-    return 'This action adds a new shop';
+    return this.prisma.shop.create({
+      data: {
+        shop_id: createShopInput.shop_id,
+        shop_name: createShopInput.shop_name,
+        logo: createShopInput.logo,
+        status: createShopInput.status,
+        location_id: createShopInput.location_id,
+        id_user: createShopInput.id_user,
+        create_at: createShopInput.create_at || new Date(),
+      }
+    });
   }
 
   async findAll(paginationArgs: PaginationInput) {

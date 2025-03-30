@@ -30,7 +30,10 @@ export class UserService {
       where: {
         id_user: id,
       },
-      data: updateUserInput.phone ? { phone: updateUserInput.phone } : {},
+      data: {
+        ...(updateUserInput.phone ? { phone: updateUserInput.phone } : {}),
+        ...(updateUserInput.role ? { role: updateUserInput.role as any } : {})
+      },
     });
     return user;
   }

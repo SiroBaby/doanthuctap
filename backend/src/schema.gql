@@ -808,13 +808,23 @@ input UpdateProductVariationInput {
 }
 
 input CreateShopInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  shop_id: String!
+  shop_name: String!
+  logo: String
+  status: Shop_status!
+  location_id: String!
+  id_user: String!
+  create_at: DateTime
 }
 
 input UpdateShopInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  shop_id: String
+  shop_name: String
+  logo: String
+  status: Shop_status
+  location_id: String
+  id_user: String
+  create_at: DateTime
   id: Int!
 }
 

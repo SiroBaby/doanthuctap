@@ -243,6 +243,20 @@ export const REMOVE_VOUCHER = gql`
 `;
 
 // Shop mutations
+export const CREATE_SHOP = gql`
+  mutation CreateShop($createShopInput: CreateShopInput!) {
+    createShop(createShopInput: $createShopInput) {
+      shop_id
+      shop_name
+      logo
+      status
+      location_id
+      id_user
+      create_at
+    }
+  }
+`;
+
 export const UPDATE_SHOP = gql`
   mutation UpdateShop($updateShopInput: UpdateShopInput!) {
     updateShop(updateShopInput: $updateShopInput) {
@@ -485,6 +499,22 @@ export const UPDATE_REVIEW = gql`
       comment
       product_id
       id_user
+      update_at
+    }
+  }
+`;
+
+// Cập nhật role cho user
+export const UPDATE_USER_ROLE = gql`
+  mutation UpdateUserRole($userId: String!, $role: String!) {
+    updateUser(
+      updateUserInput: {
+        id: $userId,
+        role: $role
+      }
+    ) {
+      id_user
+      role
       update_at
     }
   }

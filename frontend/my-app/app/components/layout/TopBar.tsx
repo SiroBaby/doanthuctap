@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Select, Option } from "@mui/joy";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -9,7 +8,6 @@ import { useUser } from "@clerk/nextjs";
 import { useTheme } from "next-themes";
 
 const TopBar = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
-  const [language, setLanguage] = useState("VIE");
   const { user } = useUser();
   const [userName, setUserName] = useState("");
   const { theme, setTheme } = useTheme();
@@ -24,15 +22,6 @@ const TopBar = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
       setUserName(`${user.firstName} ${user.lastName}`);
     }
   }, [user]);
-
-  const handleChange = (
-    _event: React.SyntheticEvent | null,
-    newValue: string | null
-  ) => {
-    if (newValue) {
-      setLanguage(newValue);
-    }
-  };
 
   const handleToggleDarkMode = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -52,15 +41,6 @@ const TopBar = ({ onToggleSidebar }: { onToggleSidebar: () => void }) => {
           <h1 className="text-4xl font-bold">Admin</h1>
         </div>
         <div className="flex items-center gap-6">
-          <Select
-            defaultValue={language}
-            onChange={handleChange}
-            size="sm"
-            className="min-w-[80px]"
-          >
-            <Option value="VIE">VIE</Option>
-            <Option value="ENG">ENG</Option>
-          </Select>
 
           <button
             className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
