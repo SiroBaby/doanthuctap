@@ -5,5 +5,10 @@ import { InputType, Field, Int, PartialType } from '@nestjs/graphql';
 export class UpdateUserInput extends PartialType(CreateUserInput) {
   @Field(() => String)
   id: string;
-  phone?: string | undefined;
+  
+  @Field(() => String, { nullable: true })
+  phone?: string;
+  
+  @Field(() => String, { nullable: true })
+  role?: string;
 }

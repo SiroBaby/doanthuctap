@@ -109,6 +109,23 @@ export default function FloatingChatButton() {
     fetchPolicy: "network-only",
   });
 
+  // Luôn lấy cả hai loại chat, vì shop cũng có thể chat với shop khác với tư cách người dùng
+  useEffect(() => {
+    if (isOpen && isSignedIn) {
+      console.log('Chat opened by user action, fetching data...');
+      // Luôn fetch user chats
+      refetchUserChats();
+      
+      // Fetch shop chats nếu người dùng có shop
+      if (shopId) {
+        refetchShopChats();
+      }
+    } else if (!isOpen) {
+      // Reset selected chat when closing
+      setSelectedChat(null);
+    }
+  }, [isOpen, isSignedIn, shopId, refetchShopChats, refetchUserChats]);
+
   // Lấy chi tiết chat đã chọn
   const {
     loading: loadingChatDetail,
@@ -199,21 +216,6 @@ export default function FloatingChatButton() {
     });
   }, [setHandleChatCreated, shopId, refetchUserChats, refetchShopChats]);
 
-  // Tự động refetch khi mở dialog một cách rõ ràng
-  useEffect(() => {
-    if (isOpen && isSignedIn) {
-      console.log('Chat opened by user action, fetching data...');
-      if (shopId) {
-        refetchShopChats();
-      } else {
-        refetchUserChats();
-      }
-    } else if (!isOpen) {
-      // Reset selected chat when closing
-      setSelectedChat(null);
-    }
-  }, [isOpen, isSignedIn, shopId, refetchShopChats, refetchUserChats]);
-
   const handleOpen = () => {
     if (!isSignedIn) {
       toast.error("Please sign in to use the chat feature", {
@@ -233,14 +235,19 @@ export default function FloatingChatButton() {
   };
 
   const handleRefresh = () => {
+    // Luôn làm mới user chats
+    refetchUserChats();
+    
+    // Làm mới shop chats nếu người dùng có shop
     if (shopId) {
       refetchShopChats();
-    } else {
-      refetchUserChats();
     }
+    
+    // Làm mới chi tiết chat nếu đang xem một chat cụ thể
     if (selectedChat) {
       refetchChatDetail();
     }
+    
     toast.success("Đã cập nhật danh sách chat", {
       duration: 2000,
       position: "top-center",
@@ -261,7 +268,9 @@ export default function FloatingChatButton() {
     // Thêm một timeout ngắn để refetch sau khi gửi tin nhắn
     setTimeout(() => {
       refetchChatDetail();
+      // Luôn refetch user chats
       refetchUserChats();
+      // Refetch shop chats nếu người dùng có shop
       if (shopId) {
         refetchShopChats();
       }
@@ -300,6 +309,11 @@ export default function FloatingChatButton() {
       return timeB - timeA;
     });
 
+    // Loại bỏ các chat trùng lặp nếu có (khi người dùng vừa là user vừa là shop owner)
+    const uniqueChats = allChats.filter((chat, index, self) => 
+      self.findIndex(c => c.chat_id === chat.chat_id) === index
+    );
+
     loading = loadingUserChats || (shopId ? loadingShopChats : false);
     error = errorUserChats || (shopId ? errorShopChats : null);
 
@@ -328,7 +342,7 @@ export default function FloatingChatButton() {
       );
     }
 
-    if (allChats.length === 0) {
+    if (uniqueChats.length === 0) {
       return (
         <Box p={3} textAlign="center">
           <Typography>No chats found. Start a conversation!</Typography>
@@ -338,7 +352,7 @@ export default function FloatingChatButton() {
 
     return (
       <List sx={{ width: "100%", maxHeight: "100%", overflow: "auto" }}>
-        {allChats.map((chat: ChatItem) => {
+        {uniqueChats.map((chat: ChatItem) => {
           // Sửa lại logic xác định shop owner - so sánh trực tiếp với chat.shop_id
           const isCurrentUserShopOwner = Boolean(shopId) && chat.shop_id === shopId;
           
@@ -352,16 +366,17 @@ export default function FloatingChatButton() {
             ? chat.user?.avatar || "/logo/avt-capy.png"
             : chat.shop?.logo || "/logo/avt-capy.png";
 
-          // Thêm debug log
-        //   console.log('Chat info:', {
-        //     chatId: chat.chat_id,
-        //     isCurrentUserShopOwner,
-        //     shopId,
-        //     chatShopId: chat.shop_id,
-        //     userName: chat.user?.user_name,
-        //     shopName: chat.shop?.shop_name,
-        //     finalChatName: chatName
-        //   });
+          // Thêm debug log để kiểm tra vai trò
+          console.log(`Chat ${chat.chat_id}:`, {
+            userName: chat.user?.user_name,
+            userId: chat.id_user,
+            shopName: chat.shop?.shop_name,
+            shopId: chat.shop_id,
+            currentUserShopId: shopId,
+            isCurrentUserShopOwner,
+            displayingAs: isCurrentUserShopOwner ? 'shop' : 'user',
+            chatName
+          });
 
           return (
             <ListItem

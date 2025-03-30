@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -32,6 +32,13 @@ import {
   FormControlLabel,
   Checkbox,
   Chip,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Popper,
+  ClickAwayListener,
+  InputAdornment,
 } from '@mui/material';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_SHOP_ID_BY_USER_ID, GET_SHOP_BY_ID, GET_LOCATIONS } from '@/graphql/queries';
@@ -77,6 +84,26 @@ interface Shop {
   };
 }
 
+interface AddressSuggestion {
+  description: string;
+  place_id: string;
+}
+
+interface GoongPrediction {
+  description: string;
+  place_id: string;
+  structured_formatting?: {
+    main_text: string;
+    secondary_text: string;
+  }
+}
+
+interface GoongResponse {
+  predictions: GoongPrediction[];
+  status: string;
+  execution_time?: string;
+}
+
 const ShopManagementPage = () => {
   const { userId } = useAuth();
   const [shopId, setShopId] = useState<string | null>(null);
@@ -110,6 +137,14 @@ const ShopManagementPage = () => {
   const [isNewAddress, setIsNewAddress] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState<number | null>(null);
+
+  // GoongMap địa chỉ
+  const [addressQuery, setAddressQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+  const [addressLoading, setAddressLoading] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const addressInputRef = useRef<HTMLInputElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Get shop ID by user ID
   const { loading: shopIdLoading } = useQuery(GET_SHOP_ID_BY_USER_ID, {
@@ -305,6 +340,82 @@ const ShopManagementPage = () => {
     setEditMode(false);
   };
 
+  // Goong Map API integration
+  const fetchAddressSuggestions = async (query: string) => {
+    if (!query.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    setAddressLoading(true);
+    try {
+      const response = await fetch(
+        `https://rsapi.goong.io/place/autocomplete?api_key=${process.env.NEXT_PUBLIC_GOONG_MAP_API_KEY}&input=${encodeURIComponent(query)}`
+      );
+      const data: GoongResponse = await response.json();
+      
+      if (data.status === 'OK' && data.predictions) {
+        setSuggestions(data.predictions.map((prediction: GoongPrediction) => ({
+          description: prediction.description,
+          place_id: prediction.place_id
+        })));
+      } else {
+        setSuggestions([]);
+      }
+    } catch (error) {
+      console.error('Error fetching address suggestions:', error);
+      setSuggestions([]);
+    } finally {
+      setAddressLoading(false);
+    }
+  };
+
+  // Debounce cho input địa chỉ
+  useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    if (addressQuery.trim()) {
+      timeoutRef.current = setTimeout(() => {
+        fetchAddressSuggestions(addressQuery);
+      }, 1000); // Debounce 1 giây
+    } else {
+      setSuggestions([]);
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [addressQuery]);
+
+  const handleAddressInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setAddressQuery(value);
+    setAnchorEl(e.currentTarget);
+    setAddressFormData((prev) => ({
+      ...prev,
+      address: value,
+    }));
+  };
+
+  const handleSuggestionClick = (suggestion: AddressSuggestion) => {
+    setAddressFormData((prev) => ({
+      ...prev,
+      address: suggestion.description,
+    }));
+    setAddressQuery(suggestion.description);
+    setSuggestions([]);
+    setAnchorEl(null);
+  };
+
+  const handleClickAway = () => {
+    setSuggestions([]);
+    setAnchorEl(null);
+  };
+
   // Address dialog handlers
   const handleOpenAddressDialog = (address?: ShopAddress) => {
     if (address) {
@@ -315,6 +426,7 @@ const ShopManagementPage = () => {
         shop_id: address.shop_id,
         is_default: address.is_default || false,
       });
+      setAddressQuery(address.address); // Đặt query cho địa chỉ hiện tại
       setIsNewAddress(false);
     } else {
       setAddressFormData({
@@ -324,6 +436,7 @@ const ShopManagementPage = () => {
         shop_id: shopId || '',
         is_default: shopData?.shop_addresses.length === 0 ? true : false, // Nếu không có địa chỉ nào, đặt mặc định = true
       });
+      setAddressQuery(''); // Reset query khi thêm mới
       setIsNewAddress(true);
     }
     setAddressDialogOpen(true);
@@ -338,6 +451,8 @@ const ShopManagementPage = () => {
       shop_id: '',
       is_default: false,
     });
+    setAddressQuery('');
+    setSuggestions([]);
   };
 
   const handleSaveAddress = () => {
@@ -411,6 +526,10 @@ const ShopManagementPage = () => {
       open: false,
     });
   };
+
+  // Suggestions popup state
+  const open = Boolean(anchorEl) && suggestions.length > 0;
+  const popoverId = open ? 'address-suggestions' : undefined;
 
   // Loading state
   if (shopIdLoading || shopDataLoading) {
@@ -654,16 +773,48 @@ const ShopManagementPage = () => {
         </DialogTitle>
         <DialogContent>
           <Box className="pt-2">
-            <TextField
-              fullWidth
-              label="Địa chỉ"
-              name="address"
-              value={addressFormData.address}
-              onChange={handleAddressChange}
-              className="mb-4"
-              multiline
-              rows={3}
-            />
+            <ClickAwayListener onClickAway={handleClickAway}>
+              <Box sx={{ position: 'relative', width: '100%', marginBottom: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Địa chỉ"
+                  name="address"
+                  value={addressQuery}
+                  onChange={handleAddressInputChange}
+                  inputRef={addressInputRef}
+                  placeholder="Nhập địa chỉ để tìm kiếm"
+                  multiline
+                  rows={2}
+                  className="mb-4"
+                  InputProps={{
+                    endAdornment: addressLoading ? (
+                      <InputAdornment position="end">
+                        <CircularProgress size={20} />
+                      </InputAdornment>
+                    ) : null,
+                  }}
+                />
+                <Popper 
+                  id={popoverId} 
+                  open={open} 
+                  anchorEl={anchorEl}
+                  placement="bottom-start"
+                  style={{ width: anchorEl?.clientWidth, zIndex: 1400 }}
+                >
+                  <Paper elevation={3} sx={{ maxHeight: 300, overflow: 'auto' }}>
+                    <List>
+                      {suggestions.map((suggestion) => (
+                        <ListItem key={suggestion.place_id} disablePadding>
+                          <ListItemButton onClick={() => handleSuggestionClick(suggestion)}>
+                            <ListItemText primary={suggestion.description} />
+                          </ListItemButton>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Paper>
+                </Popper>
+              </Box>
+            </ClickAwayListener>
             <TextField
               fullWidth
               label="Số điện thoại"

@@ -203,7 +203,14 @@ const AnotherTopBar = () => {
                 </span>
               </div>
             )}
-            {!user && <span className="text-white">User</span>}
+            {!user && (
+              <span
+                className="text-white cursor-pointer"
+                onClick={() => router.push("/sign-in")}
+              >
+                Đăng nhập
+              </span>
+            )}
           </div>
         </div>
 
