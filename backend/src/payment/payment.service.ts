@@ -152,4 +152,45 @@ export class PaymentService {
       throw new Error(`Failed to update invoice payment status: ${error.message}`);
     }
   }
+
+  // Update all invoices for a user that have the same payment method and awaiting payment status
+  async updateAllInvoicesByUserId(
+    userId: string,
+    paymentMethod: string | null,
+    paymentStatus: string,
+    createdWithinMinutes: number = 15
+  ): Promise<any> {
+    try {
+      // Get the time threshold (e.g., invoices created in the last 15 minutes)
+      const timeThreshold = new Date();
+      timeThreshold.setMinutes(timeThreshold.getMinutes() - createdWithinMinutes);
+
+      // Xác định điều kiện where dựa trên paymentMethod có tồn tại hay không
+      const whereCondition: any = {
+        id_user: userId,
+        payment_status: 'awaiting_payment',
+        create_at: {
+          gte: timeThreshold
+        }
+      };
+      
+      // Chỉ thêm điều kiện payment_method nếu nó tồn tại
+      if (paymentMethod) {
+        whereCondition.payment_method = paymentMethod;
+      }
+
+      // Find and update all relevant invoices
+      const updatedInvoices = await this.prisma.invoice.updateMany({
+        where: whereCondition,
+        data: {
+          payment_status: paymentStatus,
+        },
+      });
+
+      return updatedInvoices;
+    } catch (error) {
+      console.error('Error updating multiple invoices payment status:', error);
+      throw new Error(`Failed to update invoices payment status: ${error.message}`);
+    }
+  }
 } 

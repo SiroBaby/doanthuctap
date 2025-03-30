@@ -52,29 +52,43 @@ export class PaymentController {
       }
       
       // Get invoice ID
-      const invoiceId = query.vnp_TxnRef;
+      const invoiceId = query.vnp_TxnRef as string | undefined;
+      
+      if (!invoiceId) {
+        console.error('Missing invoice ID in VNPay return data');
+        return res.redirect(`${process.env.FRONTEND_URL}/customer/payment-result?status=error&code=98`);
+      }
+      
+      // Biến invoiceId là string qua điều kiện kiểm tra ở trên
       let paymentStatus = 'FAILED';
       
       // Process payment result based on response code
       if (responseCode === '00') {
         paymentStatus = 'COMPLETED';
         
-        // Update invoice payment status
-        const updatedInvoice = await this.paymentService.updateInvoicePaymentStatus(invoiceId, paymentStatus);
-        
-        // Lấy thông tin user_id từ invoice
         try {
+          // Lấy thông tin invoice đầu tiên
           const invoice = await this.prisma.invoice.findUnique({
             where: { invoice_id: invoiceId },
-            select: { id_user: true }
+            select: { id_user: true, payment_method: true }
           });
           
-          if (invoice) {
+          if (invoice && invoice.payment_method) {
+            // Cập nhật tất cả hoá đơn của người dùng này với phương thức thanh toán tương tự
+            await this.paymentService.updateAllInvoicesByUserId(
+              invoice.id_user,
+              invoice.payment_method,
+              paymentStatus
+            );
+            
+            // Cập nhật hoá đơn chính (để đảm bảo)
+            await this.paymentService.updateInvoicePaymentStatus(invoiceId, paymentStatus);
+            
             // Chuyển hướng về trang chi tiết đơn hàng
             return res.redirect(`${process.env.FRONTEND_URL}/customer/user/purchase/${invoice.id_user}/${invoiceId}`);
           }
         } catch (error) {
-          console.error('Error fetching invoice details:', error);
+          console.error('Error processing payment update:', error);
         }
       } else if (responseCode === '24') {
         paymentStatus = 'CANCELLED';
@@ -99,15 +113,35 @@ export class PaymentController {
       }
       
       // Get invoice ID
-      const invoiceId = query.vnp_TxnRef;
+      const invoiceId = query.vnp_TxnRef as string | undefined;
       
-      // Check if invoice exists
-      // This would require additional validation in a real implementation
+      if (!invoiceId) {
+        return { RspCode: '98', Message: 'Missing invoice ID' };
+      }
       
       // Process payment result based on response code
       if (responseCode === '00') {
-        // Update invoice payment status
-        await this.paymentService.updateInvoicePaymentStatus(invoiceId, 'COMPLETED');
+        try {
+          // Lấy thông tin invoice đầu tiên
+          const invoice = await this.prisma.invoice.findUnique({
+            where: { invoice_id: invoiceId },
+            select: { id_user: true, payment_method: true }
+          });
+          
+          if (invoice && invoice.payment_method) {
+            // Cập nhật tất cả hoá đơn của người dùng này với phương thức thanh toán tương tự
+            await this.paymentService.updateAllInvoicesByUserId(
+              invoice.id_user,
+              invoice.payment_method,
+              'COMPLETED'
+            );
+            
+            // Đảm bảo invoice gốc được cập nhật
+            await this.paymentService.updateInvoicePaymentStatus(invoiceId, 'COMPLETED');
+          }
+        } catch (error) {
+          console.error('Error updating invoices in IPN:', error);
+        }
         
         return { RspCode: '00', Message: 'Confirm Success' };
       }

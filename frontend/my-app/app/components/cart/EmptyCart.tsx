@@ -24,7 +24,7 @@ const EmptyCart: React.FC = () => {
       </p>
 
       <Link
-        href="/products"
+        href="/"
         className="bg-custom-red hover:bg-red-700 text-white py-3 px-6 rounded font-medium transition-colors"
       >
         Tiếp tục mua sắm
