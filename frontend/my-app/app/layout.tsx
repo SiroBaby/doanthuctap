@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Providers } from "./providers";
 import FloatingChatButton from "@/app/components/chat/FloatingChatButton";
+import FloatingChatBotButton from "@/app/components/chat/FloatingChatBotButton";
 import { ChatProvider } from "@/contexts/ChatContext";
 import { SocketProvider } from "@/contexts/SocketContext";
 
@@ -27,6 +28,7 @@ export default function RootLayout({
             <SocketProvider>
               <ChatProvider>
                 {children}
+                <FloatingChatBotButton />
                 <FloatingChatButton />
               </ChatProvider>
             </SocketProvider>

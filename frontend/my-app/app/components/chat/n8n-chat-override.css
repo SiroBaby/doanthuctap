@@ -1,0 +1,50 @@
+/* CSS để điều chỉnh vị trí của n8n chat widget */
+:root {
+  --n8n-distance-from-bottom: 90px; /* Khoảng cách từ dưới lên, để không đè lên nút chat hiện tại */
+}
+
+/* 
+  Chiến lược CSS: Sử dụng nhiều selectors để đảm bảo phủ tất cả cách mà n8n có thể
+  render button của nó vào DOM
+*/
+
+/* Selector 1: Sử dụng id bắt đầu bằng n8n-chat */
+div[id^="n8n-chat"] button,
+#n8n-chat button {
+  bottom: var(--n8n-distance-from-bottom) !important;
+  right: 20px !important;
+}
+
+/* Selector 2: Sử dụng các class container */
+.n8n-chat-button-container {
+  bottom: var(--n8n-distance-from-bottom) !important;
+  right: 20px !important;
+}
+
+/* Selector 3: Sử dụng attr cho element có thuộc tính data là n8n */
+[data-n8n-chat-button] {
+  bottom: var(--n8n-distance-from-bottom) !important;
+  right: 20px !important;
+}
+
+/* Selector 4: Cho chính cái button */
+button.n8n-chat-open-button,
+.n8n-chat-button {
+  bottom: var(--n8n-distance-from-bottom) !important;
+  right: 20px !important;
+}
+
+/* Tương tự cho khung chat và cửa sổ chat */
+div[id^="n8n-chat"] div[class*="bubble"],
+.n8n-chat-bubble-container,
+[data-n8n-chat-bubble] {
+  bottom: var(--n8n-distance-from-bottom) !important;
+  right: 20px !important;
+}
+
+div[id^="n8n-chat"] div[class*="window"],
+.n8n-chat-window-container,
+[data-n8n-chat-window] {
+  bottom: calc(var(--n8n-distance-from-bottom) + 30px) !important;
+  right: 20px !important;
+} 
