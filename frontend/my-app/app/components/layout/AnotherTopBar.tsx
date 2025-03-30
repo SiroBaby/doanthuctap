@@ -6,7 +6,12 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useAuth } from "@clerk/nextjs";
 import { useApolloClient, useLazyQuery } from "@apollo/client";
-import { GET_CART, GET_CART_PRODUCTS, GET_PRODUCTS } from "@/graphql/queries";
+import {
+  GET_CART,
+  GET_CART_PRODUCTS,
+  GET_PRODUCTS,
+  GET_USER_BY_ID,
+} from "@/graphql/queries";
 import { debounce } from "lodash";
 
 interface Product {
@@ -53,6 +58,27 @@ const AnotherTopBar = () => {
       setUserName(`${user.firstName} ${user.lastName}`);
     }
   }, [user]);
+  // xử lý khi click vào kênh người bán
+  const handleClickSellerChennel = async () => {
+    if (userId) {
+      try {
+        const { data: userData } = await apolloClient.query({
+          query: GET_USER_BY_ID,
+          variables: { id: userId },
+          fetchPolicy: "network-only",
+        });
+
+        if (userData?.user?.role === "seller") {
+          router.push("/seller/dashboard");
+        } else {
+          router.push("/customer/create-shop");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        router.push("/customer/create-shop");
+      }
+    }
+  };
 
   // Xử lý click outside để đóng suggestions
   useEffect(() => {
@@ -157,8 +183,12 @@ const AnotherTopBar = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex space-x-6">
-            <span className="text-white cursor-pointer">Kênh người bán</span>
-            <span className="text-white cursor-pointer">Kết nối Facebook</span>
+            <span
+              onClick={handleClickSellerChennel}
+              className="text-white cursor-pointer"
+            >
+              Kênh người bán
+            </span>
           </div>
           <div className="flex items-center space-x-4">
             {user && (
@@ -178,8 +208,14 @@ const AnotherTopBar = () => {
         </div>
 
         <div className="flex items-center justify-between mt-2">
-          <div className="font-bold text-white">
-            <Image src="/logo/logodemo.png" width={120} height={0} alt="logo" />
+          <div className="font-bold text-white cursor-pointer">
+            <Image
+              onClick={() => router.push("/")}
+              src="/logo/logodemo.png"
+              width={120}
+              height={0}
+              alt="logo"
+            />
           </div>
 
           <div className="flex justify-center flex-grow mx-4">
