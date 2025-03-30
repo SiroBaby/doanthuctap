@@ -6,7 +6,12 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useAuth } from "@clerk/nextjs";
 import { useApolloClient, useLazyQuery } from "@apollo/client";
-import { GET_CART, GET_CART_PRODUCTS, GET_PRODUCTS } from "@/graphql/queries";
+import {
+  GET_CART,
+  GET_CART_PRODUCTS,
+  GET_PRODUCTS,
+  GET_USER_BY_ID,
+} from "@/graphql/queries";
 import { debounce } from "lodash";
 
 interface Product {
@@ -53,6 +58,27 @@ const AnotherTopBar = () => {
       setUserName(`${user.firstName} ${user.lastName}`);
     }
   }, [user]);
+  // xử lý khi click vào kênh người bán
+  const handleClickSellerChennel = async () => {
+    if (userId) {
+      try {
+        const { data: userData } = await apolloClient.query({
+          query: GET_USER_BY_ID,
+          variables: { id: userId },
+          fetchPolicy: "network-only",
+        });
+
+        if (userData?.user?.role === "seller") {
+          router.push("/seller/dashboard");
+        } else {
+          router.push("/customer/create-shop");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        router.push("/customer/create-shop");
+      }
+    }
+  };
 
   // Xử lý click outside để đóng suggestions
   useEffect(() => {
