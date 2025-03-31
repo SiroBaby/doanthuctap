@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import FilterSidebar from "@/app/components/layout/FilterSidebar";
 import ProductCard from "@/app/components/layout/ProductCard";
 import { useQuery } from "@apollo/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { GET_PRODUCTS_FOR_HOMEPAGE } from "@/graphql/queries";
 
 // Define the product interface
@@ -23,6 +23,11 @@ interface Product {
   product_name: string;
   product_images: ProductImage[];
   product_variations: ProductVariation[];
+  category?: {
+    category_id: number;
+  };
+  create_at?: string;
+  total_sales?: number;
 }
 
 interface ProductsResponse {
@@ -35,11 +40,21 @@ interface ProductsResponse {
 
 const ProductPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const searchTerm = searchParams.get("search") || "";
+  const categoryId = searchParams.get("category");
+  const categoryName = searchParams.get("categoryName");
+
+  // State để quản lý sắp xếp
+  const [sortBy, setSortBy] = useState<
+    "newest" | "bestseller" | "price_asc" | "price_desc"
+  >("newest");
 
   // Navigate to home page
   const navigateToHome = () => {
     router.push("/");
   };
+
   // Fetch products from API
   const { loading, error, data } = useQuery<ProductsResponse>(
     GET_PRODUCTS_FOR_HOMEPAGE,
@@ -47,13 +62,11 @@ const ProductPage = () => {
       variables: {
         page: 1,
         limit: 40,
-        search: "",
+        search: searchTerm,
+        category: categoryId ? parseInt(categoryId) : undefined,
       },
     }
   );
-
-  // State để quản lý nút sắp xếp đang được chọn
-  const [activeSortButton, setActiveSortButton] = useState("popular");
 
   // Create sample products when real data isn't available yet
   const sampleProducts: Product[] = Array(40)
@@ -73,10 +86,46 @@ const ProductPage = () => {
           percent_discount: 0.1,
         },
       ],
+      create_at: new Date(
+        Date.now() - Math.random() * 10000000000
+      ).toISOString(),
+      total_sales: Math.floor(Math.random() * 1000),
     }));
 
   // Use real data if available, otherwise use sample data
-  const products = data?.products?.data || sampleProducts;
+  const allProducts = data?.products?.data || sampleProducts;
+
+  // Filter products by category ID if category is selected
+  const filteredProducts = categoryId
+    ? allProducts.filter(
+        (product) => product.category?.category_id === parseInt(categoryId)
+      )
+    : allProducts;
+
+  // Sort products based on selected criteria
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch (sortBy) {
+      case "newest":
+        return (
+          new Date(b.create_at || "").getTime() -
+          new Date(a.create_at || "").getTime()
+        );
+      case "bestseller":
+        return (b.total_sales || 0) - (a.total_sales || 0);
+      case "price_asc":
+        return (
+          (a.product_variations[0]?.base_price || 0) -
+          (b.product_variations[0]?.base_price || 0)
+        );
+      case "price_desc":
+        return (
+          (b.product_variations[0]?.base_price || 0) -
+          (a.product_variations[0]?.base_price || 0)
+        );
+      default:
+        return 0;
+    }
+  });
 
   return (
     <div className="bg-gray-50 min-h-screen dark:bg-blue-500 pb-8">
@@ -93,9 +142,30 @@ const ProductPage = () => {
                 Home
               </button>
               <span className="mx-2">/</span>
-              <span>Danh mục</span>
+              <span>Danh sách sản phẩm</span>
+              {categoryName && (
+                <>
+                  <span className="mx-2">/</span>
+                  <span>{categoryName}</span>
+                </>
+              )}
+              {searchTerm && (
+                <>
+                  <span className="mx-2">/</span>
+                  <span>Kết quả tìm kiếm: {searchTerm}</span>
+                </>
+              )}
             </div>
           </div>
+
+          {/* Show message when no products found for category */}
+          {categoryId && sortedProducts.length === 0 && (
+            <div className="bg-white p-4 mb-4 rounded-lg shadow-sm text-center">
+              <p className="text-gray-500">
+                Không tìm thấy sản phẩm nào trong danh mục này.
+              </p>
+            </div>
+          )}
 
           <div className="bg-white p-4 mb-4 rounded-lg shadow-sm">
             <div className="flex flex-wrap items-center justify-between">
@@ -104,31 +174,21 @@ const ProductPage = () => {
                 <div className="flex space-x-1">
                   <button
                     className={`px-3 py-1 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-button-loc active:transform active:scale-95 ${
-                      activeSortButton === "newest"
+                      sortBy === "newest"
                         ? "bg-button-loc text-black font-medium"
                         : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                     }`}
-                    onClick={() => setActiveSortButton("newest")}
+                    onClick={() => setSortBy("newest")}
                   >
                     Mới nhất
                   </button>
                   <button
                     className={`px-3 py-1 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-button-loc active:transform active:scale-95 ${
-                      activeSortButton === "popular"
+                      sortBy === "bestseller"
                         ? "bg-button-loc text-black font-medium"
                         : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                     }`}
-                    onClick={() => setActiveSortButton("popular")}
-                  >
-                    Phổ biến
-                  </button>
-                  <button
-                    className={`px-3 py-1 rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-button-loc active:transform active:scale-95 ${
-                      activeSortButton === "bestseller"
-                        ? "bg-button-loc text-black font-medium"
-                        : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                    }`}
-                    onClick={() => setActiveSortButton("bestseller")}
+                    onClick={() => setSortBy("bestseller")}
                   >
                     Bán chạy
                   </button>
@@ -141,9 +201,13 @@ const ProductPage = () => {
                   id="price-filter"
                   className="border border-gray-300 rounded px-2 py-1 text-gray-700 focus:outline-none focus:ring-1 focus:border-blue-500"
                   aria-label="Lọc theo giá"
+                  value={sortBy}
+                  onChange={(e) =>
+                    setSortBy(e.target.value as "price_asc" | "price_desc")
+                  }
                 >
-                  <option>Thấp đến cao</option>
-                  <option>Cao đến thấp</option>
+                  <option value="price_asc">Thấp đến cao</option>
+                  <option value="price_desc">Cao đến thấp</option>
                 </select>
               </div>
             </div>
@@ -151,7 +215,7 @@ const ProductPage = () => {
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
             <div className="md:col-span-3">
-              <div className=" rounded-lg shadow-sm pt-4">
+              <div className="rounded-lg shadow-sm pt-4">
                 <FilterSidebar />
               </div>
             </div>
@@ -176,7 +240,7 @@ const ProductPage = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-                    {products.map((product, index) => (
+                    {sortedProducts.map((product, index) => (
                       <ProductCard key={index} product={product} />
                     ))}
                   </div>

@@ -97,18 +97,31 @@ const AnotherTopBar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Debounced search function
+  // Debounced search function with 900ms delay
   const debouncedSearch = debounce(async (term: string) => {
     if (term.length >= 2) {
       try {
         const { data } = await executeSearch({
           variables: {
             page: 1,
-            limit: 5,
+            limit: 10, // Tăng limit để có nhiều kết quả hơn để lọc
             search: term,
           },
         });
-        setSuggestions(data?.products?.data || []);
+
+        // Lọc các sản phẩm không trùng tên và chỉ lấy 5 kết quả đầu tiên
+        const uniqueProducts =
+          data?.products?.data
+            ?.filter(
+              (product: Product, index: number, self: Product[]) =>
+                index ===
+                self.findIndex(
+                  (p: Product) => p.product_name === product.product_name
+                )
+            )
+            .slice(0, 5) || [];
+
+        setSuggestions(uniqueProducts);
         setShowSuggestions(true);
       } catch (error) {
         console.error("Error searching products:", error);
@@ -117,7 +130,7 @@ const AnotherTopBar = () => {
       setSuggestions([]);
       setShowSuggestions(false);
     }
-  }, 300);
+  }, 900); // Tăng thời gian debounce lên 900ms
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,7 +146,6 @@ const AnotherTopBar = () => {
       router.push(
         `/customer/category/product?search=${encodeURIComponent(searchTerm)}`
       );
-      setShowSuggestions(false);
     }
   };
 
