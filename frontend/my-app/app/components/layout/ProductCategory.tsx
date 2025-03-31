@@ -58,8 +58,12 @@ const ProductCategory = () => {
   };
 
   // Navigate to category products page
-  const navigateToCategory = (categoryId: number) => {
-    router.push(`/customer/category/product?category=${categoryId}`);
+  const navigateToCategory = (categoryId: number, categoryName: string) => {
+    router.push(
+      `/customer/category/product?category=${categoryId}&categoryName=${encodeURIComponent(
+        categoryName
+      )}`
+    );
   };
 
   // Prepare categories data - use data from API or fallback to default categories
@@ -146,16 +150,23 @@ const ProductCategory = () => {
               categories.map((category) => (
                 <div
                   key={category.category_id}
-                  className="flex flex-col items-center mb-4 md:mb-6 md:mx-4 cursor-pointer"
-                  onClick={() => navigateToCategory(category.category_id)}
+                  className="flex flex-col items-center mb-4 md:mb-6 md:mx-4 cursor-pointer hover:opacity-80 transition-opacity p-2 rounded-lg hover:bg-gray-50"
+                  onClick={() =>
+                    navigateToCategory(
+                      category.category_id,
+                      category.category_name
+                    )
+                  }
                 >
-                  <Image
-                    src={categoryIcons[category.category_name] || defaultIcon}
-                    width={40}
-                    height={40}
-                    alt={category.category_name}
-                  />
-                  <p className="text-center text-black">
+                  <div className="relative w-12 h-12 mb-2">
+                    <Image
+                      src={categoryIcons[category.category_name] || defaultIcon}
+                      fill
+                      className="object-contain"
+                      alt={category.category_name}
+                    />
+                  </div>
+                  <p className="text-center text-black font-medium">
                     {category.category_name}
                   </p>
                 </div>
