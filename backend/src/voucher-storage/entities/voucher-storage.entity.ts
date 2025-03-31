@@ -16,14 +16,20 @@ export class VoucherStorage {
   @Field(() => String)
   user_id: string;
 
-  @Field(() => String)
-  voucher_id: string;
+  @Field(() => Int)
+  voucher_id: number;
 
   @Field(() => Voucher_type)
   voucher_type: Voucher_type;
 
   @Field(() => Date, { nullable: true })
   claimed_at: Date;
+
+  @Field(() => Boolean)
+  is_used: boolean;
+
+  @Field(() => Date, { nullable: true })
+  used_at: Date;
 
   @Field(() => Voucher, { nullable: true })
   voucher: Voucher;

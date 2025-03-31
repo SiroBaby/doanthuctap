@@ -455,9 +455,11 @@ enum Cart_status {
 type VoucherStorage {
   voucher_storage_id: Int!
   user_id: String!
-  voucher_id: String!
+  voucher_id: Int!
   voucher_type: Voucher_type!
   claimed_at: DateTime
+  is_used: Boolean!
+  used_at: DateTime
   voucher: Voucher
   shop_voucher: ShopVoucher
 }
@@ -558,6 +560,7 @@ type Query {
   shopVoucher(id: Int!): ShopVoucher!
   vouchers(paginationInput: PaginationInput!): VoucherPagination!
   voucher(id: Int!): Voucher!
+  getLatestValidVouchers(limit: Int!): [Voucher!]!
   dashboardStats: [DashboardStat!]!
   dashboardStat(id: Int!): DashboardStat!
   getSellerDashboardStats(shopId: String!): SellerDashboardStats!
@@ -943,13 +946,19 @@ input UpdateCartProductInput {
 }
 
 input CreateVoucherStorageInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  user_id: String!
+  voucher_id: Int!
+  voucher_type: Voucher_type!
+  claimed_at: DateTime
+  is_used: Boolean! = false
 }
 
 input UpdateVoucherStorageInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  user_id: String
+  voucher_id: Int
+  voucher_type: Voucher_type
+  claimed_at: DateTime
+  is_used: Boolean = false
   id: Int!
 }
 

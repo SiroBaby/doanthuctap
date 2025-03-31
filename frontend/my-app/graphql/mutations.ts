@@ -519,3 +519,31 @@ export const UPDATE_USER_ROLE = gql`
     }
   }
 `;
+
+export const SAVE_SHOP_VOUCHER = gql`
+  mutation SaveShopVoucher($createVoucherStorageInput: CreateVoucherStorageInput!) {
+    createVoucherStorage(createVoucherStorageInput: $createVoucherStorageInput) {
+      voucher_storage_id
+      voucher_id
+      voucher_type
+      claimed_at
+      is_used
+      used_at
+      __typename
+    }
+  }
+`;
+
+export const SAVE_VOUCHER = gql`
+  mutation SaveVoucher($createVoucherStorageInput: CreateVoucherStorageInput!) {
+    createVoucherStorage(createVoucherStorageInput: $createVoucherStorageInput) {
+      voucher_storage_id
+      voucher_id
+      voucher_type
+      claimed_at
+      is_used
+      used_at
+      __typename
+    }
+  }
+`;

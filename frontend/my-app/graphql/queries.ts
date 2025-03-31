@@ -113,6 +113,7 @@ export const GET_SHOP_BY_ID = gql`
             id_user
             shop_name
             link
+            logo
             status
             location_id
             create_at
@@ -257,6 +258,7 @@ export const GET_PRODUCT_BY_ID = gql`
               id_user
               shop_name
               link
+              logo
               status
               location_id
               create_at
@@ -309,6 +311,7 @@ export const GET_PRODUCT_BY_SLUG = gql`
               id_user
               shop_name
               link
+              logo
               status
               location_id
               create_at
@@ -1021,6 +1024,49 @@ export const GET_LATEST_PRODUCTS_BY_SHOP_ID = gql`
           percent_discount
         }
       }
+    }
+  }
+`;
+
+export const GET_USER_VOUCHER_STORAGE = gql`
+  query GetUserVouchersByUserId($userId: String!) {
+    getUserVouchersByUserId(userId: $userId) {
+      voucher_storage_id
+      voucher_id
+      voucher_type
+      claimed_at
+      is_used
+      used_at
+      __typename
+      voucher {
+        id
+        code
+        discount_percent
+        minimum_require_price
+        max_discount_price
+      }
+      shop_voucher {
+        id
+        code
+        discount_percent
+        minimum_require_price
+        max_discount_price
+        shop_id
+      }
+    }
+  }
+`;
+
+// query get latest valid vouchers for homepage
+export const GET_LATEST_VALID_VOUCHERS = gql`
+  query GetLatestValidVouchers($limit: Int!) {
+    getLatestValidVouchers(limit: $limit) {
+      id
+      code
+      discount_percent
+      minimum_require_price
+      max_discount_price
+      valid_to
     }
   }
 `;

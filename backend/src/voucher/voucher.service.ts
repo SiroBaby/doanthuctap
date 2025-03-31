@@ -90,4 +90,24 @@ export class VoucherService {
       throw error;
     }
   }
+
+  async getLatestValidVouchers(limit: number) {
+    const currentDate = new Date();
+    try {
+      return await this.prisma.voucher.findMany({
+        where: {
+          valid_to: {
+            gt: currentDate
+          },
+          delete_at: null
+        },
+        orderBy: {
+          create_at: 'desc'
+        },
+        take: limit
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
 }

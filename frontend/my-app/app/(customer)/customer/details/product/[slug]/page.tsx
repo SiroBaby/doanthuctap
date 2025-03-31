@@ -25,6 +25,7 @@ interface ProductDetailData {
       shop_id: string;
       shop_name: string;
       link: string;
+      logo?: string;
       user?: {
         avatar?: string;
       };
@@ -227,7 +228,7 @@ export default function ProductDetailPage() {
         <div className="flex flex-col md:flex-row justify-between items-center bg-white p-3 rounded">
           <ProductsSeller
             sellerName={product.shop.shop_name}
-            sellerAvatar={product.shop.user?.avatar || "/logo/avt-capy.png"}
+            sellerAvatar={product.shop.logo || "/logo/avt-capy.png"}
             sellerShopUrl={`/customer/shop/${product.shop.shop_id}`}
             shopId={product.shop.shop_id}
           />

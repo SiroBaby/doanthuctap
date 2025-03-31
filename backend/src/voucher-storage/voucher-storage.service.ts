@@ -9,10 +9,73 @@ export class VoucherStorageService {
 
   constructor(private prisma: PrismaService) {}
 
-  create(createVoucherStorageInput: CreateVoucherStorageInput) {
-    return 'This action adds a new voucherStorage';
+  async create(createVoucherStorageInput: CreateVoucherStorageInput) {
+    const { user_id, voucher_id, voucher_type, claimed_at, is_used } = createVoucherStorageInput;
+    
+    // Kiểm tra xem người dùng đã lưu voucher này chưa
+    const existingVoucher = await this.prisma.voucher_storage.findFirst({
+      where: {
+        user_id,
+        voucher_id: Number(voucher_id),
+        voucher_type,
+      },
+    });
+    
+    if (existingVoucher) {
+      throw new Error('Bạn đã lưu mã giảm giá này rồi');
+    }
+  
+    // Kiểm tra voucher có tồn tại và hợp lệ không
+    const currentDate = new Date();
+    if (voucher_type === 'voucher') {
+      const voucher = await this.prisma.voucher.findFirst({
+        where: {
+          id: Number(voucher_id),
+          delete_at: null, // Chưa bị xóa mềm
+          valid_to: { gte: currentDate }, // Chưa hết hạn
+        },
+      });
+      
+      if (!voucher) {
+        throw new Error(`Không tìm thấy mã giảm giá hệ thống hợp lệ có ID ${voucher_id}`);
+      }
+    } else if (voucher_type === 'shop_voucher') {
+      const shopVoucher = await this.prisma.shop_Voucher.findFirst({
+        where: {
+          id: Number(voucher_id),
+          delete_at: null, // Chưa bị xóa mềm
+          valid_to: { gte: currentDate }, // Chưa hết hạn
+        },
+      });
+      
+      if (!shopVoucher) {
+        throw new Error(`Không tìm thấy mã giảm giá shop hợp lệ có ID ${voucher_id}`);
+      }
+    }
+  
+    try {
+      // Tạo bản ghi voucher_storage
+      return await this.prisma.voucher_storage.create({
+        data: {
+          user_id,
+          voucher_id: Number(voucher_id),
+          voucher_type,
+          claimed_at: claimed_at ? new Date(claimed_at) : new Date(),
+          is_used: is_used || false,
+        },
+        include: {
+          voucher: voucher_type === 'voucher',
+          shop_voucher: voucher_type === 'shop_voucher',
+        },
+      });
+    } catch (error) {
+      console.error('Lỗi khi lưu mã giảm giá:', error);
+      if (error.code === 'P2003') { // Lỗi khóa ngoại
+        throw new Error('Mã giảm giá không tồn tại trong hệ thống');
+      }
+      throw new Error(`Không thể lưu mã giảm giá: ${error.message}`);
+    }
   }
-
   getUserVouchersByUserId(userId: string) {
     return this.prisma.voucher_storage.findMany({
       where: {

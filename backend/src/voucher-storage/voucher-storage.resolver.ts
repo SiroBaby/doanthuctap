@@ -4,14 +4,32 @@ import { VoucherStorage } from './entities/voucher-storage.entity';
 import { CreateVoucherStorageInput } from './dto/create-voucher-storage.input';
 import { UpdateVoucherStorageInput } from './dto/update-voucher-storage.input';
 import { RemoveExpiredVouchersResponse } from './entities/remove-expired-vouchers.entity';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 @Resolver(() => VoucherStorage)
 export class VoucherStorageResolver {
   constructor(private readonly voucherStorageService: VoucherStorageService) {}
 
   @Mutation(() => VoucherStorage)
-  createVoucherStorage(@Args('createVoucherStorageInput') createVoucherStorageInput: CreateVoucherStorageInput) {
-    return this.voucherStorageService.create(createVoucherStorageInput);
+  async createVoucherStorage(
+    @Args('createVoucherStorageInput') createVoucherStorageInput: CreateVoucherStorageInput,
+  ) {
+    try {
+      return await this.voucherStorageService.create(createVoucherStorageInput);
+    } catch (error) {
+      if (error.message.includes('đã lưu mã giảm giá này')) {
+        throw new HttpException('Bạn đã lưu mã giảm giá này rồi', HttpStatus.CONFLICT);
+      } else if (error.message.includes('Không tìm thấy mã giảm giá')) {
+        throw new HttpException('Mã giảm giá không tồn tại hoặc không hợp lệ', HttpStatus.NOT_FOUND);
+      } else if (error.message.includes('Mã giảm giá không tồn tại trong hệ thống')) {
+        throw new HttpException('Mã giảm giá không tồn tại trong hệ thống', HttpStatus.BAD_REQUEST);
+      } else {
+        throw new HttpException(
+          `Không thể lưu mã giảm giá: ${error.message}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
   }
 
   @Query(() => [VoucherStorage], { name: 'getUserVouchersByUserId' })

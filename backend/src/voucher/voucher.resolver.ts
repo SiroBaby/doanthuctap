@@ -44,4 +44,9 @@ export class VoucherResolver {
   removeVoucher(@Args('id', { type: () => Int }) id: number) {
     return this.voucherService.remove(id);
   }
+
+  @Query(() => [Voucher], { name: 'getLatestValidVouchers' })
+  async getLatestValidVouchers(@Args('limit', { type: () => Int }) limit: number) {
+    return this.voucherService.getLatestValidVouchers(limit);
+  }
 }

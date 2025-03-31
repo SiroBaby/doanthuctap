@@ -70,6 +70,8 @@ const AnotherTopBar = () => {
 
         if (userData?.user?.role === "seller") {
           router.push("/seller/dashboard");
+        } else if (userData?.user?.role === "admin") {
+          router.push("/admin/dashboard");
         } else {
           router.push("/customer/create-shop");
         }

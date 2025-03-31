@@ -749,7 +749,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         const success = await onPlaceOrder(updatedFormData);
         if (success) {
           toast.success("Đặt hàng thành công!");
-          router.push("/customer/user/purchase");
+          router.push(`/customer/user/purchase/${userId}`);
         } else {
           toast.error("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.");
         }
@@ -1045,22 +1045,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               <div className="font-medium">Thanh toán khi nhận hàng (COD)</div>
               <div className="text-sm text-gray-500">
                 Bạn sẽ thanh toán bằng tiền mặt khi nhận hàng
-              </div>
-            </div>
-          </label>
-
-          <label key="payment-banking" className="flex items-center p-3 border rounded cursor-pointer hover:bg-gray-50">
-            <input
-              type="radio"
-              name="payment"
-              checked={formData.paymentMethod === "banking"}
-              onChange={() => handlePaymentMethodChange("banking")}
-              className="h-5 w-5 text-custom-red focus:ring-custom-red"
-            />
-            <div className="ml-3">
-              <div className="font-medium">Chuyển khoản ngân hàng</div>
-              <div className="text-sm text-gray-500">
-                Thông tin tài khoản sẽ được gửi sau khi đặt hàng
               </div>
             </div>
           </label>

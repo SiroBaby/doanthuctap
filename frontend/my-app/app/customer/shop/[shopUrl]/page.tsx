@@ -20,10 +20,12 @@ import {
   Rating, 
   CircularProgress, 
   Avatar, 
-  Stack
+  Stack,
+  Snackbar,
+  Alert
 } from '@mui/material';
-import toast from 'react-hot-toast';
-import { GET_SHOP_BY_ID, GET_PRODUCTS_BY_SHOP_ID, GET_PRODUCT_REVIEWS } from '@/graphql/queries';
+import { GET_SHOP_BY_ID, GET_PRODUCTS_BY_SHOP_ID, GET_PRODUCT_REVIEWS, GET_USER_VOUCHER_STORAGE } from '@/graphql/queries';
+import { SAVE_SHOP_VOUCHER } from '@/graphql/mutations';
 import { useSocket } from '@/contexts/SocketContext';
 import { useChat } from '@/contexts/ChatContext';
 import { gql, useMutation } from '@apollo/client';
@@ -36,6 +38,7 @@ import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { formatDistanceToNow } from 'date-fns';
 import vi from 'date-fns/locale/vi';
+import Image from 'next/image';
 
 interface ShopAddress {
   address_id: number;
@@ -57,6 +60,16 @@ interface Product {
     base_price: number;
     percent_discount: number;
   }[];
+}
+
+interface ShopVoucher {
+  id: number;
+  code: string;
+  discount_percent: number;
+  minimum_require_price: number;
+  max_discount_price: number;
+  valid_from: string;
+  valid_to: string;
 }
 
 interface ProductsData {
@@ -84,6 +97,14 @@ interface CreateChatVariables {
   };
 }
 
+interface VoucherStorage {
+  voucher_storage_id: number;
+  voucher_id: number;
+  voucher_type: string;
+  claimed_at: string;
+  is_used: boolean;
+}
+
 const CREATE_CHAT = gql`
   mutation CreateChat($createChatInput: CreateChatDto!) {
     createChat(createChatInput: $createChatInput) {
@@ -109,6 +130,20 @@ export default function ShopDetailPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // State for saved vouchers
+  const [savedVouchers, setSavedVouchers] = useState<number[]>([]);
+  
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
+
   // Queries
   const { data: shopData, loading: shopLoading } = useQuery(GET_SHOP_BY_ID, {
     variables: { id: shopUrl },
@@ -128,6 +163,47 @@ export default function ShopDetailPage() {
     }
   );
   
+  // Query to get user's saved vouchers
+  const { data: userVoucherData } = useQuery(GET_USER_VOUCHER_STORAGE, {
+    variables: { userId: user?.id },
+    skip: !isSignedIn || !user,
+  });
+
+  // Handle snackbar close
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  // Show snackbar message
+  const showSnackbar = (message: string, severity: 'success' | 'error' | 'info' | 'warning') => {
+    setSnackbar({
+      open: true,
+      message,
+      severity,
+    });
+  };
+
+  // Save voucher mutation
+  const [saveVoucher, { loading: savingVoucher }] = useMutation(SAVE_SHOP_VOUCHER, {
+    onCompleted: (data) => {
+      if (data?.createVoucherStorage) {
+        setSavedVouchers(prev => [...prev, data.createVoucherStorage.voucher_id]);
+        showSnackbar('Đã lưu mã giảm giá thành công!', 'success');
+      }
+    },
+    onError: (error) => {
+      let errorMessage = "Không thể lưu mã giảm giá. Vui lòng thử lại.";
+      
+      if (error.message.includes("đã lưu mã giảm giá này") || 
+          error.message.includes("You have already saved this voucher") ||
+          error.message.includes("Bạn đã lưu mã giảm giá này")) {
+        errorMessage = "Bạn đã lưu mã giảm giá này rồi.";
+      }
+      
+      showSnackbar(errorMessage, 'error');
+    },
+  });
+
   // Manually calculate shop rating from products (fallback method)
   const calculateShopRating = useCallback(async () => {
     if (!productsData?.getProductsByShopId?.data?.length) return;
@@ -179,6 +255,16 @@ export default function ShopDetailPage() {
     }
   }, [shopData?.shop?.shop_id, productsData, calculateShopRating]);
 
+  // Initialize saved vouchers from user data
+  useEffect(() => {
+    if (userVoucherData?.getUserVoucherStorage) {
+      const savedVoucherIds = userVoucherData.getUserVoucherStorage
+        .filter((storage: VoucherStorage) => storage.voucher_type === 'shop_voucher')
+        .map((storage: VoucherStorage) => storage.voucher_id);
+      setSavedVouchers(savedVoucherIds);
+    }
+  }, [userVoucherData]);
+
   // Chat mutation
   const [createChat] = useMutation<CreateChatResponse, CreateChatVariables>(CREATE_CHAT, {
     onCompleted: (data) => {
@@ -196,10 +282,7 @@ export default function ShopDetailPage() {
         errorMessage = "You cannot chat with your own shop.";
       }
       
-      toast.error(errorMessage, {
-        duration: 3000,
-        position: 'bottom-center',
-      });
+      showSnackbar(errorMessage, 'error');
     },
   });
 
@@ -228,19 +311,13 @@ export default function ShopDetailPage() {
   // Chat with shop
   const handleChatClick = async () => {
     if (!isSignedIn || !user) {
-      toast.error("Vui lòng đăng nhập để trò chuyện với người bán", {
-        duration: 3000,
-        position: 'top-center',
-      });
+      showSnackbar("Vui lòng đăng nhập để trò chuyện với người bán", 'error');
       router.push("/sign-in");
       return;
     }
     
     if (!isConnected) {
-      toast.error("Dịch vụ chat hiện đang không khả dụng. Vui lòng thử lại sau.", {
-        duration: 3000,
-        position: 'bottom-center',
-      });
+      showSnackbar("Dịch vụ chat hiện đang không khả dụng. Vui lòng thử lại sau.", 'error');
       return;
     }
 
@@ -256,10 +333,54 @@ export default function ShopDetailPage() {
       });
     } catch {
       setIsLoading(false);
-      toast.error("Kết nối thất bại. Vui lòng thử lại.", {
-        duration: 3000,
-        position: 'bottom-center',
+      showSnackbar("Kết nối thất bại. Vui lòng thử lại.", 'error');
+    }
+  };
+
+  const handleSaveVoucher = async (voucherId: number) => {
+    if (!isSignedIn || !user) {
+      showSnackbar("Vui lòng đăng nhập để lưu mã giảm giá", 'error');
+      router.push("/sign-in");
+      return;
+    }
+
+    try {
+      // Kiểm tra xem voucher đã được lưu trong state local chưa
+      if (savedVouchers.includes(voucherId)) {
+        showSnackbar("Bạn đã lưu mã giảm giá này rồi", 'error');
+        return;
+      }
+
+      // Lưu voucher
+      await saveVoucher({
+        variables: {
+          createVoucherStorageInput: {
+            user_id: user.id,
+            voucher_id: voucherId,
+            voucher_type: 'shop_voucher',
+            claimed_at: new Date().toISOString(),
+            is_used: false,
+          },
+        },
       });
+
+      // Không cập nhật state ở đây - việc này sẽ được thực hiện trong onCompleted nếu thành công
+    } catch (error: Error | { message: string } | unknown) {
+      console.error('Lỗi khi lưu mã giảm giá:', error);
+      
+      // Chuyển đổi lỗi thành chuỗi để dễ kiểm tra
+      const errorMessage = error instanceof Error ? error.message : 
+                          typeof error === 'object' && error !== null && 'message' in error 
+                          ? String(error.message) : 'Lỗi không xác định';
+      
+      // Hiển thị thông báo lỗi cụ thể dựa trên loại lỗi
+      if (errorMessage.includes("Không tìm thấy mã giảm giá")) {
+        showSnackbar("Mã giảm giá không tồn tại hoặc đã hết hạn", 'error');
+      } else if (errorMessage.includes("đã lưu mã giảm giá này") || errorMessage.includes("CONFLICT")) {
+        showSnackbar("Bạn đã lưu mã giảm giá này rồi", 'error');
+      } else {
+        showSnackbar("Không thể lưu mã giảm giá. Vui lòng thử lại sau.", 'error');
+      }
     }
   };
 
@@ -387,6 +508,7 @@ export default function ShopDetailPage() {
         <Tabs value={activeTab} onChange={handleTabChange}>
           <Tab label="Sản phẩm" />
           <Tab label="Đánh giá" />
+          <Tab label="Mã giảm giá" />
           <Tab label="Thông tin shop" />
         </Tabs>
       </Box>
@@ -495,8 +617,84 @@ export default function ShopDetailPage() {
           </Card>
         )}
 
-        {/* Tab 3: Thông tin shop */}
+        {/* Tab 3: Mã giảm giá */}
         {activeTab === 2 && (
+          <Card>
+            <CardContent>
+              {shop.shop_vouchers && shop.shop_vouchers.length > 0 ? (
+                <>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {shop.shop_vouchers
+                      .filter((voucher: ShopVoucher) => new Date(voucher.valid_to) > new Date())
+                      .slice((page - 1) * 5, page * 5)
+                      .map((voucher: ShopVoucher) => (
+                        <div key={voucher.id} className="relative bg-voucher rounded-lg overflow-hidden">
+                          <div className="flex flex-col sm:flex-row items-center p-2 sm:p-4">
+                            <div className="flex-shrink-0 mb-2 sm:mb-0 sm:mr-4">
+                              <Image
+                                src="/icon/voucher-w.png"
+                                alt="Voucher Ticket"
+                                width={128}
+                                height={96}
+                                className="w-16 h-auto sm:w-20 md:w-24 lg:w-32"
+                              />
+                            </div>
+
+                            <div className="flex-grow text-center sm:text-left mb-2 sm:mb-0">
+                              <h3 className="font-bold text-base sm:text-lg">
+                                GIẢM {(voucher.discount_percent * 100).toFixed(0)}%
+                              </h3>
+                              <p className="font-medium text-sm sm:text-base">
+                                ĐƠN TỐI THIỂU {new Intl.NumberFormat('vi-VN').format(voucher.minimum_require_price)}đ
+                              </p>
+                              <p className="text-xs sm:text-sm">
+                                Thời hạn đến {new Date(voucher.valid_to).toLocaleDateString('vi-VN')}
+                              </p>
+                            </div>
+
+                            <div className="flex-shrink-0">
+                              <button 
+                                className={`${
+                                  savedVouchers.includes(voucher.id)
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-button hover:bg-violet-600'
+                                } text-white px-6 sm:px-8 md:px-11 py-1 sm:py-2 rounded border-collapse border border-black text-sm sm:text-base`}
+                                onClick={() => handleSaveVoucher(voucher.id)}
+                                disabled={savedVouchers.includes(voucher.id) || savingVoucher}
+                              >
+                                {savedVouchers.includes(voucher.id) ? 'ĐÃ LƯU' : 'LƯU'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                    ))}
+                  </Box>
+
+                  {/* Pagination */}
+                  {Math.ceil(shop.shop_vouchers.filter((voucher: ShopVoucher) => new Date(voucher.valid_to) > new Date()).length / 5) > 1 && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                      <Pagination
+                        count={Math.ceil(shop.shop_vouchers.filter((voucher: ShopVoucher) => new Date(voucher.valid_to) > new Date()).length / 5)}
+                        page={page}
+                        onChange={handlePageChange}
+                        color="primary"
+                      />
+                    </Box>
+                  )}
+                </>
+              ) : (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    Shop chưa có mã giảm giá nào.
+                  </Typography>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Tab 4: Thông tin shop */}
+        {activeTab === 3 && (
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -571,6 +769,22 @@ export default function ShopDetailPage() {
           </Card>
         )}
       </Box>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 } 
