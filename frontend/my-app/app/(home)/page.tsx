@@ -25,6 +25,8 @@ interface Product {
     base_price: number;
     percent_discount: number;
   }>;
+  create_at?: string;
+  total_sales?: number;
 }
 
 interface ProductsResponse {
@@ -37,25 +39,46 @@ interface ProductsResponse {
 
 const HomePage: React.FC = () => {
   const router = useRouter();
-  const { loading, error, data } = useQuery<ProductsResponse>(
-    GET_PRODUCTS_FOR_HOMEPAGE,
-    {
-      variables: {
-        page: 1,
-        limit: 16,
-        search: "",
-      },
-      onError: (error) => {
-        console.error("Error fetching products:", error);
-      },
-    }
-  );
 
-  const products = data?.products?.data || [];
-  //const sampleLiveStream = Array(4).fill(null);
+  // Query cho sản phẩm mới nhất
+  const {
+    loading: loadingNewest,
+    error: errorNewest,
+    data: dataNewest,
+  } = useQuery<ProductsResponse>(GET_PRODUCTS_FOR_HOMEPAGE, {
+    variables: {
+      page: 1,
+      limit: 12,
+      search: "",
+      sort: "newest",
+    },
+    onError: (error) => {
+      console.error("Error fetching newest products:", error);
+    },
+  });
+
+  // Query cho sản phẩm bán chạy
+  const {
+    loading: loadingBestSeller,
+    error: errorBestSeller,
+    data: dataBestSeller,
+  } = useQuery<ProductsResponse>(GET_PRODUCTS_FOR_HOMEPAGE, {
+    variables: {
+      page: 1,
+      limit: 12,
+      search: "",
+      sort: "bestseller",
+    },
+    onError: (error) => {
+      console.error("Error fetching bestseller products:", error);
+    },
+  });
+
+  const newestProducts = dataNewest?.products?.data || [];
+  const bestSellerProducts = dataBestSeller?.products?.data || [];
 
   // Loading state with skeleton
-  if (loading) {
+  if (loadingNewest || loadingBestSeller) {
     return (
       <div className="w-full">
         <AnotherTopBar />
@@ -213,7 +236,7 @@ const HomePage: React.FC = () => {
                 src="/icon/check-mark.png"
                 width={30}
                 height={30}
-                alt="Cart"
+                alt="New"
                 className="mr-2"
               />
               <span className="text-lg md:text-xl lg:text-2xl text-white font-semibold">
@@ -222,9 +245,9 @@ const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Grid sản phẩm */}
+          {/* Grid sản phẩm mới nhất */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-            {error ? (
+            {errorNewest ? (
               <div className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-4 text-center py-4">
                 <div className="text-red-500 mb-4">
                   <svg
@@ -242,51 +265,30 @@ const HomePage: React.FC = () => {
                   </svg>
                 </div>
                 <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                  Không thể tải sản phẩm
+                  Không thể tải sản phẩm mới nhất
                 </h2>
                 <p className="text-gray-600 mb-4">
-                  {error.message || "Đã xảy ra lỗi khi tải dữ liệu sản phẩm"}
+                  {errorNewest.message ||
+                    "Đã xảy ra lỗi khi tải dữ liệu sản phẩm"}
                 </p>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                >
-                  Thử lại
-                </button>
               </div>
             ) : (
-              products.map((product) => (
+              newestProducts.map((product) => (
                 <ProductCard key={product.product_id} product={product} />
               ))
             )}
           </div>
 
-          {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn á */}
-          <div className="flex justify-center mb-2">
-            <Link
-              href="/customer/category/product"
-              className="rounded-full"
-              aria-label="button"
-            >
-              <Image
-                src="/icon/button-bar.png"
-                width={40}
-                height={40}
-                alt="button"
-              />
-            </Link>
-          </div>
-
           <div className="border-t border-black my-4"></div>
 
-          {/* SẢN PHẨM Bán chạy */}
+          {/* SẢN PHẨM BÁN CHẠY */}
           <div className="flex items-center mb-4">
             <div className="bg-green-300 px-3 py-1 rounded flex items-center">
               <Image
-                src="/icon/star1.png"
-                width={24}
-                height={24}
-                alt="Cart"
+                src="/icon/fire.png"
+                width={30}
+                height={30}
+                alt="Best Seller"
                 className="mr-2"
               />
               <span className="text-lg md:text-xl lg:text-2xl text-white font-semibold">
@@ -295,7 +297,41 @@ const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn á */}
+          {/* Grid sản phẩm bán chạy */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+            {errorBestSeller ? (
+              <div className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-4 text-center py-4">
+                <div className="text-red-500 mb-4">
+                  <svg
+                    className="w-16 h-16 mx-auto"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                  Không thể tải sản phẩm bán chạy
+                </h2>
+                <p className="text-gray-600 mb-4">
+                  {errorBestSeller.message ||
+                    "Đã xảy ra lỗi khi tải dữ liệu sản phẩm"}
+                </p>
+              </div>
+            ) : (
+              bestSellerProducts.map((product) => (
+                <ProductCard key={product.product_id} product={product} />
+              ))
+            )}
+          </div>
+
+          {/* Nút chuyển trang khi muốn xem nhiều sản phẩm hơn */}
           <div className="flex justify-center mb-2">
             <Link
               href="/customer/category/product"
@@ -311,10 +347,8 @@ const HomePage: React.FC = () => {
             </Link>
           </div>
         </div>
-
         <div className="col-span-1"></div>
       </div>
-
       <Footer />
     </div>
   );
