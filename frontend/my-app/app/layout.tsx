@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from 'next/font/google';
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Providers } from "./providers";
@@ -7,8 +7,9 @@ import FloatingChatButton from "@/app/components/chat/FloatingChatButton";
 import FloatingChatBotButton from "@/app/components/chat/FloatingChatBotButton";
 import { ChatProvider } from "@/contexts/ChatContext";
 import { SocketProvider } from "@/contexts/SocketContext";
+import { UserProvider } from "@/contexts/UserContext";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -27,7 +28,7 @@ export default function RootLayout({
           <Providers>
             <SocketProvider>
               <ChatProvider>
-                {children}
+                <UserProvider>{children}</UserProvider>
                 <FloatingChatBotButton />
                 <FloatingChatButton />
               </ChatProvider>
