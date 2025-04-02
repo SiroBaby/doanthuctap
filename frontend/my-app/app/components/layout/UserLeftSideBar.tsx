@@ -27,6 +27,8 @@ const UserLeftSideBar = ({
       setSelectedItem("address");
     } else if (pathname.includes("/customer/user/purchase")) {
       setSelectedItem("order");
+    } else if (pathname.includes("/customer/user/voucher")) {
+      setSelectedItem("voucher");
     }
   }, [pathname, userId]);
 
@@ -93,6 +95,21 @@ const UserLeftSideBar = ({
               className="h-auto w-6 text-custom-red"
             />
             <span className="ml-2 text-xl font-bold">Đơn hàng</span>
+          </li>
+
+          <li
+            className={`flex p-4 text-xl font-semibold pl-9 items-center cursor-pointer border-r-8 ${
+              selectedItem === "voucher"
+                ? "border-custom-red bg-selected-corlor dark:bg-dark-selected"
+                : "border-transparent"
+            }`}
+            onClick={() => handleItemClick("voucher", `/customer/user/voucher`)} // Corrected line
+          >
+            <SvgIcon
+              component={ShoppingBagIcon}
+              className="h-auto w-6 text-custom-red"
+            />
+            <span className="ml-2 text-xl font-bold">Mã giảm giá</span>
           </li>
         </ul>
       </div>

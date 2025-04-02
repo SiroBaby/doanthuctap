@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import OrderDetail from "@/app/components/purchase/OrderDetail";
-import { useQuery } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import { GET_INVOICE_DETAIL } from '@/graphql/queries';
+import { UPDATE_INVOICE_STATUS } from '@/graphql/mutations';
 import {
   Box,
   Typography,
@@ -14,6 +15,10 @@ import {
   Chip,
   Divider,
   Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
@@ -77,10 +82,37 @@ const OrderDetailPage = () => {
   const params = useParams();
   const router = useRouter();
   const orderId = params.orderId as string;
+  const [openCancelDialog, setOpenCancelDialog] = useState(false);
 
-  const { loading, error, data } = useQuery<InvoiceDetailResponse>(GET_INVOICE_DETAIL, {
+  const { loading, error, data, refetch } = useQuery<InvoiceDetailResponse>(GET_INVOICE_DETAIL, {
     variables: { invoice_id: orderId },
   });
+
+  const [updateInvoiceStatus] = useMutation(UPDATE_INVOICE_STATUS, {
+    onCompleted: () => {
+      toast.success('Đã hủy đơn hàng thành công');
+      refetch();
+      setOpenCancelDialog(false);
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Có lỗi xảy ra khi hủy đơn hàng');
+    },
+  });
+
+  const handleCancelOrder = async () => {
+    try {
+      await updateInvoiceStatus({
+        variables: {
+          updateInvoiceStatusInput: {
+            invoice_id: orderId,
+            order_status: 'CANCELED'
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error canceling order:', error);
+    }
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -113,6 +145,7 @@ const OrderDetailPage = () => {
   if (!data) return <div>Không tìm thấy đơn hàng</div>;
 
   const order = data.getInvoiceDetail;
+  const canCancel = order.order_status === 'WAITING_FOR_DELIVERY';
 
   return (
     <Box className="container mx-auto px-4 py-8">
@@ -120,11 +153,22 @@ const OrderDetailPage = () => {
         <Typography variant="h4" component="h1">
           Chi tiết đơn hàng #{order.invoice_id}
         </Typography>
-        <Chip
-          label={ORDER_STATUS_MAP[order.order_status]}
-          color={ORDER_STATUS_COLOR[order.order_status]}
-          size="medium"
-        />
+        <Box className="flex items-center gap-4">
+          {canCancel && (
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={() => setOpenCancelDialog(true)}
+            >
+              Hủy
+            </Button>
+          )}
+          <Chip
+            label={ORDER_STATUS_MAP[order.order_status]}
+            color={ORDER_STATUS_COLOR[order.order_status]}
+            size="medium"
+          />
+        </Box>
       </Box>
 
       <Grid container spacing={3}>
@@ -277,6 +321,26 @@ const OrderDetailPage = () => {
           </Button>
         </Grid>
       </Grid>
+
+      <Dialog
+        open={openCancelDialog}
+        onClose={() => setOpenCancelDialog(false)}
+      >
+        <DialogTitle>Xác nhận hủy đơn hàng</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Bạn có chắc chắn muốn hủy đơn hàng này? Hành động này không thể hoàn tác.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCancelDialog(false)}>
+            Hủy
+          </Button>
+          <Button onClick={handleCancelOrder} color="error" variant="contained">
+            Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
