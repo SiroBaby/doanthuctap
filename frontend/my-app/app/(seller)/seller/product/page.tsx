@@ -18,14 +18,21 @@ import {
     Alert,
     Button,
     Snackbar,
-    Chip
+    Chip,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle
 } from '@mui/material';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import {GET_PRODUCTS_BY_SHOP_ID, GET_SHOP_ID_BY_USER_ID} from '@/graphql/queries';
+import { REMOVE_PRODUCT } from '@/graphql/mutations';
 import { useAuth } from "@clerk/nextjs";
 import SearchBar from '@/app/components/common/SearchBar';
 
@@ -53,6 +60,10 @@ const SellerProductPage = () => {
     const router = useRouter();
     const { userId } = useAuth();
 
+    // State for delete confirmation dialog
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [productToDelete, setProductToDelete] = useState<string | null>(null);
+
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
@@ -79,7 +90,12 @@ const SellerProductPage = () => {
         skip: !shopId // Bỏ qua query nếu chưa có shopId
     });
 
-    const products = useMemo(() => data?.getProductsByShopId.data || [], [data]);
+    const products = useMemo(() => {
+        const allProducts = data?.getProductsByShopId.data || [];
+        // Lọc ra các sản phẩm không bị xóa (status khác 'delete')
+        return allProducts.filter(product => product.status !== 'delete');
+    }, [data]);
+    
     const totalPages = useMemo(() => data?.getProductsByShopId.totalPage || 0, [data]);
 
     const handleViewProduct = useCallback((id: string) => {
@@ -128,6 +144,43 @@ const SellerProductPage = () => {
             />
         );
     };
+
+    // Add delete product mutation
+    const [removeProduct, { loading: deleteLoading }] = useMutation(REMOVE_PRODUCT, {
+        onCompleted: () => {
+            setSnackbarMessage('Xóa sản phẩm thành công!');
+            setSnackbarSeverity('success');
+            setSnackbarOpen(true);
+            refetch(); // Refresh product list
+        },
+        onError: (error) => {
+            setSnackbarMessage(`Lỗi khi xóa sản phẩm: ${error.message}`);
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+        }
+    });
+
+    const handleDeleteProduct = useCallback((id: string) => {
+        setProductToDelete(id);
+        setDeleteDialogOpen(true);
+    }, []);
+
+    const handleConfirmDelete = useCallback(() => {
+        if (productToDelete) {
+            removeProduct({
+                variables: {
+                    productId: parseInt(productToDelete)
+                }
+            });
+            setDeleteDialogOpen(false);
+            setProductToDelete(null);
+        }
+    }, [productToDelete, removeProduct]);
+
+    const handleCancelDelete = useCallback(() => {
+        setDeleteDialogOpen(false);
+        setProductToDelete(null);
+    }, []);
 
     if (isUserLoading || loading) {
         return (
@@ -258,6 +311,15 @@ const SellerProductPage = () => {
                                                         >
                                                             <EditIcon className="!w-7 !h-6" />
                                                         </IconButton>
+                                                        <IconButton
+                                                            aria-label="delete"
+                                                            title="Xóa sản phẩm"
+                                                            onClick={() => handleDeleteProduct(product.product_id)}
+                                                            className="!text-red-500 hover:!bg-red-50 dark:hover:!bg-red-900"
+                                                            size="small"
+                                                        >
+                                                            <DeleteIcon className="!w-7 !h-6" />
+                                                        </IconButton>
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -280,6 +342,36 @@ const SellerProductPage = () => {
                     </TableContainer>
                 </CardContent>
             </Card>
+
+            {/* Dialog for confirming product deletion */}
+            <Dialog
+                open={deleteDialogOpen}
+                onClose={handleCancelDelete}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">
+                    {"Xác nhận xóa sản phẩm"}
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCancelDelete} color="primary">
+                        Hủy bỏ
+                    </Button>
+                    <Button 
+                        onClick={handleConfirmDelete} 
+                        color="error" 
+                        autoFocus
+                        disabled={deleteLoading}
+                    >
+                        {deleteLoading ? 'Đang xóa...' : 'Xác nhận xóa'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             <Snackbar
                 open={snackbarOpen}

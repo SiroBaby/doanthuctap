@@ -45,4 +45,13 @@ export class Product {
 
   @Field(() => [ProductVariation])
   product_variations: ProductVariation[];
+
+  @Field(() => Date, { nullable: true })
+  create_at?: Date;
+  
+  @Field(() => Date, { nullable: true })
+  update_at?: Date;
+  
+  @Field(() => Date, { nullable: true })
+  delete_at?: Date;
 }

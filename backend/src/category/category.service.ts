@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { CreateCategoryInput } from './dto/create-category.input';
 import { UpdateCategoryInput } from './dto/update-category.input';
 import { PrismaService } from 'src/prisma.service';
@@ -33,8 +33,9 @@ export class CategoryService {
           OR: [
             { category_name: { contains: search } },
           ],
+          delete_at: null,
         }
-        : {};
+        : { delete_at: null };
 
       const [data, totalCount] = await Promise.all([
         this.prisma.category.findMany({
@@ -45,7 +46,7 @@ export class CategoryService {
             create_at: 'desc',
           },
         }),
-        this.prisma.category.count()
+        this.prisma.category.count({ where: whereCondition })
       ]);
 
       return {
@@ -91,17 +92,47 @@ export class CategoryService {
   }
 
   async remove(id: number) {
-    console.log(id);
     try {
-      const category = await this.prisma.category.delete({
-        where: { category_id: id },
+      const productsCount = await this.prisma.product.count({
+        where: {
+          category_id: id,
+          delete_at: null
+        }
       });
-      if (!category) {
-        throw new NotFoundException('Category not found');
+
+      const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').toDate();
+
+      if (productsCount > 0) {
+        const result = await this.prisma.category.update({
+          where: { category_id: id },
+          data: { 
+            // @ts-ignore - Field exists in database but not in generated types
+            delete_at: vietnamTime
+          }
+        });
+        
+        if (!result) {
+          throw new NotFoundException('Category not found');
+        }
+        
+        return result;
+      } else {
+        const category = await this.prisma.category.delete({
+          where: { category_id: id },
+        });
+        
+        if (!category) {
+          throw new NotFoundException('Category not found');
+        }
+        
+        return category;
       }
-      return category;
     } catch (error) {
-      throw new NotFoundException('Error deleting category. Category not found');
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      
+      throw new ConflictException(`Không thể xóa danh mục. Lỗi: ${error.message}`);
     }
   }
 }

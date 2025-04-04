@@ -43,8 +43,11 @@ export class ProductService {
                 : parseInt(search),
             },
           ],
+          delete_at: null,
         }
-      : {};
+      : { 
+          delete_at: null
+        };
 
     try {
       const skip = (page - 1) * limit;
@@ -67,7 +70,7 @@ export class ProductService {
             },
           },
         }),
-        this.prisma.product.count(),
+        this.prisma.product.count({ where: wherecondition }),
       ]);
       return {
         data,
@@ -87,6 +90,7 @@ export class ProductService {
 
     const whereCondition = {
       shop_id: shopId,
+      delete_at: null,
       ...(search
         ? {
             OR: [
@@ -171,6 +175,7 @@ export class ProductService {
             contains: searchName,
           },
           status: 'active',
+          delete_at: null,
         },
         include: {
           shop: {
@@ -245,8 +250,12 @@ export class ProductService {
   async remove(id: number) {
     try {
       await this.findOne(id); // Check if exists
-      return await this.prisma.product.delete({
+      return await this.prisma.product.update({
         where: { product_id: id },
+        data: { 
+          delete_at: new Date(),
+          status: 'inactive' // Đổi status thành inactive để hiển thị là đã bị vô hiệu hóa
+        },
       });
     } catch (error) {
       throw error;

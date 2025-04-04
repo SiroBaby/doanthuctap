@@ -52,11 +52,12 @@ export class DashboardStatsService {
 
   async getSellerDashboardStats(shopId: string): Promise<SellerDashboardStats> {
     try {
-      // 1. Tính tổng doanh thu
+      // 1. Tính tổng doanh thu - chỉ từ đơn hàng đã giao DELIVERED
       const revenueData = await this.prisma.$queryRaw<RevenueData[]>`
         SELECT SUM(i.total_amount) as totalRevenue
         FROM Invoice i
         WHERE i.shop_id = ${shopId}
+        AND i.order_status = 'DELIVERED'
       `;
       const totalRevenue = parseFloat(revenueData[0]?.totalRevenue || '0');
 
@@ -84,13 +85,14 @@ export class DashboardStatsService {
       `;
       const averageRating = parseFloat(ratingData[0]?.averageRating || '0');
 
-      // 5. Doanh thu theo tháng (6 tháng gần nhất)
+      // 5. Doanh thu theo tháng (6 tháng gần nhất) - chỉ từ đơn hàng đã giao
       const monthlyRevenueData = await this.prisma.$queryRaw<MonthlyRevenueData[]>`
       SELECT 
         DATE_FORMAT(i.create_at, '%m/%Y') as month,
         SUM(i.total_amount) as revenue
       FROM Invoice i
       WHERE i.shop_id = ${shopId}
+      AND i.order_status = 'DELIVERED'
       AND i.create_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH)
       GROUP BY DATE_FORMAT(i.create_at, '%m/%Y')
       ORDER BY DATE_FORMAT(i.create_at, '%m/%Y') ASC

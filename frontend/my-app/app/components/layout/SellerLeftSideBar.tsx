@@ -10,11 +10,12 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import StoreIcon from '@mui/icons-material/Store';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import { SvgIcon } from "@mui/material";
+import { useRouter } from "next/navigation";
 
 const SellerLeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: string) => void; onClose: () => void; }) => {
   const [selectedItem, setSelectedItem] = useState("");
   const pathname = usePathname(); // Lấy đường dẫn hiện tại
-
+  const router = useRouter();
   // Đồng bộ selectedItem với URL hiện tại khi component được mount
   useEffect(() => {
     if (pathname.includes("/dashboard")) {
@@ -43,7 +44,7 @@ const SellerLeftSideBar = ({ onItemClick, onClose }: { onItemClick: (path: strin
   return (
     <div className="h-screen w-60 left-0 top-0 sticky flex flex-col bg-white shadow-xl dark:bg-dark-sidebar transition-colors duration-200">
       <div className="h-32 flex justify-center">
-        <Image src="/logo/logo.png" width={120} height={0} alt="logo" />
+        <Image src="/logo/logodemo.png" width={120} height={0} alt="logo" onClick={() => router.push('/')} className="cursor-pointer" />
       </div>
       <div className="left-0 dark:text-dark-text">
         <ul>

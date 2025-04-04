@@ -94,6 +94,7 @@ model Category {
   category_name   String?   @db.VarChar(255)
   create_at       DateTime?
   update_at       DateTime?
+  delete_at       DateTime?
   
   products        Product[]
 }

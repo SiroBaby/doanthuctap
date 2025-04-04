@@ -547,3 +547,49 @@ export const SAVE_VOUCHER = gql`
     }
   }
 `;
+
+export const UPDATE_VOUCHER = gql`
+  mutation UpdateVoucher($updateVoucherInput: UpdateVoucherInput!) {
+    updateVoucher(updateVoucherInput: $updateVoucherInput) {
+      id
+      code
+      discount_percent
+      minimum_require_price
+      max_discount_price
+      quantity
+      max_use_per_user
+      valid_from
+      valid_to
+      create_at
+      delete_at
+    }
+  }
+`;
+
+export const ADD_VOUCHER = gql`
+  mutation CreateVoucher($createVoucherInput: CreateVoucherInput!) {
+    createVoucher(createVoucherInput: $createVoucherInput) {
+      id
+      code
+      discount_percent
+      minimum_require_price
+      max_discount_price
+      quantity
+      max_use_per_user
+      valid_from
+      valid_to
+      create_at
+      delete_at
+    }
+  }
+`;
+
+export const REMOVE_PRODUCT = gql`
+  mutation RemoveProduct($productId: Int!) {
+    removeProduct(id: $productId) {
+      product_id
+      product_name
+      status
+    }
+  }
+`;

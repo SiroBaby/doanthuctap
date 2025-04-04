@@ -13,4 +13,7 @@ export class Category {
 
   @Field(() => Date, { nullable: true })
   update_at: Date;
+
+  @Field(() => Date, { nullable: true })
+  delete_at: Date;
 }

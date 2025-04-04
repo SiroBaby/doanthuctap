@@ -68,6 +68,7 @@ type Category {
   category_name: String!
   create_at: DateTime
   update_at: DateTime
+  delete_at: DateTime
 }
 
 type CategoryPagination {
@@ -179,6 +180,9 @@ type Product {
   product_detail: ProductDetail!
   product_images: [ProductImage!]
   product_variations: [ProductVariation!]!
+  create_at: DateTime
+  update_at: DateTime
+  delete_at: DateTime
 }
 
 """Trạng thái của sản phẩm"""

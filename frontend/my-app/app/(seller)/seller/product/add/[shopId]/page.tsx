@@ -214,7 +214,7 @@ const AddProductPage = ({ params }: { params: { shopId: string } }) => {
             setSnackbarMessage('Tạo sản phẩm thành công!');
             setSnackbarSeverity('success');
             setSnackbarOpen(true);
-            setTimeout(() => router.push('/seller/products'), 1000);
+            setTimeout(() => router.push('/seller/product'), 1000);
         } catch (error: any) {
             setSnackbarMessage(`Lỗi khi tạo sản phẩm: ${error.message}`);
             setSnackbarSeverity('error');
