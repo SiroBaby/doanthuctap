@@ -10,10 +10,19 @@ async function bootstrap() {
 
   const corsOptions: CorsOptions = {
     origin: 'https://vaashop.vercel.app',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders:
-      'Content-Type,Authorization,Apollo-Require-Preflight,x-apollo-operation-name',
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Apollo-Require-Preflight',
+      'x-apollo-operation-name',
+      'Cookie',
+      'Set-Cookie',
+    ],
+    exposedHeaders: ['Set-Cookie'],
     credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   };
 
   // Không cần multer global nữa
@@ -28,8 +37,8 @@ async function bootstrap() {
       req.method,
       req.url,
       req.body,
-      'Files:',
-      req.files,
+      'Cookies:',
+      req.cookies,
     );
     next();
   });
