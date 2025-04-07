@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '@clerk/nextjs';
 
 const PaymentResultPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { userId } = useAuth();
   const [message, setMessage] = useState('Đang xử lý kết quả thanh toán...');
   const [status, setStatus] = useState<'success' | 'error' | 'loading'>('loading');
 
@@ -41,7 +43,7 @@ const PaymentResultPage = () => {
     
     // Redirect to the purchase history page after 3 seconds
     const redirectTimer = setTimeout(() => {
-      router.push('/customer/user/purchase');
+      router.push(`/customer/user/purchase/${userId}`);
     }, 3000);
     
     // Clean up timer when component unmounts
