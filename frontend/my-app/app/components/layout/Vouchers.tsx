@@ -206,7 +206,7 @@ const Vouchers = ({ passedVouchers, limit = 2 }: VouchersProps = {}) => {
 
             <div className="flex-grow text-center sm:text-left mb-2 sm:mb-0">
               <h3 className="font-bold text-base sm:text-lg">
-                GIẢM {voucher.discount_percent}%
+                GIẢM {voucher.discount_percent * 100}%
               </h3>
               <p className="font-medium text-sm sm:text-base">
                 ĐƠN TỐI THIỂU {formatPrice(voucher.minimum_require_price)}
