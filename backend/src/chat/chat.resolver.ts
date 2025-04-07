@@ -4,6 +4,7 @@ import { Chat } from './entities/chat.entity';
 import { Chat_Message } from './entities/chat-message.entity';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { SendMessageDto } from './dto/send-message.dto';
+import { GetUserChatsInput } from './dto/get-user-chats.dto';
 
 @Resolver(() => Chat)
 export class ChatResolver {
@@ -11,9 +12,9 @@ export class ChatResolver {
 
   @Query(() => [Chat], { name: 'getUserChats' })
   async getUserChats(
-    @Args('userId', { type: () => String }) userId: string
+    @Args('input') input: GetUserChatsInput
   ) {
-    return this.chatService.findAllChatsByUser(userId);
+    return this.chatService.findAllChatsByUser(input.userId);
   }
 
   @Query(() => [Chat], { name: 'getShopChats' })
