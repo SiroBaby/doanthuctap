@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-//import { UserButton } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
 import { useAuth } from "@clerk/nextjs";
 import { useApolloClient, useLazyQuery } from "@apollo/client";
@@ -207,6 +207,7 @@ const AnotherTopBar = () => {
           <div className="flex items-center space-x-4">
             {user && (
               <div className="flex items-center gap-3">
+                <UserButton />
                 <span
                   className="text-white font-bold shadow-text cursor-pointer"
                   onClick={() =>
