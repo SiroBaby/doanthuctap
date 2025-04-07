@@ -402,7 +402,7 @@ const EditProductPage = () => {
       if (uploadedImages.length > 0) {
         const formData = new FormData();
         uploadedImages.forEach((image) => formData.append('images', image));
-        const uploadResponse = await axios.post('http://localhost:3301/api/upload', formData);
+        const uploadResponse = await axios.post('https://www.vaashop.io.vn/api/upload', formData);
         const imageUrls = uploadResponse.data.imageUrls;
 
         for (let i = 0; i < imageUrls.length; i++) {

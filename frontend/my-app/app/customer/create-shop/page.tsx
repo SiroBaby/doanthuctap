@@ -250,7 +250,7 @@ export default function CreateShopPage() {
       if (logo) {
         const formData = new FormData();
         formData.append('images', logo);
-        const uploadResponse = await axios.post('http://localhost:3301/api/upload', formData);
+        const uploadResponse = await axios.post('https://www.vaashop.io.vn/api/upload', formData);
         logoUrl = uploadResponse.data.imageUrls[0];
         console.log("Đã upload logo thành công:", logoUrl);
       }

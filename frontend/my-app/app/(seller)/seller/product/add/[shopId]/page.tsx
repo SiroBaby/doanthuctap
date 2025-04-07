@@ -171,7 +171,7 @@ const AddProductPage = ({ params }: { params: { shopId: string } }) => {
             if (images.length > 0) {
                 const formData = new FormData();
                 images.forEach((image) => formData.append('images', image));
-                const uploadResponse = await axios.post('http://localhost:3301/api/upload', formData);
+                const uploadResponse = await axios.post('https://www.vaashop.io.vn/api/upload', formData);
                 imageUrls = uploadResponse.data.imageUrls;
             }
 
