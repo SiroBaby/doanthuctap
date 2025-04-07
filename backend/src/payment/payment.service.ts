@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
+import { format, addMinutes } from 'date-fns';
 
 @Injectable()
 export class PaymentService {
@@ -40,8 +41,8 @@ export class PaymentService {
       }
 
       const now = new Date();
-      const createDate = this.formatVNPayDateTime(now);
-      const expireDate = this.formatVNPayDateTime(new Date(now.getTime() + 15 * 60 * 1000));
+      const createDate = format(now, 'yyyyMMddHHmmss');
+      const expireDate = format(addMinutes(now, 15), 'yyyyMMddHHmmss');
 
       // Tạo đối tượng chứa parameters
       const vnp_Params: { [key: string]: string } = {
