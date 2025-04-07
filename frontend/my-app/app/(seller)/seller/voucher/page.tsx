@@ -340,7 +340,7 @@ const ShopVoucherPage = () => {
                                         count={totalPages}
                                         page={page}
                                         onChange={handleChangePage}
-                                        color="error"
+                                        color="primary"
                                     />
                                 </div>
                             </>

@@ -333,7 +333,7 @@ const SellerProductPage = () => {
                                             page={page}
                                             onChange={handleChangePage}
                                             size="large"
-                                            color='error'
+                                            color='primary'
                                         />
                                     </div>
                                 )}

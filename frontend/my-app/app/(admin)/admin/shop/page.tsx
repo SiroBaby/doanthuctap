@@ -237,7 +237,7 @@ const ShopsPage = () => {
                                             page={page}
                                             onChange={handleChangePage}
                                             size="large"
-                                            color='error'
+                                            color='primary'
                                         />
                                     </div>
                                 )}
