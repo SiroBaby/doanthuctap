@@ -22,8 +22,9 @@ import {
   Paper,
   Grid
 } from "@mui/material";
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { GET_USER_CHATS, GET_CHAT_BY_ID, GET_SHOP_CHATS, GET_SHOP_ID_BY_USER_ID } from "@/graphql/queries";
+import { MARK_MESSAGES_AS_READ } from "@/graphql/mutations";
 import { formatDistanceToNow } from "date-fns";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -73,6 +74,8 @@ export default function FloatingChatButton() {
   } = useSocket();
   const { setHandleChatCreated, isOpen, setIsOpen } = useChat();
 
+  const [markMessagesAsRead] = useMutation(MARK_MESSAGES_AS_READ);
+
   // Đảm bảo chat không tự động mở khi component mount
   useEffect(() => {
     // Chỉ reset selectedChat khi component mount lần đầu
@@ -93,7 +96,8 @@ export default function FloatingChatButton() {
     data: userChatsData,
     refetch: refetchUserChats,
   } = useQuery(GET_USER_CHATS, {
-    skip: !isSignedIn,
+    variables: { userId: user?.id },
+    skip: !isSignedIn || !user,
     fetchPolicy: "network-only",
   });
 
@@ -256,6 +260,14 @@ export default function FloatingChatButton() {
 
   const handleChatSelect = (chatId: string) => {
     setSelectedChat(chatId);
+    if (user?.id) {
+      markMessagesAsRead({
+        variables: {
+          chatId,
+          userId: user.id
+        }
+      });
+    }
   };
 
   const handleSendMessage = () => {

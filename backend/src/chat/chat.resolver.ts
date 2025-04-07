@@ -1,24 +1,21 @@
 import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
-import { UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { Chat } from './entities/chat.entity';
 import { Chat_Message } from './entities/chat-message.entity';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { SendMessageDto } from './dto/send-message.dto';
-import { GqlClerkAuthGuard } from '../auth/gql-clerk-auth.guard';
 
 @Resolver(() => Chat)
 export class ChatResolver {
   constructor(private readonly chatService: ChatService) {}
 
   @Query(() => [Chat], { name: 'getUserChats' })
-  async getUserChats(@Context() context) {
-    const userId = context.req.user.id;
+  async getUserChats(@Args('userId') userId: string) {
     return this.chatService.findAllChatsByUser(userId);
   }
 
   @Query(() => [Chat], { name: 'getShopChats' })
-  async getShopChats(@Args('shopId') shopId: string, @Context() context) {
+  async getShopChats(@Args('shopId') shopId: string) {
     return this.chatService.findAllChatsByShop(shopId);
   }
 
@@ -30,7 +27,6 @@ export class ChatResolver {
   @Mutation(() => Chat)
   async createChat(
     @Args('createChatInput') createChatDto: CreateChatDto,
-    @Context() context,
   ) {
     return this.chatService.createChat(createChatDto);
   }
@@ -38,7 +34,6 @@ export class ChatResolver {
   @Mutation(() => Chat_Message)
   async sendMessage(
     @Args('sendMessageInput') sendMessageDto: SendMessageDto,
-    @Context() context,
   ) {
     return this.chatService.sendMessage(sendMessageDto);
   }
@@ -46,9 +41,8 @@ export class ChatResolver {
   @Mutation(() => Boolean)
   async markMessagesAsRead(
     @Args('chatId') chatId: string,
-    @Context() context,
+    @Args('userId') userId: string,
   ) {
-    const userId = context.req.user.id;
     await this.chatService.markMessagesAsRead(chatId, userId);
     return true;
   }

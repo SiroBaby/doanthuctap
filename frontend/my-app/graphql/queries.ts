@@ -872,8 +872,8 @@ export const GET_INVOICES_BY_USER_ID = gql`
 `;
 
 export const GET_USER_CHATS = gql`
-  query GetUserChats {
-    getUserChats {
+  query GetUserChats($userId: String!) {
+    getUserChats(userId: $userId) {
       chat_id
       id_user
       shop_id

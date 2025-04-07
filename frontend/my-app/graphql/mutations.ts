@@ -457,8 +457,8 @@ export const SEND_MESSAGE = gql`
 `;
 
 export const MARK_MESSAGES_AS_READ = gql`
-  mutation MarkMessagesAsRead($chatId: String!) {
-    markMessagesAsRead(chatId: $chatId)
+  mutation MarkMessagesAsRead($chatId: String!, $userId: String!) {
+    markMessagesAsRead(chatId: $chatId, userId: $userId)
   }
 `;
 

@@ -18,6 +18,11 @@ interface ChatButtonProps {
 interface CreateChatResponse {
   createChat: {
     chat_id: string;
+    id_user: string;
+    shop_id: string;
+    last_message_at: string;
+    create_at: string;
+    update_at: string;
   };
 }
 
@@ -39,6 +44,11 @@ export default function ChatButton({ shopId, className }: ChatButtonProps) {
     mutation CreateChat($createChatInput: CreateChatDto!) {
       createChat(createChatInput: $createChatInput) {
         chat_id
+        id_user
+        shop_id
+        last_message_at
+        create_at
+        update_at
       }
     }
   `;
