@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import ProfileForm from "@/app/components/layout/ProfileForm";
+// import ProfileForm from "@/app/components/layout/ProfileForm";
 //import ProfileTabs from "@/app/components/layout/ProfileTabs";
 import { UserProfile } from "@clerk/nextjs";
 

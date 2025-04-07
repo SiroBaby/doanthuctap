@@ -4,6 +4,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from 'next/image';
 
 export const UserTopBar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -105,15 +106,21 @@ export const UserTopBar = () => {
                   className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   <span className="sr-only">Mở menu người dùng</span>
-                  <img
-                    className="h-8 w-8 rounded-full object-cover"
-                    src={user.avatar}
-                    alt="Avatar"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "/default-avatar.png";
-                    }}
-                  />
+                  {user?.avatar ? (
+                    <Image
+                      src={user.avatar}
+                      alt="User avatar"
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-500 text-sm">
+                        {user?.name?.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
                 </button>
               </div>
 

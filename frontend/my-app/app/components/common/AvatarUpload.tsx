@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { toast } from "react-hot-toast";
 
 export default function AvatarUpload() {
-  const [avatar, setAvatar] = useState<string>("/default-avatar.png");
+  // const [avatar, setAvatar] = useState<string>("/default-avatar.png");
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -29,7 +29,7 @@ export default function AvatarUpload() {
     // Create a preview URL
     const reader = new FileReader();
     reader.onload = () => {
-      setAvatar(reader.result as string);
+      // setAvatar(reader.result as string);
       setIsUploading(false);
       toast.success("Tải ảnh lên thành công");
     };
@@ -73,14 +73,14 @@ export default function AvatarUpload() {
             </svg>
           </div>
         )}
-        <img
+        {/* <img
           src={avatar}
           alt="Avatar"
           className="w-full h-full object-cover rounded-full border-2 border-gray-200"
           onError={(e) => {
             (e.target as HTMLImageElement).src = "/default-avatar.png";
           }}
-        />
+        /> */}
       </div>
 
       {/* Fixing the accessibility issue with proper labeling */}

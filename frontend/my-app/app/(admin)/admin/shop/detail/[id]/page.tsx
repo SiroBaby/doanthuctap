@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import { useQuery } from '@apollo/client';
 import { GET_SHOP_BY_ID } from '@/graphql/queries';
 import moment from 'moment-timezone';
+import Image from 'next/image';
 
 // Định nghĩa interface cho dữ liệu từ GraphQL
 interface ShopAddress {
@@ -363,9 +364,11 @@ const ShopDetailPage = ({ params }: { params: { id: string } }) => {
                                         className="w-64 h-100 bg-white dark:bg-dark-sidebar shadow-md hover:shadow-lg transition-shadow flex-shrink-0 justify-center"
                                     >
                                         <CardContent className="px-4 py-2 flex flex-col justify-between h-full">
-                                            <img
+                                            <Image
                                                 src={thumbnail || '/placeholder.jpg'}
                                                 alt={product.product_name}
+                                                width={200}
+                                                height={150}
                                                 className="w-full max-h-32 object-contain mb-2"
                                             />
                                             <Box className="flex flex-col items-center text-center">

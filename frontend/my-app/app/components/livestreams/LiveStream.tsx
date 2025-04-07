@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 
 interface LiveStreamProps {
   id: string;
@@ -16,9 +15,9 @@ interface LiveStreamProps {
 const LiveStream: React.FC<LiveStreamProps> = ({
   id,
   title,
-  thumbnailUrl,
+  // thumbnailUrl,
   shopName,
-  shopAvatarUrl,
+  // shopAvatarUrl,
   viewerCount,
   isLive,
 }) => {
@@ -33,11 +32,11 @@ const LiveStream: React.FC<LiveStreamProps> = ({
       onClick={handleClick}
     >
       <div className="relative">
-        <img
+        {/* <img
           src={thumbnailUrl}
           alt={title}
           className="w-full aspect-video object-cover"
-        />
+        /> */}
 
         {isLive && (
           <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded-md flex items-center">
@@ -75,11 +74,11 @@ const LiveStream: React.FC<LiveStreamProps> = ({
         <h3 className="font-medium text-sm line-clamp-1">{title}</h3>
 
         <div className="mt-2 flex items-center">
-          <img
+          {/* <img
             src={shopAvatarUrl}
             alt={shopName}
             className="w-6 h-6 rounded-full mr-2 object-cover"
-          />
+          /> */}
           <span className="text-xs text-gray-600">{shopName}</span>
         </div>
       </div>
