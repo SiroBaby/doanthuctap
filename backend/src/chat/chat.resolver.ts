@@ -10,7 +10,9 @@ export class ChatResolver {
   constructor(private readonly chatService: ChatService) {}
 
   @Query(() => [Chat], { name: 'getUserChats' })
-  async getUserChats(@Args('userId') userId: string) {
+  async getUserChats(
+    @Args('userId', { type: () => String }) userId: string
+  ) {
     return this.chatService.findAllChatsByUser(userId);
   }
 
