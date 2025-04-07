@@ -23,6 +23,13 @@ export class PaymentService {
     return `${yyyy}${MM}${dd}${HH}${mm}${ss}`;
   }
 
+  // Đảm bảo thời gian được tính theo múi giờ Việt Nam (GMT+7)
+  private vietnamTime() {
+    const now = new Date();
+    // Điều chỉnh sang múi giờ Việt Nam
+    return new Date(now.getTime() + (7 * 60 + now.getTimezoneOffset()) * 60000);
+  }
+
   // Create VNPay URL for payment
   async createVNPayUrl(
     invoiceId: string,
@@ -40,9 +47,14 @@ export class PaymentService {
         throw new Error('Missing VNPay configuration');
       }
 
-      const now = new Date();
-      const createDate = format(now, 'yyyyMMddHHmmss');
-      const expireDate = format(addMinutes(now, 15), 'yyyyMMddHHmmss');
+      // Tạo các tham số thời gian
+      const now = this.vietnamTime();
+      const createDate = now.toISOString().replace(/[^0-9]/g, '').slice(0, 14); // Format: yyyyMMddHHmmss
+      const expireDate = new Date(now.getTime() + 15 * 60000).toISOString().replace(/[^0-9]/g, '').slice(0, 14);
+
+      console.log('Current time (Vietnam): ', now);
+      console.log('vnp_CreateDate: ', createDate);
+      console.log('vnp_ExpireDate: ', expireDate);
 
       // Tạo đối tượng chứa parameters
       const vnp_Params: { [key: string]: string } = {
