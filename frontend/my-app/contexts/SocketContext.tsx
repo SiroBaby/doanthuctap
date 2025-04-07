@@ -30,21 +30,16 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const { isSignedIn, user } = useUser();
 
   useEffect(() => {
-    // Chỉ kết nối socket khi user đã đăng nhập
     if (!isSignedIn || !user) return;
 
-    // Kết nối tới server WebSocket
-    const socketInstance = io(process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3301', {
+    const socketInstance = io('https://www.vaashop.io.vn', {
       withCredentials: true,
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
-      transports: ['websocket'], // Force WebSocket transport
+      transports: ['websocket'],
       path: '/socket.io/',
-      extraHeaders: {
-        'Access-Control-Allow-Origin': 'http://localhost:3000'
-      }
     });
 
     socketInstance.on('connect', () => {
@@ -63,11 +58,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     socketInstance.on('connect_error', (error) => {
       console.error('Socket connection error:', error);
-      setIsConnected(false);
-    });
-
-    socketInstance.on('connect_timeout', () => {
-      console.error('Socket connection timeout');
       setIsConnected(false);
     });
 

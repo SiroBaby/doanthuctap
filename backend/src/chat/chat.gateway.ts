@@ -25,9 +25,12 @@ interface JoinChatRoom {
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL,
-    credentials: true
+    origin: 'https://vaashop.vercel.app',
+    credentials: true,
+    methods: ['GET', 'POST'],
   },
+  transports: ['websocket'],
+  path: '/socket.io/',
 })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(ChatGateway.name);

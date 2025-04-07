@@ -11,26 +11,22 @@ import { GqlClerkAuthGuard } from '../auth/gql-clerk-auth.guard';
 export class ChatResolver {
   constructor(private readonly chatService: ChatService) {}
 
-  @UseGuards(GqlClerkAuthGuard)
   @Query(() => [Chat], { name: 'getUserChats' })
   async getUserChats(@Context() context) {
     const userId = context.req.user.id;
     return this.chatService.findAllChatsByUser(userId);
   }
 
-  @UseGuards(GqlClerkAuthGuard)
   @Query(() => [Chat], { name: 'getShopChats' })
   async getShopChats(@Args('shopId') shopId: string, @Context() context) {
     return this.chatService.findAllChatsByShop(shopId);
   }
 
-  @UseGuards(GqlClerkAuthGuard)
   @Query(() => Chat, { name: 'getChatById' })
   async getChatById(@Args('chatId') chatId: string) {
     return this.chatService.findChatById(chatId);
   }
 
-  @UseGuards(GqlClerkAuthGuard)
   @Mutation(() => Chat)
   async createChat(
     @Args('createChatInput') createChatDto: CreateChatDto,
@@ -39,7 +35,6 @@ export class ChatResolver {
     return this.chatService.createChat(createChatDto);
   }
 
-  @UseGuards(GqlClerkAuthGuard)
   @Mutation(() => Chat_Message)
   async sendMessage(
     @Args('sendMessageInput') sendMessageDto: SendMessageDto,
@@ -48,7 +43,6 @@ export class ChatResolver {
     return this.chatService.sendMessage(sendMessageDto);
   }
 
-  @UseGuards(GqlClerkAuthGuard)
   @Mutation(() => Boolean)
   async markMessagesAsRead(
     @Args('chatId') chatId: string,

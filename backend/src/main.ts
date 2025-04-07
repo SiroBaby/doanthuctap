@@ -4,11 +4,12 @@ import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.int
 import * as express from 'express';
 import { join } from 'path';
 import * as cookieParser from 'cookie-parser';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const corsOptions: CorsOptions = {
-    origin: ['http://localhost:3000', 'http://localhost:3001', 'https://vaashop.vercel.app'],
+    origin: 'https://vaashop.vercel.app',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders:
       'Content-Type,Authorization,Apollo-Require-Preflight,x-apollo-operation-name',
