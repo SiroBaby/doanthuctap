@@ -200,8 +200,8 @@ export const GET_PRODUCTS_BY_SHOP_ID = gql`
 //query category
 //query get categories
 export const GET_CATEGORIES = gql`
-  query Categories($page: Int!, $limit: Int!, $search: String) {
-    categories(pagination: { limit: $limit, page: $page, search: $search }) {
+  query Categorys($page: Int!, $limit: Int!, $search: String) {
+    categorys(pagination: { limit: $limit, page: $page, search: $search }) {
       totalCount
       totalPage
       data {
