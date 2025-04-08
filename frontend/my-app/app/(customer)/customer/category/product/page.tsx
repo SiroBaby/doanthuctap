@@ -1,11 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import FilterSidebar from "@/app/components/layout/FilterSidebar";
+//import FilterSidebar from "@/app/components/layout/FilterSidebar";
 import ProductCard from "@/app/components/layout/ProductCard";
 import { useQuery } from "@apollo/client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { GET_PRODUCTS_FOR_HOMEPAGE } from "@/graphql/queries";
+import {
+  GET_PRODUCTS_FOR_HOMEPAGE,
+  GET_USER_PURCHASE_CATEGORIES,
+  GET_ADMIN_DASHBOARD_STATS,
+} from "@/graphql/queries";
 import { useUser } from "@/contexts/UserContext";
 import Image from "next/image";
 
@@ -66,6 +70,15 @@ interface ProductsResponse {
   };
 }
 
+// Interface cho danh mục sản phẩm mà người dùng đã mua
+interface Category {
+  category_id: number;
+  category_name: string;
+  create_at: Date | null;
+  update_at: Date | null;
+  delete_at: Date | null;
+}
+
 /**
  * Các tùy chọn sắp xếp sản phẩm
  * - newest: Sản phẩm mới nhất
@@ -80,6 +93,30 @@ type SortOption =
   | "price_asc"
   | "price_desc"
   | "foryou";
+
+/**
+ * Interface mô tả cấu trúc của sản phẩm bán chạy
+ * @property product_id - ID duy nhất của sản phẩm
+ * @property product_name - Tên sản phẩm
+ * @property total_quantity - Tổng số lượng đã bán
+ * @property total_revenue - Tổng doanh thu từ sản phẩm
+ * @property product - Đối tượng chứa thông tin sản phẩm
+ */
+interface TopSellingProduct {
+  product_id: string;
+  product_name: string;
+  total_quantity: number;
+  total_revenue: number;
+  product: {
+    product_images: {
+      image_url: string;
+      is_thumbnail: boolean;
+    }[];
+    shop: {
+      shop_name: string;
+    };
+  };
+}
 
 /**
  * Component trang danh sách sản phẩm
@@ -101,7 +138,6 @@ const ProductPage = () => {
   const userId = searchParams.get("userId");
   const selectedCategories =
     searchParams.get("category")?.split(",").map(Number) || [];
-  const selectedBrands = searchParams.get("brands")?.split(",") || [];
   const currentPage = parseInt(searchParams.get("page") || "1");
   const itemsPerPage = 30; // Số sản phẩm hiển thị trên mỗi trang là 30 sản phẩm
 
@@ -135,6 +171,24 @@ const ProductPage = () => {
       },
     }
   );
+
+  // Query lấy danh mục sản phẩm mà người dùng đã mua
+  const { data: dataUserCategories } = useQuery(GET_USER_PURCHASE_CATEGORIES, {
+    variables: {
+      userId: user?.user_id || "",
+    },
+    skip: !user?.user_id,
+    onError: (error) => {
+      console.error("Error fetching user purchase categories:", error);
+    },
+  });
+
+  // Query lấy top sản phẩm bán chạy
+  const { data: dataBestSeller } = useQuery(GET_ADMIN_DASHBOARD_STATS, {
+    onError: (error) => {
+      console.error("Error fetching bestseller products:", error);
+    },
+  });
 
   /**
    * Tạo dữ liệu mẫu khi chưa có dữ liệu thật từ API
@@ -174,23 +228,15 @@ const ProductPage = () => {
         )
       : allProducts;
 
-  // Lọc sản phẩm theo thương hiệu đã chọn
-  const filteredByBrands =
-    selectedBrands.length > 0
-      ? filteredByCategories.filter((product) =>
-          selectedBrands.includes(product.brand || "")
-        )
-      : filteredByCategories;
+  // Lọc sản phẩm theo từ khóa tìm kiếm
+  const filteredBySearch = searchTerm
+    ? filteredByCategories.filter((product) =>
+        product.product_name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : filteredByCategories;
 
-  /**
-   * Sắp xếp sản phẩm dựa trên tiêu chí đã chọn
-   * - newest: Sắp xếp theo thời gian tạo (mới nhất lên đầu)
-   * - bestseller: Sắp xếp theo số lượng bán (cao nhất lên đầu)
-   * - price_asc: Sắp xếp theo giá tăng dần
-   * - price_desc: Sắp xếp theo giá giảm dần
-   * - foryou: (Xử lý đặc biệt ở backend, không cần sắp xếp ở frontend)
-   */
-  const sortedProducts = [...filteredByBrands].sort((a, b) => {
+  // Sắp xếp sản phẩm dựa trên tiêu chí đã chọn
+  const sortedProducts = [...filteredBySearch].sort((a, b) => {
     switch (sortBy) {
       case "newest":
         return (
@@ -198,6 +244,30 @@ const ProductPage = () => {
           new Date(a.create_at || "").getTime()
         );
       case "bestseller":
+        // Nếu có dữ liệu sản phẩm bán chạy, sử dụng dữ liệu đó để sắp xếp
+        if (dataBestSeller?.getAdminDashboardStats?.topSellingProducts) {
+          const bestSellers =
+            dataBestSeller.getAdminDashboardStats.topSellingProducts;
+          const aIndex = bestSellers.findIndex(
+            (item: TopSellingProduct) =>
+              item.product_id === a.product_id.toString()
+          );
+          const bIndex = bestSellers.findIndex(
+            (item: TopSellingProduct) =>
+              item.product_id === b.product_id.toString()
+          );
+
+          // Nếu cả hai sản phẩm đều có trong danh sách bán chạy
+          if (aIndex !== -1 && bIndex !== -1) {
+            return aIndex - bIndex; // Sắp xếp theo thứ tự trong danh sách bán chạy
+          }
+
+          // Nếu chỉ một sản phẩm có trong danh sách bán chạy
+          if (aIndex !== -1) return -1;
+          if (bIndex !== -1) return 1;
+        }
+
+        // Nếu không có dữ liệu sản phẩm bán chạy, sử dụng total_sales
         return (b.total_sales || 0) - (a.total_sales || 0);
       case "price_asc":
         return (
@@ -209,10 +279,64 @@ const ProductPage = () => {
           (b.product_variations[0]?.base_price || 0) -
           (a.product_variations[0]?.base_price || 0)
         );
+      case "foryou":
+        // Sắp xếp theo thứ tự dành cho bạn (ưu tiên sản phẩm trong danh mục người dùng đã mua)
+        if (user?.user_id && dataUserCategories?.getUserPurchaseCategories) {
+          const userCategoryIds =
+            dataUserCategories.getUserPurchaseCategories.map(
+              (cat: Category) => cat.category_id
+            );
+
+          const aInUserCategory =
+            a.category && userCategoryIds.includes(a.category.category_id);
+          const bInUserCategory =
+            b.category && userCategoryIds.includes(b.category.category_id);
+
+          if (aInUserCategory && !bInUserCategory) return -1;
+          if (!aInUserCategory && bInUserCategory) return 1;
+        }
+        return 0;
       default:
         return 0;
     }
   });
+
+  // Lọc sản phẩm bán chạy nếu đang ở chế độ bestseller
+  const finalProducts =
+    sortBy === "bestseller" &&
+    dataBestSeller?.getAdminDashboardStats?.topSellingProducts
+      ? [...dataBestSeller.getAdminDashboardStats.topSellingProducts]
+          .sort((a, b) => b.total_quantity - a.total_quantity) // Sắp xếp theo số lượng bán giảm dần
+          .map((item: TopSellingProduct) => {
+            // Tìm sản phẩm tương ứng trong danh sách sản phẩm đã lọc
+            const matchingProduct = filteredBySearch.find(
+              (product: Product) =>
+                product.product_id.toString() === item.product_id
+            );
+
+            // Nếu tìm thấy sản phẩm, trả về sản phẩm đó với thông tin đầy đủ
+            if (matchingProduct) {
+              return matchingProduct;
+            }
+
+            // Nếu không tìm thấy, tạo một sản phẩm mới từ dữ liệu topSellingProduct
+            return {
+              product_id: Number(item.product_id),
+              product_name: item.product_name,
+              product_images: item.product.product_images,
+              product_variations: [],
+              total_sales: item.total_quantity,
+            };
+          })
+          // Lọc lại để chỉ giữ những sản phẩm thỏa mãn điều kiện tìm kiếm
+          .filter(
+            (product: Product) =>
+              !searchTerm ||
+              product.product_name
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase())
+          )
+      : sortedProducts;
 
   // Tính toán tổng số trang
   const totalPages = Math.ceil(
@@ -282,7 +406,7 @@ const ProductPage = () => {
           </div>
 
           {/* Hiển thị thông báo khi không tìm thấy sản phẩm nào trong danh mục */}
-          {categoryId && sortedProducts.length === 0 && (
+          {categoryId && finalProducts.length === 0 && (
             <div className="bg-white p-4 mb-4 rounded-lg shadow-sm text-center">
               <p className="text-gray-500">
                 Không tìm thấy sản phẩm nào trong danh mục này.
@@ -306,7 +430,13 @@ const ProductPage = () => {
                     }`}
                     onClick={() => {
                       setSortBy("newest");
-                      router.push("/customer/category/product?sort=newest");
+                      const params = new URLSearchParams(
+                        searchParams.toString()
+                      );
+                      params.set("sort", "newest");
+                      router.push(
+                        `/customer/category/product?${params.toString()}`
+                      );
                     }}
                   >
                     Mới nhất
@@ -320,7 +450,13 @@ const ProductPage = () => {
                     }`}
                     onClick={() => {
                       setSortBy("bestseller");
-                      router.push("/customer/category/product?sort=bestseller");
+                      const params = new URLSearchParams(
+                        searchParams.toString()
+                      );
+                      params.set("sort", "bestseller");
+                      router.push(
+                        `/customer/category/product?${params.toString()}`
+                      );
                     }}
                   >
                     Bán chạy
@@ -335,8 +471,13 @@ const ProductPage = () => {
                       }`}
                       onClick={() => {
                         setSortBy("foryou");
+                        const params = new URLSearchParams(
+                          searchParams.toString()
+                        );
+                        params.set("sort", "foryou");
+                        params.set("userId", user.user_id);
                         router.push(
-                          `/customer/category/product?sort=foryou&userId=${user.user_id}`
+                          `/customer/category/product?${params.toString()}`
                         );
                       }}
                     >
@@ -354,7 +495,15 @@ const ProductPage = () => {
                   className="border border-gray-300 rounded px-2 py-1 text-gray-700 focus:outline-none focus:ring-1 focus:border-blue-500"
                   aria-label="Lọc theo giá"
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  onChange={(e) => {
+                    const newSortBy = e.target.value as SortOption;
+                    setSortBy(newSortBy);
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.set("sort", newSortBy);
+                    router.push(
+                      `/customer/category/product?${params.toString()}`
+                    );
+                  }}
                 >
                   <option value="price_asc">Thấp đến cao</option>
                   <option value="price_desc">Cao đến thấp</option>
@@ -364,16 +513,11 @@ const ProductPage = () => {
           </div>
 
           {/* Bố cục chính của trang */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
+          <div className="grid ">
             {/* Thanh bên trái chứa các bộ lọc */}
-            <div className="md:col-span-3">
-              <div className="rounded-lg shadow-sm pt-4">
-                <FilterSidebar />
-              </div>
-            </div>
 
             {/* Phần hiển thị danh sách sản phẩm */}
-            <div className="md:col-span-9">
+            <div className="">
               <div className="pt-4">
                 {loading ? (
                   // Hiển thị skeleton loading khi đang tải dữ liệu
@@ -396,9 +540,23 @@ const ProductPage = () => {
                 ) : (
                   // Hiển thị lưới sản phẩm
                   <div className="grid grid-cols-3 gap-4">
-                    {sortedProducts.map((product) => (
-                      <ProductCard key={product.product_id} product={product} />
-                    ))}
+                    {finalProducts.length > 0 ? (
+                      finalProducts.map((product: Product) => (
+                        <ProductCard
+                          key={product.product_id}
+                          product={product}
+                        />
+                      ))
+                    ) : (
+                      <div className="col-span-3 text-center py-8">
+                        <p className="text-lg text-gray-500">
+                          Không tìm thấy sản phẩm phù hợp với bộ lọc.
+                        </p>
+                        <p className="mt-2 text-sm text-gray-400">
+                          Vui lòng thử lại với bộ lọc khác.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

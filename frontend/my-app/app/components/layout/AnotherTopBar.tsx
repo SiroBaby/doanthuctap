@@ -151,7 +151,11 @@ const AnotherTopBar = () => {
 
   // Handle suggestion click
   const handleSuggestionClick = (product: Product) => {
-    router.push(`/customer/category/product/${product.product_id}`);
+    router.push(
+      `/customer/category/product?search=${encodeURIComponent(
+        product.product_name
+      )}`
+    );
     setShowSuggestions(false);
     setSearchTerm("");
     setSuggestions([]);
@@ -273,11 +277,13 @@ const AnotherTopBar = () => {
                     suggestions.map((product) => (
                       <div
                         key={product.product_id}
-                        className="p-3 hover:bg-gray-100 cursor-pointer"
+                        className="p-3 hover:bg-gray-100 cursor-pointer flex items-center"
                         onClick={() => handleSuggestionClick(product)}
                       >
-                        <div className="font-medium text-gray-800">
-                          {product.product_name}
+                        <div>
+                          <div className="font-medium text-gray-800">
+                            {product.product_name}
+                          </div>
                         </div>
                       </div>
                     ))

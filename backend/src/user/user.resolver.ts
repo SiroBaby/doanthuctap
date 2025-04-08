@@ -5,9 +5,14 @@ import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { PaginationInput } from 'src/common/dto/pagination.input';
 import { UserPagination } from './entities/userpagination.entity';
+import { InvoiceService } from 'src/invoice/invoice.service';
+import { Category } from 'src/category/entities/category.entity';
 @Resolver(() => User)
 export class UserResolver {
-  constructor(private readonly userService: UserService) { }
+  constructor(
+    private readonly userService: UserService,
+    private readonly invoiceService: InvoiceService,
+  ) {}
 
   // @Mutation(() => User)
   // createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
@@ -15,7 +20,10 @@ export class UserResolver {
   // }
 
   @Query(() => UserPagination, { name: 'users' })
-  findAll(@Args('pagination', { type: () => PaginationInput }) PaginationInput: PaginationInput) {
+  findAll(
+    @Args('pagination', { type: () => PaginationInput })
+    PaginationInput: PaginationInput,
+  ) {
     return this.userService.findAll(PaginationInput);
   }
 
@@ -33,4 +41,11 @@ export class UserResolver {
   // removeUser(@Args('id', { type: () => Int }) id: number) {
   //   return this.userService.remove(id);
   // }
+
+  @Query(() => [Category], { name: 'getUserPurchaseCategories' })
+  async getUserPurchaseCategories(
+    @Args('userId', { type: () => String }) userId: string,
+  ) {
+    return this.userService.getUserPurchaseCategories(userId);
+  }
 }

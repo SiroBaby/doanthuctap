@@ -5,15 +5,15 @@ export class Category {
   @Field(() => Int)
   category_id: number;
 
-  @Field(() => String, { nullable: false })
+  @Field(() => String)
   category_name: string;
 
   @Field(() => Date, { nullable: true })
-  create_at: Date;
+  create_at?: Date;
 
   @Field(() => Date, { nullable: true })
-  update_at: Date;
+  update_at?: Date;
 
   @Field(() => Date, { nullable: true })
-  delete_at: Date;
+  delete_at?: Date;
 }
