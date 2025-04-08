@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import AnotherTopBar from "../components/layout/AnotherTopBar";
@@ -528,16 +529,8 @@ const HomePage: React.FC = () => {
               </div>
             ) : (
               // Hiển thị danh sách sản phẩm bán chạy
-              bestSellerProducts.map((product: TopSellingProduct) => (
-                <ProductCard
-                  key={product.product_id}
-                  product={{
-                    product_id: Number(product.product_id),
-                    product_name: product.product_name,
-                    product_images: product.product.product_images,
-                    product_variations: [],
-                  }}
-                />
+              bestSellerProducts.map((product: Product) => (
+                <ProductCard key={product.product_id} product={product} />
               ))
             )}
           </div>
