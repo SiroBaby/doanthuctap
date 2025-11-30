@@ -5,23 +5,21 @@ import * as express from 'express';
 import { join } from 'path';
 import cookieParser from 'cookie-parser';
 
+const corsOptions: CorsOptions = {
+  origin: 'https://vaashop.vercel.app',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  allowedHeaders:
+    'Content-Type,Authorization,Apollo-Require-Preflight,x-apollo-operation-name',
+  credentials: true,
+};
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const corsOptions: CorsOptions = {
-    origin: 'https://vaashop.vercel.app',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders:
-      'Content-Type,Authorization,Apollo-Require-Preflight,x-apollo-operation-name',
-    credentials: true,
-  };
-
-  // Không cần multer global nữa
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
 
-  // Log incoming request
   app.use((req, res, next) => {
     console.log(
       'Incoming request:',
@@ -37,7 +35,21 @@ async function bootstrap() {
   app.enableCors(corsOptions);
   app.use('/img', express.static(join(__dirname, '..', 'img')));
 
-  await app.listen(process.env.PORT ?? 3301);
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  await app.init();
+  return app;
 }
-bootstrap();
+
+// Local development
+if (require.main === module) {
+  bootstrap().then(app => {
+    app.listen(process.env.PORT ?? 3301);
+    console.log(`Application is running on port ${process.env.PORT ?? 3301}`);
+  });
+}
+
+// Vercel serverless export
+export default async (req, res) => {
+  const app = await bootstrap();
+  const instance = app.getHttpAdapter().getInstance();
+  return instance(req, res);
+};

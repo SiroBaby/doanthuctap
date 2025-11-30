@@ -20,6 +20,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
+  "main": "dist/main.js",
   "dependencies": {
     "@apollo/server": "^4.11.3",
     "@clerk/clerk-sdk-node": "^5.1.6",
