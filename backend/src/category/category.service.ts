@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { CreateCategoryInput } from './dto/create-category.input';
 import { UpdateCategoryInput } from './dto/update-category.input';
 import { PrismaService } from 'src/prisma.service';
-import * as moment from 'moment-timezone';
+import moment from 'moment-timezone';
 import { PaginationInput } from '../common/dto/pagination.input';
 
 @Injectable()
@@ -105,33 +105,33 @@ export class CategoryService {
       if (productsCount > 0) {
         const result = await this.prisma.category.update({
           where: { category_id: id },
-          data: { 
+          data: {
             // @ts-ignore - Field exists in database but not in generated types
             delete_at: vietnamTime
           }
         });
-        
+
         if (!result) {
           throw new NotFoundException('Category not found');
         }
-        
+
         return result;
       } else {
         const category = await this.prisma.category.delete({
           where: { category_id: id },
         });
-        
+
         if (!category) {
           throw new NotFoundException('Category not found');
         }
-        
+
         return category;
       }
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      
+
       throw new ConflictException(`Không thể xóa danh mục. Lỗi: ${error.message}`);
     }
   }
