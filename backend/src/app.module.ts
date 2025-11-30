@@ -32,9 +32,12 @@ import { ReviewModule } from './review/review.module';
   imports: [
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      autoSchemaFile: process.env.NODE_ENV === 'production'
+        ? true  // In-memory cho production
+        : 'src/schema.gql', // File cho development
       debug: true,
       playground: true,
+      sortSchema: true,
       context: ({ req, res }) => ({ req, res }),
     }),
     ConfigModule.forRoot({ isGlobal: true }),
