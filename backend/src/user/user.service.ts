@@ -3,16 +3,16 @@ import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { PrismaService } from '../prisma.service';
 import { User } from './entities/user.entity';
-import { PaginationInput } from 'src/common/dto/pagination.input';
-import { Category } from 'src/category/entities/category.entity';
-import { InvoiceService } from 'src/invoice/invoice.service';
+import { PaginationInput } from '../common/dto/pagination.input';
+import { Category } from '../category/entities/category.entity';
+import { InvoiceService } from '../invoice/invoice.service';
 
 @Injectable()
 export class UserService {
   constructor(
     private prisma: PrismaService,
     private readonly invoiceService: InvoiceService,
-  ) {}
+  ) { }
 
   // create(createUserInput: CreateUserInput) {
   //   return 'This action adds a new user';
@@ -56,11 +56,11 @@ export class UserService {
 
       const whereCondition = search
         ? {
-            OR: [
-              { user_name: { contains: search } },
-              ...(isEmail ? [{ email: { contains: search } }] : []),
-            ],
-          }
+          OR: [
+            { user_name: { contains: search } },
+            ...(isEmail ? [{ email: { contains: search } }] : []),
+          ],
+        }
         : {};
 
       const [data, totalCount] = await Promise.all([

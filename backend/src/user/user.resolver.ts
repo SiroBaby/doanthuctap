@@ -3,16 +3,16 @@ import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
-import { PaginationInput } from 'src/common/dto/pagination.input';
+import { PaginationInput } from '../common/dto/pagination.input';
 import { UserPagination } from './entities/userpagination.entity';
-import { InvoiceService } from 'src/invoice/invoice.service';
-import { Category } from 'src/category/entities/category.entity';
+import { InvoiceService } from '../invoice/invoice.service';
+import { Category } from '../category/entities/category.entity';
 @Resolver(() => User)
 export class UserResolver {
   constructor(
     private readonly userService: UserService,
     private readonly invoiceService: InvoiceService,
-  ) {}
+  ) { }
 
   // @Mutation(() => User)
   // createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
