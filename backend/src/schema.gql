@@ -2,325 +2,21 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type User {
-  id_user: String!
-  user_name: String!
-  email: String!
-  password: String!
-  phone: String
-  avatar: String
-  status: String
-  role: String!
-  create_at: DateTime
-  update_at: DateTime
-  delete_at: DateTime
-}
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
-
-type ProductImage {
-  image_id: Int!
-  product_id: Int!
-  image_url: String!
-  is_thumbnail: Boolean
-  create_at: DateTime
-}
-
-type SimpleShop {
-  shop_id: String!
-  shop_name: String!
-  id_user: String!
-  link: String
-  status: String!
-  location_id: String
-  create_at: DateTime
-  update_at: DateTime
-  delete_at: DateTime
-}
-
-type ShippingAddress {
-  address: String!
-  phone: String!
-}
-
-type Invoice {
-  invoice_id: String!
-  payment_method: String
-  payment_status: String
-  order_status: OrderStatus!
-  total_amount: Float!
-  shipping_fee: Float!
-  id_user: String!
-  cart_id: String!
-  shop_id: String!
-  user: User!
-  shop: SimpleShop
-  shipping_address: ShippingAddress
-  invoice_products: [InvoiceProduct!]!
-  create_at: DateTime
-  update_at: DateTime
-}
-
-"""Status of the order"""
-enum OrderStatus {
-  WAITING_FOR_DELIVERY
-  PROCESSED
-  DELIVERY
-  DELIVERED
-  CANCELED
-}
-
-type ProductVariationOrder {
-  product_variation_name: String!
-  base_price: Float!
-  percent_discount: Float!
-  status: String!
-  product_name: String!
-  shop_id: String!
-  shop_name: String!
-  image_url: String
-  quantity: Float!
-}
-
-type InvoiceDetail {
-  invoice_id: String!
-  payment_method: String
-  payment_status: String
-  order_status: String!
-  total_amount: Float!
-  shipping_fee: Float!
-  user_name: String!
-  address: String
-  phone: String
-  create_at: DateTime
-  user: User
-  shipping_address: ShippingAddress
-  products: [ProductVariationOrder!]
-  invoice_products: [InvoiceProduct!]
-}
-
-type ProductVariationDetail {
-  product_variation_name: String!
-  base_price: Float!
-  percent_discount: Float!
-  status: String!
-  product_images: [SimpleProductImage!]!
-}
-
-type SimpleProductImage {
-  image_url: String!
-  is_thumbnail: Boolean
-}
-
-type InvoiceProduct {
-  invoice_product_id: String!
-  product_name: String!
-  variation_name: String!
-  price: Float!
-  quantity: Int!
-  discount_percent: Float!
-  discount_amount: Float
-  product_variation_id: Int!
-  product_variation: ProductVariationDetail!
-}
-
-type InvoicePagination {
-  data: [Invoice!]!
-  totalCount: Int!
-  totalPage: Int!
-}
-
-type UserPagination {
-  data: [User!]
-  totalCount: Int
-  totalPage: Int
-}
-
-type Category {
-  category_id: Int!
-  category_name: String!
-  create_at: DateTime
-  update_at: DateTime
-  delete_at: DateTime
-}
-
-type ProductDetail {
-  product_detail_id: Int!
-  description: String
-  specifications: String
-  create_at: DateTime
-  update_at: DateTime
-}
-
-type ProductVariation {
-  product_variation_id: Int!
-  product_variation_name: String!
-  base_price: Float!
-  percent_discount: Float!
-  stock_quantity: Int!
-  status: String!
-  product_id: Int!
-  create_at: DateTime
-  update_at: DateTime
-}
-
-type ShopAddress {
-  address_id: Int!
-  shop_id: String!
-  address: String!
-  phone: String!
-  is_default: Boolean
-}
-
-type Location {
-  location_id: String!
-  location_name: String!
-}
-
-type Voucher {
-  id: Int!
-  code: String!
-  discount_percent: Float!
-  minimum_require_price: Float!
-  max_discount_price: Float!
-  quantity: Int!
-  max_use_per_user: Int
-  valid_from: DateTime
-  valid_to: DateTime
-  create_at: DateTime
-  delete_at: DateTime
-}
-
-type ShopVoucher {
-  id: Int!
-  code: String!
-  discount_percent: Float!
-  minimum_require_price: Float!
-  max_discount_price: Float!
-  quantity: Int!
-  max_use_per_user: Int
-  valid_from: DateTime
-  valid_to: DateTime
-  create_at: DateTime
-  delete_at: DateTime
-  shop_id: String!
-  shop: Shop
-}
-
-type Shop {
-  shop_id: String!
-  id_user: String!
-  shop_name: String!
-  logo: String
-  link: String
-  status: Shop_status!
-  location_id: String!
-  create_at: DateTime
-  update_at: DateTime
-  delete_at: DateTime
-  shop_addresses: [ShopAddress!]
-  location: Location
-  shop_vouchers: [ShopVoucher!]
-  user: User!
-  products: [Product!]
-}
-
-"""Trạng thái của cửa hàng"""
-enum Shop_status {
-  active
-  inactive
-  banned
-}
-
-type Product {
-  product_id: Int!
-  product_name: String!
-  brand: String!
-  status: Product_status!
-  category: Category!
-  product_detail_id: Int!
-  shop_id: String!
-  shop: Shop
-  product_detail: ProductDetail!
-  product_images: [ProductImage!]
-  product_variations: [ProductVariation!]!
-  create_at: DateTime
-  update_at: DateTime
-  delete_at: DateTime
-}
-
-"""Trạng thái của sản phẩm"""
-enum Product_status {
-  active
-  inactive
-  out_of_stock
-}
-
-type OrderStats {
-  waiting_for_delivery: Int!
-  processed: Int!
-  delivery: Int!
-  delivered: Int!
-  canceled: Int!
-}
-
-type RevenueByMonth {
-  month: String!
-  revenue: Float!
-}
-
-type TopSellingProduct {
-  product_id: Int!
-  product_name: String!
-  total_quantity: Int!
-  total_revenue: Float!
-  product: Product!
-}
-
-type TopShop {
-  shop_id: String!
-  shop_name: String!
-  total_revenue: Float!
-  total_orders: Int!
-  total_products: Int!
-  shop: Shop!
-}
-
-type RecentOrder {
-  invoice_id: String!
-  order_status: String!
-  total_amount: Float!
-  user: User!
-  shop: Shop!
-}
-
-type AdminDashboardStats {
-  totalRevenue: Float!
-  totalOrders: Int!
-  totalProducts: Int!
-  totalShops: Int!
-  totalUsers: Int!
-  orderStats: OrderStats!
-  revenueByMonth: [RevenueByMonth!]!
-  topSellingProducts: [TopSellingProduct!]!
-  topShops: [TopShop!]!
-  recentOrders: [RecentOrder!]!
-}
-
 type Address {
+  address: String!
   address_id: Int!
   address_name: String!
+  create_at: DateTime
+  delete_at: DateTime
   full_name: String!
-  phone: String!
-  address: String!
   id_user: String!
   is_default: Boolean
-  create_at: DateTime
+  phone: String!
   update_at: DateTime
-  delete_at: DateTime
+}
+
+type AddressByUserId {
+  address: [Address!]
 }
 
 type AddressPagination {
@@ -329,8 +25,53 @@ type AddressPagination {
   totalPage: Int!
 }
 
-type AddressByUserId {
-  address: [Address!]
+type AdminDashboardStats {
+  orderStats: OrderStats!
+  recentOrders: [RecentOrder!]!
+  revenueByMonth: [RevenueByMonth!]!
+  topSellingProducts: [TopSellingProduct!]!
+  topShops: [TopShop!]!
+  totalOrders: Int!
+  totalProducts: Int!
+  totalRevenue: Float!
+  totalShops: Int!
+  totalUsers: Int!
+}
+
+type Cart {
+  cart_id: String!
+  cart_products: [CartProduct!]!
+  create_at: DateTime
+  id_user: String!
+  status: Cart_status!
+  update_at: DateTime
+}
+
+type CartProduct {
+  cart_id: String!
+  cart_product_id: Int!
+  create_at: DateTime
+  is_selected: Boolean!
+  product: Product
+  product_variation: ProductVariation!
+  product_variation_id: Int!
+  quantity: Int!
+  update_at: DateTime
+}
+
+"""Trạng thái của giỏ hàng"""
+enum Cart_status {
+  abandoned
+  active
+  checkout
+}
+
+type Category {
+  category_id: Int!
+  category_name: String!
+  create_at: DateTime
+  delete_at: DateTime
+  update_at: DateTime
 }
 
 type CategoryPagination {
@@ -339,52 +80,173 @@ type CategoryPagination {
   totalPage: Int!
 }
 
-type PaginatedProductDetails {
-  items: [ProductDetail!]!
-  totalCount: Int!
-  page: Int!
-  limit: Int!
-  totalPages: Int!
+type Chat {
+  chat_id: ID!
+  create_at: DateTime!
+  id_user: String!
+  last_message_at: DateTime
+  messages: [Chat_Message!]
+  shop: Shop
+  shop_id: String!
+  update_at: DateTime!
+  user: User
 }
 
-type ProductPagination {
-  data: [Product!]!
-  totalCount: Int!
-  totalPage: Int!
+type Chat_Message {
+  chat_id: String!
+  is_read: Boolean!
+  message: String!
+  message_id: ID!
+  sender_id: String!
+  sender_type: SenderType!
+  sent_at: DateTime!
 }
 
-type CreateProduct {
-  product_id: Int!
-  product_name: String!
-  brand: String!
-  status: Product_status!
-  category_id: Int!
-  product_detail_id: Int!
+input CreateAddressInput {
+  address: String!
+  address_name: String!
+  full_name: String!
+  id_user: String!
+  is_default: Boolean
+  phone: String!
+}
+
+input CreateCartInput {
+  cart_id: String!
+  id_user: String!
+  status: Cart_status!
+}
+
+input CreateCartProductInput {
+  cart_id: String!
+  is_selected: Boolean! = false
+  product_variation_id: Int!
+  quantity: Int! = 1
+}
+
+input CreateCategoryInput {
+  category_name: String!
+}
+
+input CreateChatDto {
+  id_user: String!
   shop_id: String!
 }
 
-type PaginatedProductVariations {
-  data: [ProductVariation!]!
-  totalCount: Int!
-  totalPages: Int!
+input CreateDashboardStatInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
 }
 
-type ShopPagination {
-  data: [Shop!]!
-  totalCount: Int!
-  totalPage: Int!
+input CreateInvoiceInput {
+  payment_method: String!
+  products: [InvoiceProductInput!]!
+  shipping_address_id: Int
+  shipping_fee: Float!
+  shop_id: String!
+  total_amount: Float!
+  user_id: String!
+  voucher_storage_id: Int
 }
 
-type ShopVoucherPagination {
-  totalCount: Int
-  totalPage: Int
-  data: [ShopVoucher!]!
+input CreateLocationInput {
+  location_id: String!
+  location_name: String!
 }
 
-type VoucherPagination {
-  totalCount: Int
-  totalPage: Int
-  data: [Voucher!]!
+type CreateProduct {
+  brand: String!
+  category_id: Int!
+  product_detail_id: Int!
+  product_id: Int!
+  product_name: String!
+  shop_id: String!
+  status: Product_status!
+}
+
+input CreateProductDetailInput {
+  description: String!
+  specifications: String!
+}
+
+input CreateProductImageInput {
+  image_url: String!
+  is_thumbnail: Boolean = false
+  product_id: Int!
+}
+
+input CreateProductInput {
+  brand: String!
+  category_id: Int!
+  product_detail_id: Int!
+  product_name: String!
+  shop_id: String!
+  status: String!
+}
+
+input CreateProductVariationInput {
+  base_price: Float!
+  percent_discount: Float!
+  product_id: Int!
+  product_variation_name: String!
+  status: String!
+  stock_quantity: Int!
+}
+
+input CreateReviewInput {
+  comment: String
+  id_user: String!
+  is_review: Boolean
+  product_id: Int!
+  rating: Float!
+}
+
+input CreateShopAddressInput {
+  address: String!
+  is_default: Boolean = false
+  phone: String!
+  shop_id: String!
+}
+
+input CreateShopInput {
+  create_at: DateTime
+  id_user: String!
+  location_id: String!
+  logo: String
+  shop_id: String!
+  shop_name: String!
+  status: Shop_status!
+}
+
+input CreateShopVoucherInput {
+  code: String!
+  discount_percent: Float!
+  max_discount_price: Float!
+  max_use_per_user: Int
+  minimum_require_price: Float!
+  quantity: Int!
+  shop_id: String!
+  valid_from: DateTime
+  valid_to: DateTime
+}
+
+input CreateVoucherInput {
+  code: String!
+  discount_percent: Float!
+  max_discount_price: Float!
+  max_use_per_user: Int
+  minimum_require_price: Float!
+  quantity: Int!
+  valid_from: DateTime
+  valid_to: DateTime
+}
+
+input CreateVoucherStorageInput {
+  claimed_at: DateTime
+  is_used: Boolean! = false
+  user_id: String!
+  voucher_id: Int!
+  voucher_type: Voucher_type!
 }
 
 type DashboardStat {
@@ -392,24 +254,115 @@ type DashboardStat {
   exampleField: Int!
 }
 
-type SellerDashboardStats {
-  """Tổng doanh thu"""
-  totalRevenue: Float!
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
 
-  """Số lượng đơn hàng"""
-  orderCount: Int!
+input GetAllInvoicesInput {
+  limit: Int! = 10
+  order_status: String
+  page: Int! = 1
+  search: String
+}
 
-  """Số lượng sản phẩm"""
-  productCount: Int!
+input GetInvoicesByShopInput {
+  end_date: DateTime
+  limit: Int! = 10
+  max_amount: Float
+  min_amount: Float
+  order_status: String
+  page: Int! = 1
+  payment_method: String
+  search: String
+  shop_id: String!
+  start_date: DateTime
+}
 
-  """Điểm đánh giá trung bình"""
-  averageRating: Float!
+input GetInvoicesByUserIdInput {
+  limit: Int! = 10
+  page: Int! = 1
+  status: OrderStatus
+  userId: String!
+}
 
-  """Doanh thu theo tháng"""
-  monthlyRevenue: [MonthlyRevenue!]
+input GetOutOfStockProductsInput {
+  limit: Int! = 10
+  page: Int! = 1
+  shop_id: String!
+}
 
-  """Số lượng sản phẩm theo trạng thái"""
-  productStatusCount: [ProductStatus!]
+input GetUserChatsInput {
+  userId: String!
+}
+
+type Invoice {
+  cart_id: String!
+  create_at: DateTime
+  id_user: String!
+  invoice_id: String!
+  invoice_products: [InvoiceProduct!]!
+  order_status: OrderStatus!
+  payment_method: String
+  payment_status: String
+  shipping_address: ShippingAddress
+  shipping_fee: Float!
+  shop: SimpleShop
+  shop_id: String!
+  total_amount: Float!
+  update_at: DateTime
+  user: User!
+}
+
+type InvoiceDetail {
+  address: String
+  create_at: DateTime
+  invoice_id: String!
+  invoice_products: [InvoiceProduct!]
+  order_status: String!
+  payment_method: String
+  payment_status: String
+  phone: String
+  products: [ProductVariationOrder!]
+  shipping_address: ShippingAddress
+  shipping_fee: Float!
+  total_amount: Float!
+  user: User
+  user_name: String!
+}
+
+type InvoicePagination {
+  data: [Invoice!]!
+  totalCount: Int!
+  totalPage: Int!
+}
+
+type InvoiceProduct {
+  discount_amount: Float
+  discount_percent: Float!
+  invoice_product_id: String!
+  price: Float!
+  product_name: String!
+  product_variation: ProductVariationDetail!
+  product_variation_id: Int!
+  quantity: Int!
+  variation_name: String!
+}
+
+input InvoiceProductInput {
+  discount_amount: Float
+  discount_percent: Float
+  original_price: Float
+  price: Float!
+  product_name: String!
+  product_variation_id: Int!
+  quantity: Int!
+  variation_name: String!
+}
+
+type Location {
+  location_id: String!
+  location_name: String!
 }
 
 type MonthlyRevenue {
@@ -420,58 +373,250 @@ type MonthlyRevenue {
   revenue: Float!
 }
 
-type ProductStatus {
-  """Trạng thái sản phẩm"""
-  status: String!
+type Mutation {
+  addProductToCart(addProductToCartInput: CreateCartProductInput!): CartProduct!
+  createAddress(createAddressInput: CreateAddressInput!): Address!
+  createCart(createCartInput: CreateCartInput!): Cart!
+  createCategory(createCategoryInput: CreateCategoryInput!): Category!
+  createChat(createChatInput: CreateChatDto!): Chat!
+  createDashboardStat(createDashboardStatInput: CreateDashboardStatInput!): DashboardStat!
+  createInvoice(createInvoiceInput: CreateInvoiceInput!): Invoice!
+  createLocation(createLocationInput: CreateLocationInput!): Location!
+  createProduct(createProductInput: CreateProductInput!): CreateProduct!
+  createProductDetail(createProductDetailInput: CreateProductDetailInput!): ProductDetail!
+  createProductImage(createProductImageInput: CreateProductImageInput!): ProductImage!
+  createProductVariation(createProductVariationInput: CreateProductVariationInput!): ProductVariation!
+  createReview(createReviewInput: CreateReviewInput!): Review!
+  createShop(createShopInput: CreateShopInput!): Shop!
+  createShopAddress(createShopAddressInput: CreateShopAddressInput!): ShopAddress!
+  createShopVoucher(createShopVoucherInput: CreateShopVoucherInput!): ShopVoucher!
+  createVoucher(createVoucherInput: CreateVoucherInput!): Voucher!
+  createVoucherStorage(createVoucherStorageInput: CreateVoucherStorageInput!): VoucherStorage!
+  markMessagesAsRead(chatId: String!, userId: String!): Boolean!
+  removeAddress(id: Int!): Address!
+  removeCart(id: Int!): Cart!
+  removeCartProduct(cartproductid: Int!, productvariationid: Int!): CartProduct!
+  removeCategory(id: Int!): Category!
+  removeDashboardStat(id: Int!): DashboardStat!
+  removeExpiredVouchers(userId: String!): RemoveExpiredVouchersResponse!
+  removeLocation(location_id: String!): Location!
+  removeProduct(id: Int!): Product!
+  removeProductDetail(id: Int!): ProductDetail!
+  removeProductImage(id: Int!): ProductImage!
+  removeProductVariation(id: Int!): ProductVariation!
+  removeShop(id: Int!): Shop!
+  removeShopAddress(id: Int!): ShopAddress!
+  removeShopVoucher(id: Int!): ShopVoucher!
+  removeVoucher(id: Int!): Voucher!
+  removeVoucherStorage(id: Int!): VoucherStorage!
+  sendMessage(sendMessageInput: SendMessageDto!): Chat_Message!
+  setDefaultShopAddress(id: Int!): ShopAddress!
+  updateAddress(updateAddressInput: UpdateAddressInput!): Address!
+  updateCart(updateCartInput: UpdateCartInput!): Cart!
+  updateCartProduct(updateCartProductInput: UpdateCartProductInput!): CartProduct!
+  updateCategory(updateCategoryInput: UpdateCategoryInput!): Category!
+  updateDashboardStat(updateDashboardStatInput: UpdateDashboardStatInput!): DashboardStat!
+  updateInvoiceStatus(updateInvoiceStatusInput: UpdateInvoiceStatusInput!): Invoice!
+  updateLocation(updateLocationInput: UpdateLocationInput!): Location!
+  updateProduct(shopid: String!, updateProductInput: UpdateProductInput!): Product!
+  updateProductDetail(updateProductDetailInput: UpdateProductDetailInput!): ProductDetail!
+  updateProductImage(updateProductImageInput: UpdateProductImageInput!): ProductImage!
+  updateProductVariation(updateProductVariationInput: UpdateProductVariationInput!): ProductVariation!
+  updateReview(updateReviewInput: UpdateReviewInput!): Review!
+  updateShop(updateShopInput: UpdateShopInput!): Shop!
+  updateShopAddress(updateShopAddressInput: UpdateShopAddressInput!): ShopAddress!
+  updateShopVoucher(updateShopVoucherInput: UpdateShopVoucherInput!): ShopVoucher!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+  updateVoucher(updateVoucherInput: UpdateVoucherInput!): Voucher!
+  updateVoucherStorage(updateVoucherStorageInput: UpdateVoucherStorageInput!): VoucherStorage!
+}
 
+type OrderStats {
+  canceled: Int!
+  delivered: Int!
+  delivery: Int!
+  processed: Int!
+  waiting_for_delivery: Int!
+}
+
+"""Status of the order"""
+enum OrderStatus {
+  CANCELED
+  DELIVERED
+  DELIVERY
+  PROCESSED
+  WAITING_FOR_DELIVERY
+}
+
+type PaginatedProductDetails {
+  items: [ProductDetail!]!
+  limit: Int!
+  page: Int!
+  totalCount: Int!
+  totalPages: Int!
+}
+
+type PaginatedProductVariations {
+  data: [ProductVariation!]!
+  totalCount: Int!
+  totalPages: Int!
+}
+
+input PaginationInput {
+  limit: Int = 10
+  page: Int = 1
+  search: String
+}
+
+type Product {
+  brand: String!
+  category: Category!
+  create_at: DateTime
+  delete_at: DateTime
+  product_detail: ProductDetail!
+  product_detail_id: Int!
+  product_id: Int!
+  product_images: [ProductImage!]
+  product_name: String!
+  product_variations: [ProductVariation!]!
+  shop: Shop
+  shop_id: String!
+  status: Product_status!
+  update_at: DateTime
+}
+
+type ProductDetail {
+  create_at: DateTime
+  description: String
+  product_detail_id: Int!
+  specifications: String
+  update_at: DateTime
+}
+
+type ProductImage {
+  create_at: DateTime
+  image_id: Int!
+  image_url: String!
+  is_thumbnail: Boolean
+  product_id: Int!
+}
+
+type ProductPagination {
+  data: [Product!]!
+  totalCount: Int!
+  totalPage: Int!
+}
+
+type ProductStatus {
   """Số lượng"""
   count: Int!
+
+  """Trạng thái sản phẩm"""
+  status: String!
 }
 
-type CartProduct {
-  cart_product_id: Int!
-  cart_id: String!
+type ProductVariation {
+  base_price: Float!
+  create_at: DateTime
+  percent_discount: Float!
+  product_id: Int!
   product_variation_id: Int!
-  quantity: Int!
-  create_at: DateTime
+  product_variation_name: String!
+  status: String!
+  stock_quantity: Int!
   update_at: DateTime
-  is_selected: Boolean!
-  product_variation: ProductVariation!
-  product: Product
 }
 
-type Cart {
-  cart_id: String!
-  id_user: String!
-  status: Cart_status!
-  create_at: DateTime
-  update_at: DateTime
-  cart_products: [CartProduct!]!
+type ProductVariationDetail {
+  base_price: Float!
+  percent_discount: Float!
+  product_images: [SimpleProductImage!]!
+  product_variation_name: String!
+  status: String!
 }
 
-"""Trạng thái của giỏ hàng"""
-enum Cart_status {
+type ProductVariationOrder {
+  base_price: Float!
+  image_url: String
+  percent_discount: Float!
+  product_name: String!
+  product_variation_name: String!
+  quantity: Float!
+  shop_id: String!
+  shop_name: String!
+  status: String!
+}
+
+"""Trạng thái của sản phẩm"""
+enum Product_status {
   active
-  checkout
-  abandoned
+  inactive
+  out_of_stock
 }
 
-type VoucherStorage {
-  voucher_storage_id: Int!
-  user_id: String!
-  voucher_id: Int!
-  voucher_type: Voucher_type!
-  claimed_at: DateTime
-  is_used: Boolean!
-  used_at: DateTime
-  voucher: Voucher
-  shop_voucher: ShopVoucher
+type Query {
+  address(id: Int!): Address!
+  addressByUserId(id: String!): AddressByUserId!
+  addresss(addresss: PaginationInput!): AddressPagination!
+  cartProduct(id: Int!): CartProduct!
+  category(id: Int!): Category!
+  categorys(pagination: PaginationInput!): CategoryPagination!
+  checkUserCanReview(productId: Int!, userId: String!): ReviewCheckResult!
+  dashboardStat(id: Int!): DashboardStat!
+  dashboardStats: [DashboardStat!]!
+  getAdminDashboardStats: AdminDashboardStats!
+  getAllInvoices(getAllInvoicesInput: GetAllInvoicesInput!): InvoicePagination!
+  getCartProducts(cart_id: String!): [CartProduct!]!
+  getChatById(chatId: String!): Chat!
+  getInvoiceDetail(invoice_id: String!): InvoiceDetail!
+  getInvoicesByShop(getInvoicesByShopInput: GetInvoicesByShopInput!): InvoicePagination!
+  getInvoicesByUserId(getInvoicesByUserIdInput: GetInvoicesByUserIdInput!): InvoicePagination!
+  getLatestValidVouchers(limit: Int!): [Voucher!]!
+  getOutOfStockProducts(getOutOfStockProductsInput: GetOutOfStockProductsInput!): InvoicePagination!
+  getProductReviews(pagination: ReviewPaginationInput, productId: Int!): ReviewPagination!
+  getProductsByShopId(id: String!, pagination: PaginationInput): ProductPagination!
+  getSellerDashboardStats(shopId: String!): SellerDashboardStats!
+  getShopChats(shopId: String!): [Chat!]!
+  getShopIdByUserId(id: String!): Shop!
+  getShopVouchersByShopId(paginationInput: PaginationInput!, shopId: String!): ShopVoucherPagination!
+  getUserChats(input: GetUserChatsInput!): [Chat!]!
+  getUserPurchaseCategories(userId: String!): [Category!]!
+  getUserReviewForProduct(productId: Int!, userId: String!): Review
+  getUserVouchersByUserId(userId: String!): [VoucherStorage!]!
+  getUserVouchersForCheckout(shopId: String!, userId: String!): [VoucherStorage!]!
+  getcart(id: String!): Cart!
+  location(location_id: String!): Location!
+  locations: [Location!]!
+  product(id: Int!): Product!
+  productBySlug(slug: String!): Product!
+  productDetail(id: Int!): ProductDetail!
+  productDetails(pagination: PaginationInput): PaginatedProductDetails!
+  productImage(id: Int!): ProductImage!
+  productImages: [ProductImage!]!
+  productImagesByProductId(productId: Int!): [ProductImage!]!
+  productVariation(id: Int!): ProductVariation!
+  productVariations(pagination: PaginationInput): PaginatedProductVariations!
+  productVariationsByProductId(pagination: PaginationInput, productId: Int!): PaginatedProductVariations!
+  products(pagination: PaginationInput!): ProductPagination!
+  shop(id: String!): Shop!
+  shopAddress(id: Int!): ShopAddress!
+  shopAddresss: [ShopAddress!]!
+  shopVoucher(id: Int!): ShopVoucher!
+  shopVouchers(paginationInput: PaginationInput!): ShopVoucherPagination!
+  shops(pagination: PaginationInput!): ShopPagination!
+  user(id: String!): User!
+  users(pagination: PaginationInput!): UserPagination!
+  voucher(id: Int!): Voucher!
+  voucherStorage(id: Int!): VoucherStorage!
+  vouchers(paginationInput: PaginationInput!): VoucherPagination!
 }
 
-"""Loại voucher"""
-enum Voucher_type {
-  voucher
-  shop_voucher
+type RecentOrder {
+  invoice_id: String!
+  order_status: String!
+  shop: Shop!
+  total_amount: Float!
+  user: User!
 }
 
 type RemoveExpiredVouchersResponse {
@@ -479,50 +624,22 @@ type RemoveExpiredVouchersResponse {
   message: String!
 }
 
-type Chat_Message {
-  message_id: ID!
-  chat_id: String!
-  sender_type: SenderType!
-  sender_id: String!
-  message: String!
-  sent_at: DateTime!
-  is_read: Boolean!
-}
-
-enum SenderType {
-  USER
-  SHOP
-}
-
-type Chat {
-  chat_id: ID!
-  id_user: String!
-  shop_id: String!
-  last_message_at: DateTime
-  create_at: DateTime!
-  update_at: DateTime!
-  user: User
-  shop: Shop
-  messages: [Chat_Message!]
+type RevenueByMonth {
+  month: String!
+  revenue: Float!
 }
 
 type Review {
-  review_id: Int!
-  rating: Float!
   comment: String
-  is_review: Boolean
-  product_id: Int!
-  id_user: String!
   create_at: DateTime
-  update_at: DateTime
+  id_user: String!
+  is_review: Boolean
   product: Product
+  product_id: Int!
+  rating: Float!
+  review_id: Int!
+  update_at: DateTime
   user: User
-}
-
-type ReviewPagination {
-  data: [Review!]!
-  totalCount: Int!
-  totalPage: Int!
 }
 
 type ReviewCheckResult {
@@ -532,392 +649,176 @@ type ReviewCheckResult {
   shopId: String
 }
 
-type Query {
-  users(pagination: PaginationInput!): UserPagination!
-  user(id: String!): User!
-  getUserPurchaseCategories(userId: String!): [Category!]!
-  getInvoicesByUserId(getInvoicesByUserIdInput: GetInvoicesByUserIdInput!): InvoicePagination!
-  getInvoicesByShop(getInvoicesByShopInput: GetInvoicesByShopInput!): InvoicePagination!
-  getInvoiceDetail(invoice_id: String!): InvoiceDetail!
-  getOutOfStockProducts(getOutOfStockProductsInput: GetOutOfStockProductsInput!): InvoicePagination!
-  getAllInvoices(getAllInvoicesInput: GetAllInvoicesInput!): InvoicePagination!
-  getAdminDashboardStats: AdminDashboardStats!
-  locations: [Location!]!
-  location(location_id: String!): Location!
-  addressByUserId(id: String!): AddressByUserId!
-  addresss(addresss: PaginationInput!): AddressPagination!
-  address(id: Int!): Address!
-  shopAddresss: [ShopAddress!]!
-  shopAddress(id: Int!): ShopAddress!
-  categorys(pagination: PaginationInput!): CategoryPagination!
-  category(id: Int!): Category!
-  productDetails(pagination: PaginationInput): PaginatedProductDetails!
-  productDetail(id: Int!): ProductDetail!
-  products(pagination: PaginationInput!): ProductPagination!
-  getProductsByShopId(id: String!, pagination: PaginationInput): ProductPagination!
-  product(id: Int!): Product!
-  productBySlug(slug: String!): Product!
-  productImages: [ProductImage!]!
-  productImage(id: Int!): ProductImage!
-  productImagesByProductId(productId: Int!): [ProductImage!]!
-  productVariations(pagination: PaginationInput): PaginatedProductVariations!
-  productVariationsByProductId(productId: Int!, pagination: PaginationInput): PaginatedProductVariations!
-  productVariation(id: Int!): ProductVariation!
-  shops(pagination: PaginationInput!): ShopPagination!
-  shop(id: String!): Shop!
-  getShopIdByUserId(id: String!): Shop!
-  shopVouchers(paginationInput: PaginationInput!): ShopVoucherPagination!
-  getShopVouchersByShopId(shopId: String!, paginationInput: PaginationInput!): ShopVoucherPagination!
-  shopVoucher(id: Int!): ShopVoucher!
-  vouchers(paginationInput: PaginationInput!): VoucherPagination!
-  voucher(id: Int!): Voucher!
-  getLatestValidVouchers(limit: Int!): [Voucher!]!
-  dashboardStats: [DashboardStat!]!
-  dashboardStat(id: Int!): DashboardStat!
-  getSellerDashboardStats(shopId: String!): SellerDashboardStats!
-  getcart(id: String!): Cart!
-  getCartProducts(cart_id: String!): [CartProduct!]!
-  cartProduct(id: Int!): CartProduct!
-  getUserVouchersByUserId(userId: String!): [VoucherStorage!]!
-  getUserVouchersForCheckout(userId: String!, shopId: String!): [VoucherStorage!]!
-  voucherStorage(id: Int!): VoucherStorage!
-  getUserChats(input: GetUserChatsInput!): [Chat!]!
-  getShopChats(shopId: String!): [Chat!]!
-  getChatById(chatId: String!): Chat!
-  getProductReviews(productId: Int!, pagination: ReviewPaginationInput): ReviewPagination!
-  getUserReviewForProduct(userId: String!, productId: Int!): Review
-  checkUserCanReview(userId: String!, productId: Int!): ReviewCheckResult!
-}
-
-input PaginationInput {
-  page: Int = 1
-  limit: Int = 10
-  search: String
-}
-
-input GetInvoicesByUserIdInput {
-  userId: String!
-  page: Int! = 1
-  limit: Int! = 10
-  status: OrderStatus
-}
-
-input GetInvoicesByShopInput {
-  shop_id: String!
-  order_status: String
-  page: Int! = 1
-  limit: Int! = 10
-  search: String
-  start_date: DateTime
-  end_date: DateTime
-  payment_method: String
-  min_amount: Float
-  max_amount: Float
-}
-
-input GetOutOfStockProductsInput {
-  shop_id: String!
-  page: Int! = 1
-  limit: Int! = 10
-}
-
-input GetAllInvoicesInput {
-  order_status: String
-  page: Int! = 1
-  limit: Int! = 10
-  search: String
-}
-
-input GetUserChatsInput {
-  userId: String!
+type ReviewPagination {
+  data: [Review!]!
+  totalCount: Int!
+  totalPage: Int!
 }
 
 input ReviewPaginationInput {
-  page: Int! = 1
   limit: Int! = 10
+  page: Int! = 1
 }
 
-type Mutation {
-  updateUser(updateUserInput: UpdateUserInput!): User!
-  createInvoice(createInvoiceInput: CreateInvoiceInput!): Invoice!
-  updateInvoiceStatus(updateInvoiceStatusInput: UpdateInvoiceStatusInput!): Invoice!
-  createLocation(createLocationInput: CreateLocationInput!): Location!
-  updateLocation(updateLocationInput: UpdateLocationInput!): Location!
-  removeLocation(location_id: String!): Location!
-  createAddress(createAddressInput: CreateAddressInput!): Address!
-  updateAddress(updateAddressInput: UpdateAddressInput!): Address!
-  removeAddress(id: Int!): Address!
-  createShopAddress(createShopAddressInput: CreateShopAddressInput!): ShopAddress!
-  updateShopAddress(updateShopAddressInput: UpdateShopAddressInput!): ShopAddress!
-  removeShopAddress(id: Int!): ShopAddress!
-  setDefaultShopAddress(id: Int!): ShopAddress!
-  createCategory(createCategoryInput: CreateCategoryInput!): Category!
-  updateCategory(updateCategoryInput: UpdateCategoryInput!): Category!
-  removeCategory(id: Int!): Category!
-  createProductDetail(createProductDetailInput: CreateProductDetailInput!): ProductDetail!
-  updateProductDetail(updateProductDetailInput: UpdateProductDetailInput!): ProductDetail!
-  removeProductDetail(id: Int!): ProductDetail!
-  createProduct(createProductInput: CreateProductInput!): CreateProduct!
-  updateProduct(shopid: String!, updateProductInput: UpdateProductInput!): Product!
-  removeProduct(id: Int!): Product!
-  createProductImage(createProductImageInput: CreateProductImageInput!): ProductImage!
-  updateProductImage(updateProductImageInput: UpdateProductImageInput!): ProductImage!
-  removeProductImage(id: Int!): ProductImage!
-  createProductVariation(createProductVariationInput: CreateProductVariationInput!): ProductVariation!
-  updateProductVariation(updateProductVariationInput: UpdateProductVariationInput!): ProductVariation!
-  removeProductVariation(id: Int!): ProductVariation!
-  createShop(createShopInput: CreateShopInput!): Shop!
-  updateShop(updateShopInput: UpdateShopInput!): Shop!
-  removeShop(id: Int!): Shop!
-  createShopVoucher(createShopVoucherInput: CreateShopVoucherInput!): ShopVoucher!
-  updateShopVoucher(updateShopVoucherInput: UpdateShopVoucherInput!): ShopVoucher!
-  removeShopVoucher(id: Int!): ShopVoucher!
-  createVoucher(createVoucherInput: CreateVoucherInput!): Voucher!
-  updateVoucher(updateVoucherInput: UpdateVoucherInput!): Voucher!
-  removeVoucher(id: Int!): Voucher!
-  createDashboardStat(createDashboardStatInput: CreateDashboardStatInput!): DashboardStat!
-  updateDashboardStat(updateDashboardStatInput: UpdateDashboardStatInput!): DashboardStat!
-  removeDashboardStat(id: Int!): DashboardStat!
-  createCart(createCartInput: CreateCartInput!): Cart!
-  updateCart(updateCartInput: UpdateCartInput!): Cart!
-  removeCart(id: Int!): Cart!
-  addProductToCart(addProductToCartInput: CreateCartProductInput!): CartProduct!
-  updateCartProduct(updateCartProductInput: UpdateCartProductInput!): CartProduct!
-  removeCartProduct(cartproductid: Int!, productvariationid: Int!): CartProduct!
-  createVoucherStorage(createVoucherStorageInput: CreateVoucherStorageInput!): VoucherStorage!
-  updateVoucherStorage(updateVoucherStorageInput: UpdateVoucherStorageInput!): VoucherStorage!
-  removeVoucherStorage(id: Int!): VoucherStorage!
-  removeExpiredVouchers(userId: String!): RemoveExpiredVouchersResponse!
-  createChat(createChatInput: CreateChatDto!): Chat!
-  sendMessage(sendMessageInput: SendMessageDto!): Chat_Message!
-  markMessagesAsRead(chatId: String!, userId: String!): Boolean!
-  createReview(createReviewInput: CreateReviewInput!): Review!
-  updateReview(updateReviewInput: UpdateReviewInput!): Review!
+type SellerDashboardStats {
+  """Điểm đánh giá trung bình"""
+  averageRating: Float!
+
+  """Doanh thu theo tháng"""
+  monthlyRevenue: [MonthlyRevenue!]
+
+  """Số lượng đơn hàng"""
+  orderCount: Int!
+
+  """Số lượng sản phẩm"""
+  productCount: Int!
+
+  """Số lượng sản phẩm theo trạng thái"""
+  productStatusCount: [ProductStatus!]
+
+  """Tổng doanh thu"""
+  totalRevenue: Float!
 }
 
-input UpdateUserInput {
-  user_name: String
-  email: String
-  password: String
-  role: String
-  phone: String
-  avatar: String
-  id: String!
+input SendMessageDto {
+  chat_id: String!
+  message: String!
+  sender_id: String!
 }
 
-input CreateInvoiceInput {
-  user_id: String!
-  shop_id: String!
-  payment_method: String!
-  shipping_address_id: Int
-  products: [InvoiceProductInput!]!
-  total_amount: Float!
-  shipping_fee: Float!
-  voucher_storage_id: Int
+enum SenderType {
+  SHOP
+  USER
 }
 
-input InvoiceProductInput {
-  product_variation_id: Int!
-  product_name: String!
-  variation_name: String!
-  price: Float!
-  original_price: Float
-  quantity: Int!
-  discount_percent: Float
-  discount_amount: Float
-}
-
-input UpdateInvoiceStatusInput {
-  invoice_id: String!
-  order_status: String!
-}
-
-input CreateLocationInput {
-  location_id: String!
-  location_name: String!
-}
-
-input UpdateLocationInput {
-  location_id: String!
-  location_name: String!
-}
-
-input CreateAddressInput {
-  full_name: String!
-  address_name: String!
-  phone: String!
+type ShippingAddress {
   address: String!
+  phone: String!
+}
+
+type Shop {
+  create_at: DateTime
+  delete_at: DateTime
   id_user: String!
+  link: String
+  location: Location
+  location_id: String!
+  logo: String
+  products: [Product!]
+  shop_addresses: [ShopAddress!]
+  shop_id: String!
+  shop_name: String!
+  shop_vouchers: [ShopVoucher!]
+  status: Shop_status!
+  update_at: DateTime
+  user: User!
+}
+
+type ShopAddress {
+  address: String!
+  address_id: Int!
   is_default: Boolean
+  phone: String!
+  shop_id: String!
+}
+
+type ShopPagination {
+  data: [Shop!]!
+  totalCount: Int!
+  totalPage: Int!
+}
+
+type ShopVoucher {
+  code: String!
+  create_at: DateTime
+  delete_at: DateTime
+  discount_percent: Float!
+  id: Int!
+  max_discount_price: Float!
+  max_use_per_user: Int
+  minimum_require_price: Float!
+  quantity: Int!
+  shop: Shop
+  shop_id: String!
+  valid_from: DateTime
+  valid_to: DateTime
+}
+
+type ShopVoucherPagination {
+  data: [ShopVoucher!]!
+  totalCount: Int
+  totalPage: Int
+}
+
+"""Trạng thái của cửa hàng"""
+enum Shop_status {
+  active
+  banned
+  inactive
+}
+
+type SimpleProductImage {
+  image_url: String!
+  is_thumbnail: Boolean
+}
+
+type SimpleShop {
+  create_at: DateTime
+  delete_at: DateTime
+  id_user: String!
+  link: String
+  location_id: String
+  shop_id: String!
+  shop_name: String!
+  status: String!
+  update_at: DateTime
+}
+
+type TopSellingProduct {
+  product: Product!
+  product_id: Int!
+  product_name: String!
+  total_quantity: Int!
+  total_revenue: Float!
+}
+
+type TopShop {
+  shop: Shop!
+  shop_id: String!
+  shop_name: String!
+  total_orders: Int!
+  total_products: Int!
+  total_revenue: Float!
 }
 
 input UpdateAddressInput {
-  full_name: String!
-  address_name: String!
-  phone: String!
   address: String!
+  address_id: Int!
+  address_name: String!
+  full_name: String!
   id_user: String
   is_default: Boolean
-  address_id: Int!
-}
-
-input CreateShopAddressInput {
-  address: String!
-  shop_id: String!
   phone: String!
-  is_default: Boolean = false
 }
 
-input UpdateShopAddressInput {
-  address_id: Int!
-  address: String!
-  phone: String!
-  shop_id: String
-  is_default: Boolean
+input UpdateCartInput {
+  cart_id: String
+  id: Int!
+  id_user: String
+  status: Cart_status
 }
 
-input CreateCategoryInput {
-  category_name: String!
+input UpdateCartProductInput {
+  cart_id: String
+  id: Int!
+  is_selected: Boolean = false
+  product_variation_id: Int
+  quantity: Int = 1
 }
 
 input UpdateCategoryInput {
   category_id: Int!
   category_name: String!
-}
-
-input CreateProductDetailInput {
-  description: String!
-  specifications: String!
-}
-
-input UpdateProductDetailInput {
-  description: String
-  specifications: String
-  product_detail_id: Int!
-}
-
-input CreateProductInput {
-  product_name: String!
-  brand: String!
-  status: String!
-  category_id: Int!
-  product_detail_id: Int!
-  shop_id: String!
-}
-
-input UpdateProductInput {
-  product_id: Int!
-  product_name: String
-  brand: String
-  status: String
-  category_id: Int
-  product_detail_id: Int
-}
-
-input CreateProductImageInput {
-  product_id: Int!
-  image_url: String!
-  is_thumbnail: Boolean = false
-}
-
-input UpdateProductImageInput {
-  product_id: Int
-  image_url: String
-  is_thumbnail: Boolean = false
-  image_id: Int!
-}
-
-input CreateProductVariationInput {
-  product_variation_name: String!
-  base_price: Float!
-  percent_discount: Float!
-  stock_quantity: Int!
-  status: String!
-  product_id: Int!
-}
-
-input UpdateProductVariationInput {
-  product_variation_name: String
-  base_price: Float
-  percent_discount: Float
-  stock_quantity: Int
-  status: String
-  product_id: Int
-  product_variation_id: Int!
-}
-
-input CreateShopInput {
-  shop_id: String!
-  shop_name: String!
-  logo: String
-  status: Shop_status!
-  location_id: String!
-  id_user: String!
-  create_at: DateTime
-}
-
-input UpdateShopInput {
-  shop_id: String
-  shop_name: String
-  logo: String
-  status: Shop_status
-  location_id: String
-  id_user: String
-  create_at: DateTime
-  id: Int!
-}
-
-input CreateShopVoucherInput {
-  code: String!
-  shop_id: String!
-  discount_percent: Float!
-  minimum_require_price: Float!
-  max_discount_price: Float!
-  quantity: Int!
-  max_use_per_user: Int
-  valid_from: DateTime
-  valid_to: DateTime
-}
-
-input UpdateShopVoucherInput {
-  code: String
-  shop_id: String
-  discount_percent: Float!
-  minimum_require_price: Float!
-  max_discount_price: Float!
-  quantity: Int!
-  max_use_per_user: Int!
-  valid_from: DateTime!
-  valid_to: DateTime!
-  id: Int!
-}
-
-input CreateVoucherInput {
-  code: String!
-  discount_percent: Float!
-  minimum_require_price: Float!
-  max_discount_price: Float!
-  quantity: Int!
-  max_use_per_user: Int
-  valid_from: DateTime
-  valid_to: DateTime
-}
-
-input UpdateVoucherInput {
-  code: String
-  discount_percent: Float!
-  minimum_require_price: Float!
-  max_discount_price: Float!
-  quantity: Int!
-  max_use_per_user: Int!
-  valid_from: DateTime!
-  valid_to: DateTime!
-  id: Int!
-}
-
-input CreateDashboardStatInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
 }
 
 input UpdateDashboardStatInput {
@@ -926,72 +827,171 @@ input UpdateDashboardStatInput {
   id: Int!
 }
 
-input CreateCartInput {
-  cart_id: String!
-  id_user: String!
-  status: Cart_status!
+input UpdateInvoiceStatusInput {
+  invoice_id: String!
+  order_status: String!
 }
 
-input UpdateCartInput {
-  cart_id: String
-  id_user: String
-  status: Cart_status
-  id: Int!
+input UpdateLocationInput {
+  location_id: String!
+  location_name: String!
 }
 
-input CreateCartProductInput {
-  cart_id: String!
-  product_variation_id: Int!
-  quantity: Int! = 1
-  is_selected: Boolean! = false
+input UpdateProductDetailInput {
+  description: String
+  product_detail_id: Int!
+  specifications: String
 }
 
-input UpdateCartProductInput {
-  cart_id: String
-  product_variation_id: Int
-  quantity: Int = 1
-  is_selected: Boolean = false
-  id: Int!
+input UpdateProductImageInput {
+  image_id: Int!
+  image_url: String
+  is_thumbnail: Boolean = false
+  product_id: Int
 }
 
-input CreateVoucherStorageInput {
-  user_id: String!
-  voucher_id: Int!
-  voucher_type: Voucher_type!
-  claimed_at: DateTime
-  is_used: Boolean! = false
-}
-
-input UpdateVoucherStorageInput {
-  user_id: String
-  voucher_id: Int
-  voucher_type: Voucher_type
-  claimed_at: DateTime
-  is_used: Boolean = false
-  id: Int!
-}
-
-input CreateChatDto {
-  id_user: String!
-  shop_id: String!
-}
-
-input SendMessageDto {
-  chat_id: String!
-  sender_id: String!
-  message: String!
-}
-
-input CreateReviewInput {
+input UpdateProductInput {
+  brand: String
+  category_id: Int
+  product_detail_id: Int
   product_id: Int!
-  id_user: String!
-  rating: Float!
-  comment: String
-  is_review: Boolean
+  product_name: String
+  status: String
+}
+
+input UpdateProductVariationInput {
+  base_price: Float
+  percent_discount: Float
+  product_id: Int
+  product_variation_id: Int!
+  product_variation_name: String
+  status: String
+  stock_quantity: Int
 }
 
 input UpdateReviewInput {
-  review_id: Int!
-  rating: Float
   comment: String
+  rating: Float
+  review_id: Int!
+}
+
+input UpdateShopAddressInput {
+  address: String!
+  address_id: Int!
+  is_default: Boolean
+  phone: String!
+  shop_id: String
+}
+
+input UpdateShopInput {
+  create_at: DateTime
+  id: Int!
+  id_user: String
+  location_id: String
+  logo: String
+  shop_id: String
+  shop_name: String
+  status: Shop_status
+}
+
+input UpdateShopVoucherInput {
+  code: String
+  discount_percent: Float!
+  id: Int!
+  max_discount_price: Float!
+  max_use_per_user: Int!
+  minimum_require_price: Float!
+  quantity: Int!
+  shop_id: String
+  valid_from: DateTime!
+  valid_to: DateTime!
+}
+
+input UpdateUserInput {
+  avatar: String
+  email: String
+  id: String!
+  password: String
+  phone: String
+  role: String
+  user_name: String
+}
+
+input UpdateVoucherInput {
+  code: String
+  discount_percent: Float!
+  id: Int!
+  max_discount_price: Float!
+  max_use_per_user: Int!
+  minimum_require_price: Float!
+  quantity: Int!
+  valid_from: DateTime!
+  valid_to: DateTime!
+}
+
+input UpdateVoucherStorageInput {
+  claimed_at: DateTime
+  id: Int!
+  is_used: Boolean = false
+  user_id: String
+  voucher_id: Int
+  voucher_type: Voucher_type
+}
+
+type User {
+  avatar: String
+  create_at: DateTime
+  delete_at: DateTime
+  email: String!
+  id_user: String!
+  password: String!
+  phone: String
+  role: String!
+  status: String
+  update_at: DateTime
+  user_name: String!
+}
+
+type UserPagination {
+  data: [User!]
+  totalCount: Int
+  totalPage: Int
+}
+
+type Voucher {
+  code: String!
+  create_at: DateTime
+  delete_at: DateTime
+  discount_percent: Float!
+  id: Int!
+  max_discount_price: Float!
+  max_use_per_user: Int
+  minimum_require_price: Float!
+  quantity: Int!
+  valid_from: DateTime
+  valid_to: DateTime
+}
+
+type VoucherPagination {
+  data: [Voucher!]!
+  totalCount: Int
+  totalPage: Int
+}
+
+type VoucherStorage {
+  claimed_at: DateTime
+  is_used: Boolean!
+  shop_voucher: ShopVoucher
+  used_at: DateTime
+  user_id: String!
+  voucher: Voucher
+  voucher_id: Int!
+  voucher_storage_id: Int!
+  voucher_type: Voucher_type!
+}
+
+"""Loại voucher"""
+enum Voucher_type {
+  shop_voucher
+  voucher
 }
