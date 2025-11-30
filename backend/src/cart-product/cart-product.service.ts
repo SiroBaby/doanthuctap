@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCartProductInput } from './dto/create-cart-product.input';
 import { UpdateCartProductInput } from './dto/update-cart-product.input';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class CartProductService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async addProductToCart(addProductToCartInput: CreateCartProductInput) {
     const cart = await this.prisma.cart.findUnique({
@@ -138,7 +138,7 @@ export class CartProductService {
       },
     });
     if (!cartProduct) {
-      throw new Error('Cart product not found');  
+      throw new Error('Cart product not found');
     }
 
     return this.prisma.cart_Product.delete({

@@ -1,10 +1,10 @@
 import { ObjectType, Field, Int, registerEnumType } from '@nestjs/graphql';
 import { Product_status } from '@prisma/client';
-import { Category } from 'src/category/entities/category.entity';
-import { ProductDetail } from 'src/product-detail/entities/product-detail.entity';
-import { ProductImage } from 'src/product-image/entities/product-image.entity';
-import { ProductVariation } from 'src/product-variations/entities/product-variation.entity';
-import { Shop } from 'src/shop/entities/shop.entity';
+import { Category } from '../../category/entities/category.entity';
+import { ProductDetail } from '../../product-detail/entities/product-detail.entity';
+import { ProductImage } from '../../product-image/entities/product-image.entity'
+import { ProductVariation } from '../../product-variations/entities/product-variation.entity';
+import { Shop } from '../../shop/entities/shop.entity';
 
 registerEnumType(Product_status, {
   name: 'Product_status',
@@ -48,10 +48,10 @@ export class Product {
 
   @Field(() => Date, { nullable: true })
   create_at?: Date;
-  
+
   @Field(() => Date, { nullable: true })
   update_at?: Date;
-  
+
   @Field(() => Date, { nullable: true })
   delete_at?: Date;
 }

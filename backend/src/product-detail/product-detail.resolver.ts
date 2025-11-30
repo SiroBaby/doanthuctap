@@ -4,7 +4,7 @@ import { ProductDetail } from './entities/product-detail.entity';
 import { CreateProductDetailInput } from './dto/create-product-detail.input';
 import { UpdateProductDetailInput } from './dto/update-product-detail.input';
 import { PaginatedProductDetails } from './entities/paginated-product-details.entity';
-import { PaginationInput } from 'src/common/dto/pagination.input';
+import { PaginationInput } from '../common/dto/pagination.input';
 
 @Resolver(() => ProductDetail)
 export class ProductDetailResolver {

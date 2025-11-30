@@ -3,22 +3,22 @@ import { CartProductService } from './cart-product.service';
 import { CartProduct } from './entities/cart-product.entity';
 import { CreateCartProductInput } from './dto/create-cart-product.input';
 import { UpdateCartProductInput } from './dto/update-cart-product.input';
-import { Product } from 'src/product/entities/product.entity';
-import { PrismaService } from 'src/prisma.service';
+import { Product } from '../product/entities/product.entity';
+import { PrismaService } from '../prisma.service';
 
 @Resolver(() => CartProduct)
 export class CartProductResolver {
   constructor(
     private readonly cartProductService: CartProductService,
     private readonly prisma: PrismaService
-  ) {}
+  ) { }
 
   @Mutation(() => CartProduct)
   addProductToCart(@Args('addProductToCartInput') addProductToCartInput: CreateCartProductInput) {
     return this.cartProductService.addProductToCart(addProductToCartInput);
   }
 
-  
+
   @Query(() => [CartProduct], { name: 'getCartProducts' })
   getCartProducts(@Args('cart_id', { type: () => String }) cart_id: string) {
     return this.cartProductService.getCartProducts(cart_id);
@@ -30,7 +30,7 @@ export class CartProductResolver {
     if (!cartProduct.product_variation) {
       return null;
     }
-    
+
     const productId = cartProduct.product_variation.product_id;
     return this.prisma.product.findUnique({
       where: { product_id: productId }

@@ -1,6 +1,6 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { Product } from 'src/product/entities/product.entity';
-import { ProductVariation } from 'src/product-variations/entities/product-variation.entity';
+import { Product } from '../../product/entities/product.entity';
+import { ProductVariation } from '../../product-variations/entities/product-variation.entity';
 
 @ObjectType()
 export class CartProduct {
@@ -20,8 +20,8 @@ export class CartProduct {
   create_at?: Date;
 
   @Field(() => Date, { nullable: true })
-  update_at?: Date; 
-  
+  update_at?: Date;
+
   @Field(() => Boolean)
   is_selected: boolean;
 

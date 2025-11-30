@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateShopAddressInput } from './dto/create-shop-address.input';
 import { UpdateShopAddressInput } from './dto/update-shop-address.input';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '../prisma.service';
 import { abort } from 'process';
 
 @Injectable()

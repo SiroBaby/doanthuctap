@@ -3,7 +3,7 @@ import { ProductImageService } from './product-image.service';
 import { ProductImage } from './entities/product-image.entity';
 import { CreateProductImageInput } from './dto/create-product-image.input';
 import { UpdateProductImageInput } from './dto/update-product-image.input';
-import { PaginationInput } from 'src/common/dto/pagination.input';
+import { PaginationInput } from '../common/dto/pagination.input';
 PaginationInput
 
 @Resolver(() => ProductImage)

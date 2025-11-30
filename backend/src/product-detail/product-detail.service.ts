@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDetailInput } from './dto/create-product-detail.input';
 import { UpdateProductDetailInput } from './dto/update-product-detail.input';
 import { PrismaService } from '../prisma.service';
-import { PaginationInput } from 'src/common/dto/pagination.input';
+import { PaginationInput } from '../common/dto/pagination.input';
 
 @Injectable()
 export class ProductDetailService {

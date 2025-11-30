@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { CreateShopInput } from './dto/create-shop.input';
 import { UpdateShopInput } from './dto/update-shop.input';
-import { PaginationInput } from 'src/common/dto/pagination.input';
-import { PrismaService } from 'src/prisma.service';
+import { PaginationInput } from '../common/dto/pagination.input';
+import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class ShopService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   create(createShopInput: CreateShopInput) {
     return this.prisma.shop.create({
@@ -27,11 +27,11 @@ export class ShopService {
 
     const wherecondition = search
       ? {
-          OR: [
-            { shop_id: { contains: search } },
-            { shop_name: { contains: search } },
-          ],
-        }
+        OR: [
+          { shop_id: { contains: search } },
+          { shop_name: { contains: search } },
+        ],
+      }
       : {};
 
     try {

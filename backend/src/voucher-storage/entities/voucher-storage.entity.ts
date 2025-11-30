@@ -1,7 +1,7 @@
 import { ObjectType, Field, Int, registerEnumType } from '@nestjs/graphql';
 import { Voucher_type } from '@prisma/client';
-import { ShopVoucher } from 'src/shop-voucher/entities/shop-voucher.entity';
-import { Voucher } from 'src/voucher/entities/voucher.entity';
+import { ShopVoucher } from '../../shop-voucher/entities/shop-voucher.entity';
+import { Voucher } from '../../voucher/entities/voucher.entity';
 
 registerEnumType(Voucher_type, {
   name: 'Voucher_type',

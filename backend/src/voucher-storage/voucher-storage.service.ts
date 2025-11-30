@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { CreateVoucherStorageInput } from './dto/create-voucher-storage.input';
 import { UpdateVoucherStorageInput } from './dto/update-voucher-storage.input';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '../prisma.service';
 import { Voucher_type } from '@prisma/client';
 
 @Injectable()
 export class VoucherStorageService {
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(createVoucherStorageInput: CreateVoucherStorageInput) {
     const { user_id, voucher_id, voucher_type, claimed_at, is_used } = createVoucherStorageInput;
-    
+
     // Kiểm tra xem người dùng đã lưu voucher này chưa
     const existingVoucher = await this.prisma.voucher_storage.findFirst({
       where: {
@@ -20,11 +20,11 @@ export class VoucherStorageService {
         voucher_type,
       },
     });
-    
+
     if (existingVoucher) {
       throw new Error('Bạn đã lưu mã giảm giá này rồi');
     }
-  
+
     // Kiểm tra voucher có tồn tại và hợp lệ không
     const currentDate = new Date();
     if (voucher_type === 'voucher') {
@@ -35,7 +35,7 @@ export class VoucherStorageService {
           valid_to: { gte: currentDate }, // Chưa hết hạn
         },
       });
-      
+
       if (!voucher) {
         throw new Error(`Không tìm thấy mã giảm giá hệ thống hợp lệ có ID ${voucher_id}`);
       }
@@ -47,12 +47,12 @@ export class VoucherStorageService {
           valid_to: { gte: currentDate }, // Chưa hết hạn
         },
       });
-      
+
       if (!shopVoucher) {
         throw new Error(`Không tìm thấy mã giảm giá shop hợp lệ có ID ${voucher_id}`);
       }
     }
-  
+
     try {
       // Tạo bản ghi voucher_storage
       return await this.prisma.voucher_storage.create({
@@ -139,7 +139,7 @@ export class VoucherStorageService {
         },
       },
     });
-  
+
     // Trả về mảng đã transform, không bọc trong object "data"
     return vouchers.map((voucher) => ({
       voucher_storage_id: voucher.voucher_storage_id,
@@ -195,7 +195,7 @@ export class VoucherStorageService {
 
   async removeExpiredVouchers(userId: string) {
     const currentDate = new Date();
-    
+
     // Find expired vouchers in user's storage
     const expiredVouchers = await this.prisma.voucher_storage.findMany({
       where: {

@@ -3,11 +3,11 @@ import { CartService } from './cart.service';
 import { Cart } from './entities/cart.entity';
 import { CreateCartInput } from './dto/create-cart.input';
 import { UpdateCartInput } from './dto/update-cart.input';
-import { CartProduct } from 'src/cart-product/entities/cart-product.entity';
+import { CartProduct } from '../cart-product/entities/cart-product.entity';
 
 @Resolver(() => Cart)
 export class CartResolver {
-  constructor(private readonly cartService: CartService) {}
+  constructor(private readonly cartService: CartService) { }
 
   @Query(() => Cart, { name: 'getcart' })
   getCart(@Args('id', { type: () => String }) id: string) {

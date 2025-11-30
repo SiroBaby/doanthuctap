@@ -1,7 +1,7 @@
 import { Field, Float, Int, ObjectType } from '@nestjs/graphql';
-import { Product } from 'src/product/entities/product.entity';
-import { Shop } from 'src/shop/entities/shop.entity';
-import { User } from 'src/user/entities/user.entity';
+import { Product } from '../../product/entities/product.entity';
+import { Shop } from '../../shop/entities/shop.entity';
+import { User } from '../../user/entities/user.entity';
 
 @ObjectType()
 class OrderStats {

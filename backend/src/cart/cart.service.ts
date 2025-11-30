@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCartInput } from './dto/create-cart.input';
 import { UpdateCartInput } from './dto/update-cart.input';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '../prisma.service';
 @Injectable()
 export class CartService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async getOrCreateCart(Id: string) {
     const cart = await this.prisma.cart.findFirst({
@@ -22,7 +22,7 @@ export class CartService {
     }
 
     return cart;
-  } 
+  }
 
   async create(createCartInput: CreateCartInput) {
     return this.prisma.cart.create({

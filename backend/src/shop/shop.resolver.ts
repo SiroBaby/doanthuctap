@@ -3,13 +3,13 @@ import { ShopService } from './shop.service';
 import { Shop } from './entities/shop.entity';
 import { CreateShopInput } from './dto/create-shop.input';
 import { UpdateShopInput } from './dto/update-shop.input';
-import { PaginationInput } from 'src/common/dto/pagination.input';
+import { PaginationInput } from '../common/dto/pagination.input';
 import ShopPagination from './entities/shoppagination.entity';
 import { User } from '../user/entities/user.entity';
 
 @Resolver(() => Shop)
 export class ShopResolver {
-  constructor(private readonly shopService: ShopService) {}
+  constructor(private readonly shopService: ShopService) { }
 
   @Mutation(() => Shop)
   createShop(@Args('createShopInput') createShopInput: CreateShopInput) {

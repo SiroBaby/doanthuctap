@@ -4,7 +4,7 @@ import { ProductVariation } from './entities/product-variation.entity';
 import { CreateProductVariationInput } from './dto/create-product-variation.input';
 import { UpdateProductVariationInput } from './dto/update-product-variation.input';
 import { PaginatedProductVariations } from './entities/paginated-product-variations.entity';
-import { PaginationInput } from 'src/common/dto/pagination.input';
+import { PaginationInput } from '../common/dto/pagination.input';
 
 @Resolver(() => ProductVariation)
 export class ProductVariationsResolver {

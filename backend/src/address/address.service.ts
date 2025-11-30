@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAddressInput } from './dto/create-address.input';
 import { UpdateAddressInput } from './dto/update-address.input';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from '../prisma.service';
 import { PaginationInput } from '../common/dto/pagination.input';
 
 @Injectable()
