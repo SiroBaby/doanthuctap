@@ -6,7 +6,10 @@ import { join } from 'path';
 import cookieParser from 'cookie-parser';
 
 const corsOptions: CorsOptions = {
-  origin: 'https://vaashop.vercel.app',
+  origin: [
+    'https://vaashop.vercel.app',
+    'https://vaashop.io.vn',
+  ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   allowedHeaders:
     'Content-Type,Authorization,Apollo-Require-Preflight,x-apollo-operation-name',
